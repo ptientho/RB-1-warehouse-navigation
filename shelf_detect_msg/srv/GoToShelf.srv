@@ -1,0 +1,5 @@
+# request detect_shelf service. If attach_shelf = true, go underneath shelf after complete navigation, else stop right before shelf
+# result If shelf_found = true, return goal pose otherwise the current pose.
+---
+geometry_msgs/PoseStamped shelf_pose
+bool shelf_found 
