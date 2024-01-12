@@ -1,0 +1,25 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <ReactiveSequence>
+            <!--implement battery checking-->
+
+            <ReactiveSequence>
+                <ReactiveFallback>
+                    <CheckAttachShelf name="check_attach_shelf" status={is_attached}/>
+                    <Sequence>
+                        <Sequence>
+                            <GoToPose name="go_to_shelf" loc="front_shelf"/>
+                            <ShelfDetector name="shelf_detection_client" shelf_pose={shelf_pose} find_shelf={is_found}/>
+                        </Sequence>
+                        <ReactiveSequence>
+                            <CheckShelfFound name="check_shelf_found" status={is_found}/>
+                            <GoToPose name="go_to_shelf_pose" loc={shelf_pose}/>
+                            <AttachShelf name="attach_shelf_client" get_shelf={is_attached}/>
+                        </ReactiveSequence>
+                    </Sequence>
+                </ReactiveFallback>
+                <GoToPose name="go_to_desired_location" loc="desired_location"/>
+            </ReactiveSequence>
+        </ReactiveSequence>
+    </BehaviorTree>
+</root>

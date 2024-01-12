@@ -2,6 +2,7 @@
 #include "shelf_detect/shelf_detect_server.hpp"
 #include "cmath"
 #include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/detail/odometry__struct.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -18,6 +19,7 @@
 #include "shelf_detect_msg/srv/go_to_shelf.hpp"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/static_transform_broadcaster.h"
+#include "tf2_ros/transform_broadcaster.h"
 #include "tf2_ros/transform_listener.h"
 #include <algorithm>
 #include <cmath>
@@ -26,20 +28,13 @@
 #include <iterator>
 #include <memory>
 #include <vector>
-#include "tf2_ros/transform_broadcaster.h"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-
-// detect shelf
-// create tf
-// transform tf to map frame
-// send result as goal pose
 
 ShelfDetectionServer::ShelfDetectionServer()
     : rclcpp::Node("shelf_detection_node") {
   using GoToShelf = shelf_detect_msg::srv::GoToShelf;
   using LaserScan = sensor_msgs::msg::LaserScan;
   using Odom = nav_msgs::msg::Odometry;
-  
+
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
                                    RCUTILS_LOG_SEVERITY_INFO);
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
@@ -49,11 +44,14 @@ ShelfDetectionServer::ShelfDetectionServer()
   rclcpp::SubscriptionOptions group;
   group.callback_group = subGrp_;
 
+  this->timer_group_ =
+      this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);  
+
   // start shelf_detection server
   this->srv_ = this->create_service<GoToShelf>(
       "/go_to_shelf", std::bind(&ShelfDetectionServer::service_callback, this,
                                 std::placeholders::_1, std::placeholders::_2));
-
+  // rmw_qos_profile_services_default, srv_group_
   // start sensor callback
   this->odomSub_ = this->create_subscription<Odom>(
       "/odom", 10,
@@ -67,10 +65,17 @@ ShelfDetectionServer::ShelfDetectionServer()
       group);
 
   // start tf objects
-  this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-  this->tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
-  this->tf_listener_ =
-      std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  // this->tf_pub_ =
+  // std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
+  shelf_found = false;
+  this->tf_pub_dyn_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+  this->timer1_ = this->create_wall_timer(
+      1000ms, std::bind(&ShelfDetectionServer::publish_shelf_frame, this),
+      timer_group_);
+
+  this->timer2_ = this->create_wall_timer(
+      500ms, std::bind(&ShelfDetectionServer::detect_shelf, this), timer_group_);
+  RCLCPP_INFO(this->get_logger(), "Initialized go_to_shelf Service");
 }
 
 void ShelfDetectionServer::service_callback(
@@ -80,19 +85,20 @@ void ShelfDetectionServer::service_callback(
   RCLCPP_INFO(this->get_logger(), "Start go_to_shelf service");
 
   /* detect shelf: if shelf is found, compute front shelf distance */
-  //std::this_thread::sleep_for(0.5s);
-  bool shelf_found = detect_shelf();
+  // std::this_thread::sleep_for(0.5s);
   RCLCPP_INFO(this->get_logger(), "Found Shelf: %s",
-                  shelf_found ? "YES" : "NO");
+              shelf_found ? "YES" : "NO");
   if (shelf_found) {
+    /* for static broadcaster, just call this method */
     publish_shelf_frame();
+    /* for dynamic broadcaster, use timer to continuously publish tf */
+    // timer_ = this->create_wall_timer(
+    //     100ms, std::bind(&ShelfDetectionServer::publish_shelf_frame, this),
+    //     subGrp_);
 
-
-    rsp->shelf_pose = get_tf("front_shelf","map");
     rsp->shelf_found = true;
 
-  }else {
-    rsp->shelf_pose = get_tf("front_shelf","map");
+  } else {
     rsp->shelf_found = false;
   }
 }
@@ -121,17 +127,20 @@ void ShelfDetectionServer::laser_callback(
     // if (detect_shelf()) {
     //   float front_shelf_distance = compute_front_shelf_distance();
     // }
-    bool shelf_found = detect_shelf();
+    detect_shelf();
     if (shelf_found) {
       auto ranges = compute_front_shelf_distance();
     }
   }
 }
 
-bool ShelfDetectionServer::detect_shelf() {
+void ShelfDetectionServer::detect_shelf() {
   // intensity array
   bool debug_mode = false;
-
+  if (laser_data == nullptr) {
+    RCLCPP_INFO(this->get_logger(), "Laser data not received.");
+    return;
+  }
   std::vector<float> intensity_list = laser_data->intensities;
   std::vector<float>::iterator it;
   // range values
@@ -147,26 +156,25 @@ bool ShelfDetectionServer::detect_shelf() {
   int num_legs = 0;
 
   for (it = intensity_list.begin(), i = 0;
-       it != intensity_list.end() &&
-       i < intensity_list.size();
-       it++, i++) {
-    if ((*it == *min_pointer_) && (*(std::next(it)) == *max_pointer_)) { // signal 0 -> 1
+       it != intensity_list.end() && i < intensity_list.size(); it++, i++) {
+    if ((*it == *min_pointer_) &&
+        (*(std::next(it)) == *max_pointer_)) { // signal 0 -> 1
       num_legs += 1;
       // get leg1 range and leg2 range
       if (num_legs == 1) {
         leg1_idx_start = i;
-        
       }
       if (num_legs == 2) {
         leg2_idx_start = i;
       }
-    } else if ((num_legs == 1) && (*it == *max_pointer_) && (*(std::next(it)) == *min_pointer_)) { // signal 1 -> 0
-        leg1_idx_end = i;
-        leg1_idx_mid = leg1_idx_start + (leg1_idx_end - leg1_idx_start) / 2; 
-    } else if ((num_legs == 2) && (*it == *max_pointer_) && (*(std::next(it)) == *min_pointer_)) {
-        leg2_idx_end = i;
-        leg2_idx_mid = leg2_idx_start + (leg2_idx_end - leg2_idx_start) / 2; 
-
+    } else if ((num_legs == 1) && (*it == *max_pointer_) &&
+               (*(std::next(it)) == *min_pointer_)) { // signal 1 -> 0
+      leg1_idx_end = i;
+      leg1_idx_mid = leg1_idx_start + (leg1_idx_end - leg1_idx_start) / 2;
+    } else if ((num_legs == 2) && (*it == *max_pointer_) &&
+               (*(std::next(it)) == *min_pointer_)) {
+      leg2_idx_end = i;
+      leg2_idx_mid = leg2_idx_start + (leg2_idx_end - leg2_idx_start) / 2;
     }
   }
   leg1_range = range_list[leg1_idx_mid];
@@ -182,22 +190,27 @@ bool ShelfDetectionServer::detect_shelf() {
   }
 
   if (num_legs == 2) {
-    return true;
+    shelf_found = true;
   } else {
-    return false;
+    shelf_found = false;
   }
 }
 
 std::vector<float> ShelfDetectionServer::compute_front_shelf_distance() {
   /* use this method to compute mid shelf length */
   // get angle_increment
-  float angle_increment = laser_data->angle_increment;
+  std::vector<float> ranges;
   bool debug_mode = false;
+  if (laser_data == nullptr) {
+    ranges = {0, 0, 0, 0};
+    return ranges;
+  }
+  float angle_increment = laser_data->angle_increment;
 
   // leg angles and mid angle (rad)
   float leg1_angle = leg1_idx_mid * angle_increment;
   float leg2_angle = leg2_idx_mid * angle_increment;
-  float mid_angle = (laser_data->ranges.size()/2 - 1) * angle_increment;
+  float mid_angle = (laser_data->ranges.size() / 2 - 1) * angle_increment;
   // angle difference between leg range and mid range (rad)
   float angle1_diff = abs(leg1_angle - mid_angle);
   float angle2_diff = abs(leg2_angle - mid_angle);
@@ -207,39 +220,48 @@ std::vector<float> ShelfDetectionServer::compute_front_shelf_distance() {
   float midleg_offset = (d1 + d2) / 2;
   float front_range = abs(leg1_range * cos(angle1_diff));
 
-  std::vector<float> ranges = {front_range, midleg_offset, d1, d2};
+  ranges = {front_range, midleg_offset, d1, d2};
   if (debug_mode) {
     RCLCPP_INFO(this->get_logger(), "FRONT SHELF RANGE: %f", front_range);
   }
-  
+
   return ranges;
 }
 
 void ShelfDetectionServer::publish_shelf_frame() {
 
   // compute front shelf distance
-  auto ranges =
-      compute_front_shelf_distance(); // [front_range, midleg_offset, d1, d2]
-                                      // where d1 + d2 = 2*midleg_offset
-  auto t = geometry_msgs::msg::TransformStamped();
-  t.header.frame_id = "robot_front_laser_base_link";
-  t.child_frame_id = "front_shelf";
-  t.header.stamp = odom_data->header.stamp;
-
-  t.transform.translation.x = ranges[0];
-  // front shelf offset in y axis of laser_base_link
-  if (ranges[2] <= ranges[3]) {
-    t.transform.translation.y = ranges[1] - ranges[2];
-  } else {
-    t.transform.translation.y = -(ranges[1] - ranges[3]);
+  if (odom_data == nullptr) {
+    return;
   }
-  t.transform.translation.z = 0.0;
-  t.transform.rotation.x = 0.0;
-  t.transform.rotation.y = 0.0;
-  t.transform.rotation.z = 0.0;
-  t.transform.rotation.w = 1.0;
+  if (shelf_found) {
+    auto ranges =
+        compute_front_shelf_distance(); // [front_range, midleg_offset, d1, d2]
+                                        // where d1 + d2 = 2*midleg_offset
+    /* build tf message */
+    auto t = geometry_msgs::msg::TransformStamped();
+    t.header.frame_id = "robot_front_laser_base_link";
+    t.child_frame_id = "front_shelf";
+    t.header.stamp = odom_data->header.stamp;
 
-  tf_pub_->sendTransform(t);
+    t.transform.translation.x = ranges[0];
+    // front shelf offset in y axis of laser_base_link
+    if (ranges[2] <= ranges[3]) {
+      t.transform.translation.y = ranges[1] - ranges[2];
+    } else {
+      t.transform.translation.y = -(ranges[1] - ranges[3]);
+    }
+    t.transform.translation.z = 0.0;
+    t.transform.rotation.x = 0.0;
+    t.transform.rotation.y = 0.0;
+    t.transform.rotation.z = 0.0;
+    t.transform.rotation.w = 1.0;
+
+    /* broadcast tf topic. For static transform, broadcast once */
+    // tf_pub_->sendTransform(t);
+    tf_pub_dyn_->sendTransform(t);
+    RCLCPP_INFO(this->get_logger(), "Shelf frame published");
+  }
 }
 
 void ShelfDetectionServer::odom_callback(const std::shared_ptr<Odom> msg) {
@@ -251,41 +273,3 @@ void ShelfDetectionServer::odom_callback(const std::shared_ptr<Odom> msg) {
   mat.getRPY(r, p, robot_yaw);
   odom_data = msg;
 }
-
-geometry_msgs::msg::PoseStamped ShelfDetectionServer::get_tf(std::string fromFrame, std::string toFrame) {
-    geometry_msgs::msg::TransformStamped t;
-    auto shelf_pose = geometry_msgs::msg::PoseStamped();
-
-    try {
-       t = tf_buffer_->lookupTransform(fromFrame, toFrame, tf2::TimePointZero);
-    } catch (const tf2::TransformException &ex) {
-
-      RCLCPP_INFO(this->get_logger(), "Could not transform %s to %s: %s",
-                  fromFrame.c_str(), toFrame.c_str(), ex.what());
-      
-      shelf_pose.header.stamp = odom_data->header.stamp;
-      shelf_pose.header.frame_id = "map";
-      shelf_pose.pose.position.x = 0.0;
-      shelf_pose.pose.position.y = 0.0;
-      shelf_pose.pose.position.z = 0.0;
-      shelf_pose.pose.orientation.x = 0.0;
-      shelf_pose.pose.orientation.y = 0.0;
-      shelf_pose.pose.orientation.z = 0.0;
-      shelf_pose.pose.orientation.w = 1.0;
-      // rclcpp::shutdown();
-      return shelf_pose;
-    }
-
-    auto translation_pose = t.transform.translation;
-    auto rotation_pose = t.transform.rotation;
-
-    shelf_pose.pose.position.x = translation_pose.x;
-    shelf_pose.pose.position.y = translation_pose.y;
-    shelf_pose.pose.position.z = translation_pose.z;
-    shelf_pose.pose.orientation.x = rotation_pose.x;
-    shelf_pose.pose.orientation.y = rotation_pose.y;
-    shelf_pose.pose.orientation.z = rotation_pose.z;
-    shelf_pose.pose.orientation.w = rotation_pose.w;
-
-    return shelf_pose;
-  }

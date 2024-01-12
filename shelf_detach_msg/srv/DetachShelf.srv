@@ -1,0 +1,8 @@
+# request 
+# detach_shelf: whether the robot unload the shelf
+# result
+# is_attached: True if detach_shelf is False. False otherwise.
+
+bool detach_shelf
+---
+bool is_attached

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(shelf_detect)
+project(shelf_attach)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -9,36 +9,29 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
-find_package(shelf_detect_msg REQUIRED)
+find_package(shelf_attach_msg REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(geometry_msgs REQUIRED)
-
 
 include_directories(
 	include
 )
-
-set(executable_name shelf_detect_server)
+set(executable_name shelf_attach_server)
 set(library_name ${executable_name}_core)
 
 set(dependencies
   rclcpp
   std_msgs
-  sensor_msgs
-  nav_msgs
-  shelf_detect_msg
+  shelf_attach_msg
+  geometry_msgs
   tf2
   tf2_ros
-  geometry_msgs
 )
 
 add_library(${library_name} SHARED
-  src/shelf_detect_server.cpp
+  src/shelf_attach_server.cpp
 )
-
 ament_target_dependencies(${library_name}
   ${dependencies}
 )
@@ -48,7 +41,6 @@ add_executable(${executable_name}
 )
 
 target_link_libraries(${executable_name} ${library_name})
-
 ament_target_dependencies(${executable_name}
   ${dependencies}
 )
@@ -78,6 +70,5 @@ if(BUILD_TESTING)
   set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
-
 
 ament_package()

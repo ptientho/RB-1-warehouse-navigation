@@ -1,0 +1,8 @@
+# request 
+# attach_shelf: whether the robot go underneath shelf and lift it
+# result
+# is_success: True if attach_shelf is true. False otherwise.
+
+bool attach_shelf
+---
+bool is_success 

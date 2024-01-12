@@ -23,9 +23,18 @@ def generate_launch_description():
         output='screen'
     )
 
+    shelf_detection_server = Node(
+        package='shelf_detect',
+        executable='shelf_detect_server',
+        name='shelf_detect_server',
+        output='screen'
+    
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(start_async_slam_toolbox_node)
+    ld.add_action(shelf_detection_server)
 
     return ld
 
