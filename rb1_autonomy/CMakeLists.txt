@@ -22,7 +22,7 @@ find_package(btcpp_ros2_interfaces REQUIRED)
 find_package(shelf_detect_msg REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
-
+find_package(shelf_attach_msg REQUIRED)
 
 # install directories
 install(DIRECTORY
@@ -34,7 +34,7 @@ install(DIRECTORY
 
 # set variable
 set(NAV_SOURCES src/navigation_behavior.cpp)
-set(SHELF_SOURCES src/shelf_detection_behavior.cpp)
+set(SHELF_SOURCES src/shelf_detection_behavior.cpp src/shelf_attach_behavior.cpp)
 set(AUTONOMY_SOURCE src/autonomy.cpp)
 
 set(TARGET_DEPENDS
@@ -49,6 +49,7 @@ set(TARGET_DEPENDS
 	geometry_msgs
 	behaviortree_ros2
 	btcpp_ros2_interfaces
+	shelf_attach_msg
 )
 
 # include headers

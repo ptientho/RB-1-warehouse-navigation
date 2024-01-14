@@ -31,10 +31,19 @@ def generate_launch_description():
     
     )
 
+    shelf_attach_server = Node(
+        package='shelf_attach',
+        executable='shelf_attach_server',
+        name='shelf_attach_server',
+        output='screen',
+        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2}]
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(start_async_slam_toolbox_node)
     ld.add_action(shelf_detection_server)
+    ld.add_action(shelf_attach_server)
 
     return ld
 

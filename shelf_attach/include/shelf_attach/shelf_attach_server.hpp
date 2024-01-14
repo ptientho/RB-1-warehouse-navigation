@@ -1,6 +1,8 @@
 #pragma once
+#include "geometry_msgs/msg/detail/polygon__struct.hpp"
 #include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
 #include "geometry_msgs/msg/detail/twist__struct.hpp"
+#include "geometry_msgs/msg/polygon.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/node.hpp"
@@ -20,6 +22,7 @@ public:
   using PoseStamped = geometry_msgs::msg::PoseStamped;
   using CmdVel = geometry_msgs::msg::Twist;
   using Elevator = std_msgs::msg::String;
+  using Footprint = geometry_msgs::msg::Polygon;
   AttachShelfServer();
 
 private:
@@ -28,6 +31,7 @@ private:
                         const std::shared_ptr<AttachShelf::Response> res);
   void move_to_front_shelf();
   void attach_shelf();
+  void set_params();
 
   // listener to tf frame
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
@@ -35,7 +39,9 @@ private:
   geometry_msgs::msg::PoseStamped get_tf(std::string fromFrame,
                                          std::string toFrame);
 
-  // twist publisher
+  // publisher
   rclcpp::Publisher<CmdVel>::SharedPtr vel_pub_;
   rclcpp::Publisher<Elevator>::SharedPtr lift_pub_;
+  rclcpp::Publisher<Footprint>::SharedPtr foot_pub_glob_;
+  rclcpp::Publisher<Footprint>::SharedPtr foot_pub_local_;
 };

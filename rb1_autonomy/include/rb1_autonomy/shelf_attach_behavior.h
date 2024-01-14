@@ -10,7 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/service.hpp"
 #include "rclcpp/time.hpp"
-#include "shelf_detect_msg/srv/go_to_shelf.hpp"
+#include "shelf_attach_msg/srv/attach_shelf.hpp"
 #include <future>
 #include <memory>
 #include <string>
@@ -19,18 +19,18 @@
 using namespace BT;
 
 /* New service node */
-class ShelfDetectionClient
-    : public RosServiceNode<shelf_detect_msg::srv::GoToShelf> {
+class AttachShelfClient
+    : public RosServiceNode<shelf_attach_msg::srv::AttachShelf> {
 
 public:
-  ShelfDetectionClient(const std::string &name, const BT::NodeConfig &conf,
+  AttachShelfClient(const std::string &name, const BT::NodeConfig &conf,
                        const BT::RosNodeParams &params)
-      : RosServiceNode<shelf_detect_msg::srv::GoToShelf>(name, conf,
+      : RosServiceNode<shelf_attach_msg::srv::AttachShelf>(name, conf,
                                                              params) {}
 
   static BT::PortsList providedPorts() {
     return providedBasicPorts(
-        {BT::OutputPort<bool>("find_shelf")});
+        {BT::InputPort<bool>("attach_shelf"),BT::OutputPort<bool>("is_success")});
   }
 
   bool setRequest(Request::SharedPtr &request) override;
@@ -40,7 +40,7 @@ public:
 
   virtual BT::NodeStatus onFailure(BT::ServiceNodeErrorCode error)
   {
-    RCLCPP_ERROR(node_->get_logger(), "Error: %d", error);
+    RCLCPP_ERROR(node_->get_logger(), "Error: %s", toStr(error));
     return BT::NodeStatus::FAILURE;
   }
 };

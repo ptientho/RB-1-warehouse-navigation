@@ -1,9 +1,5 @@
 #include "rb1_autonomy/autonomy.h"
-//#include "behaviortree_cpp/basic_types.h"
-//#include "behaviortree_cpp/bt_factory.h"
-//#include "behaviortree_cpp_v3/basic_types.h"
-//#include "behaviortree_cpp_v3/blackboard.h"
-//#include "behaviortree_cpp_v3/bt_factory.h"
+#include "rb1_autonomy/shelf_attach_behavior.h"
 #include "behaviortree_ros2/ros_node_params.hpp"
 #include "rb1_autonomy/navigation_behavior.h"
 #include "rb1_autonomy/shelf_detection_behavior.h"
@@ -143,6 +139,10 @@ void AutonomyEngine::createBt() {
 
   params.default_port_value = "navigate_to_pose";
   factory_.registerNodeType<GoToPoseActionClient>("GoToPose", params);
+
+  params.default_port_value = "attach_shelf";
+  params.server_timeout = std::chrono::milliseconds(20000);
+  factory_.registerNodeType<AttachShelfClient>("AttachShelf", params);
 
   // create BT from XML file using blackboard as data collection. Not require in
   // simple tree

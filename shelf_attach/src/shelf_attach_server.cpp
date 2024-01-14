@@ -3,18 +3,21 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "rclcpp/clock.hpp"
 #include "rclcpp/logging.hpp"
+#include "rclcpp/parameter.hpp"
 #include "rclcpp/utilities.hpp"
 #include "std_msgs/msg/detail/string__struct.hpp"
 #include <chrono>
 #include <functional>
+#include <math.h>
 
+using namespace std::chrono_literals;
 AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
                                    RCUTILS_LOG_SEVERITY_INFO);
 
-  this->declare_parameter<double>("shelf_center_distance", 0.3);
-  this->declare_parameter<double>("attach_velocity", 0.3);
+  this->declare_parameter<bool>("activate_elevator", true);
+  this->declare_parameter<float>("attach_velocity", 0.3);
 
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
@@ -22,6 +25,10 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
 
   this->vel_pub_ = this->create_publisher<CmdVel>("/cmd_vel", 10);
   this->lift_pub_ = this->create_publisher<Elevator>("/elevator_up", 10);
+  this->foot_pub_glob_ =
+      this->create_publisher<Footprint>("/global_costmap/footprint", 10);
+  this->foot_pub_local_ =
+      this->create_publisher<Footprint>("/local_costmap/footprint", 10);
 
   this->srv_ = this->create_service<AttachShelf>(
       "/attach_shelf", std::bind(&AttachShelfServer::service_callback, this,
@@ -46,13 +53,14 @@ void AttachShelfServer::service_callback(
     // do attach_shelf()
     RCLCPP_INFO(this->get_logger(), "Robot is attaching to shelf");
     attach_shelf();
+    set_params();
     res->is_success = true;
     RCLCPP_INFO(this->get_logger(), "Attaching to shelf done.");
   }
 }
 
 void AttachShelfServer::move_to_front_shelf() {
-
+  rclcpp::Rate loop_rate(10);
   // shelf_pose is wrt map frame. get tf robot_base_link -> front_shelf
   auto tf_robot_shelf = get_tf("robot_front_laser_base_link", "front_shelf");
 
@@ -60,13 +68,20 @@ void AttachShelfServer::move_to_front_shelf() {
   auto distance = tf_robot_shelf.pose.position.x;
   // create vel message
   CmdVel vel_msg = geometry_msgs::msg::Twist();
-  auto vx = 0.5;
-  vel_msg.linear.x = vx; // m/s
-  vel_pub_->publish(vel_msg);
-  // delay for t = s/v
-  auto delay = distance / vx;
-  std::chrono::nanoseconds delay_ns(static_cast<int64_t>(delay * 1e9));
-  rclcpp::sleep_for(delay_ns);
+  auto vx = 0.2;
+
+  while (distance > 0.15) {
+    // move forward
+    vel_msg.linear.x = vx; // m/s
+    vel_pub_->publish(vel_msg);
+
+    // update distance
+    tf_robot_shelf = get_tf("robot_front_laser_base_link", "front_shelf");
+    distance = tf_robot_shelf.pose.position.x;
+    RCLCPP_INFO(this->get_logger(), "Front shelf distance: %f", distance);
+    loop_rate.sleep();
+  }
+
   // stop robot
   vel_msg.linear.x = 0.0;
   vel_pub_->publish(vel_msg);
@@ -74,24 +89,28 @@ void AttachShelfServer::move_to_front_shelf() {
 
 void AttachShelfServer::attach_shelf() {
 
-  Elevator lift_msg = std_msgs::msg::String();
-  CmdVel vel_msg = geometry_msgs::msg::Twist();
-  double center_distance;
-  double front_vel;
-  this->get_parameter("shelf_center_distance", center_distance);
+  CmdVel vel_msg;
+  bool elevator_up;
+  float front_vel;
+  this->get_parameter("activate_elevator", elevator_up);
   this->get_parameter("attach_velocity", front_vel);
   // move to center shelf
-  vel_msg.linear.x = front_vel;
-  vel_pub_->publish(vel_msg);
-  auto delay =
-      center_distance / front_vel; // center_distance = 0.3m, velocity = 0.3 m/s
-  std::chrono::nanoseconds delay_ns(static_cast<int64_t>(delay * 1e9));
-  rclcpp::sleep_for(delay_ns);
+  for (int i = 0; i < 10; i++) {
+    vel_msg.linear.x = front_vel;
+    vel_pub_->publish(vel_msg);
+    std::this_thread::sleep_for(0.5s);
+  }
+
   vel_msg.linear.x = 0.0;
   vel_pub_->publish(vel_msg);
 
   // activate lift
-  lift_pub_->publish(lift_msg);
+  if (elevator_up) {
+    Elevator lift_msg = std_msgs::msg::String();
+    lift_pub_->publish(lift_msg);
+
+    // set footprint
+  }
 }
 
 geometry_msgs::msg::PoseStamped AttachShelfServer::get_tf(std::string fromFrame,
@@ -132,4 +151,38 @@ geometry_msgs::msg::PoseStamped AttachShelfServer::get_tf(std::string fromFrame,
   shelf_pose.pose.orientation.w = rotation_pose.w;
 
   return shelf_pose;
+}
+
+void AttachShelfServer::set_params() {
+
+  // set global and local footprint
+  Footprint footprint;
+  // Initialize each Point32 in the points array separately
+  geometry_msgs::msg::Point32 point1, point2, point3, point4;
+
+  point1.x = 0.325;
+  point1.y = 0.325;
+  point1.z = 0.0;
+
+  point2.x = 0.325;
+  point2.y = -0.325;
+  point2.z = 0.0;
+
+  point3.x = -0.325;
+  point3.y = -0.325;
+  point3.z = 0.0;
+
+  point4.x = -0.325;
+  point4.y = 0.325;
+  point4.z = 0.0;
+
+  // Fill the points array
+  footprint.points.push_back(point1);
+  footprint.points.push_back(point2);
+  footprint.points.push_back(point3);
+  footprint.points.push_back(point4);
+  
+  foot_pub_glob_->publish(footprint);
+  foot_pub_local_->publish(footprint);
+  RCLCPP_INFO(this->get_logger(), "Footprint parameter set.");    
 }

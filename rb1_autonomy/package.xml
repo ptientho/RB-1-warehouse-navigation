@@ -21,7 +21,8 @@
   <depend>btcpp_ros2_interfaces</depend>
   <depend>shelf_detect_msg</depend>
   <depend>geometry_msgs</depend>
-  <depend>action_msgs</depend>
+  <depend>shelf_attach_msg</depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

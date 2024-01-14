@@ -70,11 +70,11 @@ ShelfDetectionServer::ShelfDetectionServer()
   shelf_found = false;
   this->tf_pub_dyn_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
   this->timer1_ = this->create_wall_timer(
-      1000ms, std::bind(&ShelfDetectionServer::publish_shelf_frame, this),
+      50ms, std::bind(&ShelfDetectionServer::publish_shelf_frame, this),
       timer_group_);
 
   this->timer2_ = this->create_wall_timer(
-      500ms, std::bind(&ShelfDetectionServer::detect_shelf, this), timer_group_);
+      10ms, std::bind(&ShelfDetectionServer::detect_shelf, this), timer_group_);
   RCLCPP_INFO(this->get_logger(), "Initialized go_to_shelf Service");
 }
 
@@ -106,7 +106,7 @@ void ShelfDetectionServer::service_callback(
 void ShelfDetectionServer::laser_callback(
     const std::shared_ptr<LaserScan> msg) {
   std::vector<float> intensity_list = msg->intensities;
-  bool debug_mode = false;
+  bool debug_mode = true;
 
   laser_data = msg;
 
@@ -136,7 +136,7 @@ void ShelfDetectionServer::laser_callback(
 
 void ShelfDetectionServer::detect_shelf() {
   // intensity array
-  bool debug_mode = false;
+  bool debug_mode = true;
   if (laser_data == nullptr) {
     RCLCPP_INFO(this->get_logger(), "Laser data not received.");
     return;
@@ -181,11 +181,11 @@ void ShelfDetectionServer::detect_shelf() {
   leg2_range = range_list[leg2_idx_mid];
 
   if (debug_mode) {
-    RCLCPP_INFO(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
+    RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
                 num_legs);
-    RCLCPP_INFO(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
+    RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
                 leg1_idx_mid);
-    RCLCPP_INFO(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
+    RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
                 leg2_idx_mid);
   }
 
