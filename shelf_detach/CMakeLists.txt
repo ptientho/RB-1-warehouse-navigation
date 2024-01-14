@@ -9,6 +9,54 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(shelf_detach_msg REQUIRED)
+find_package(geometry_msgs REQUIRED)
+
+include_directories(
+	include
+)
+
+set(executable_name shelf_detach_server)
+set(library_name ${executable_name}_core)
+
+set(dependencies
+  rclcpp
+  std_msgs
+  shelf_detach_msg
+  geometry_msgs
+
+)
+
+add_library(${library_name} SHARED
+  src/shelf_detach_server.cpp
+)
+ament_target_dependencies(${library_name}
+  ${dependencies}
+)
+
+add_executable(${executable_name}
+  src/main.cpp
+)
+
+target_link_libraries(${executable_name} ${library_name})
+ament_target_dependencies(${executable_name}
+  ${dependencies}
+)
+
+install(TARGETS ${library_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(TARGETS ${executable_name}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY include/
+  DESTINATION include/
+)
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

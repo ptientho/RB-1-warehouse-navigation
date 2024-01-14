@@ -5,4 +5,4 @@
 
 bool detach_shelf
 ---
-bool is_attached
+bool is_success
