@@ -13,7 +13,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(nav2_msgs REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -36,7 +36,7 @@ install(DIRECTORY
 # set variable
 set(NAV_SOURCES src/navigation_behavior.cpp)
 set(SHELF_SOURCES src/shelf_detection_behavior.cpp src/shelf_attach_behavior.cpp src/shelf_detach_behavior.cpp)
-set(AUTONOMY_SOURCE src/autonomy.cpp)
+set(AUTONOMY_SOURCE src/autonomy.cpp src/backup_behavior.cpp)
 
 set(TARGET_DEPENDS
 
@@ -52,6 +52,7 @@ set(TARGET_DEPENDS
 	btcpp_ros2_interfaces
 	shelf_attach_msg
 	shelf_detach_msg
+	behaviortree_cpp
 )
 
 # include headers

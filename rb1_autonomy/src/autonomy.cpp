@@ -1,7 +1,9 @@
 #include "rb1_autonomy/autonomy.h"
-#include "rb1_autonomy/shelf_attach_behavior.h"
 #include "behaviortree_ros2/ros_node_params.hpp"
+#include "rb1_autonomy/backup_behavior.h"
 #include "rb1_autonomy/navigation_behavior.h"
+#include "rb1_autonomy/shelf_attach_behavior.h"
+#include "rb1_autonomy/shelf_detach_behavior.h"
 #include "rb1_autonomy/shelf_detection_behavior.h"
 #include "rclcpp/callback_group.hpp"
 #include "rclcpp/executors/single_threaded_executor.hpp"
@@ -13,7 +15,6 @@
 #include <chrono>
 #include <functional>
 #include <memory>
-#include "rb1_autonomy/shelf_detach_behavior.h"
 
 /*
 const std::string bt_xml_dir =
@@ -83,7 +84,7 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
 }
 
 // create static blackboard to exchange data in BT
-//BT::Blackboard::Ptr AutonomyEngine::blackboard_ = BT::Blackboard::create();
+// BT::Blackboard::Ptr AutonomyEngine::blackboard_ = BT::Blackboard::create();
 
 void AutonomyEngine::setUp() {
 
@@ -149,9 +150,15 @@ void AutonomyEngine::createBt() {
   params.server_timeout = std::chrono::milliseconds(20000);
   factory_.registerNodeType<DetachShelfClient>("DetachShelf", params);
 
-  // create BT from XML file using blackboard as data collection. Not require in
-  // simple tree
-  // tree = createTreeFromFile(bt_xml_dir, blackboard_);
+  BT::NodeBuilder builder = [=](const std::string &name,
+                                const BT::NodeConfiguration &config) {
+    return std::make_unique<BackUpActionNode>(name, config, shared_from_this());
+  };
+
+  factory_.registerBuilder<BackUpActionNode>("Backup", builder);
+  // create BT from XML file using blackboard as data collection. Not
+  // require in simple tree tree = createTreeFromFile(bt_xml_dir,
+  // blackboard_);
 
   tree = factory_.createTreeFromFile(bt_xml_dir);
 }
@@ -228,8 +235,8 @@ BtStatus AutonomyEngine::run(BT::Tree *tree,
                  ex.what());
     return BtStatus::FAILED;
   }
-  RCLCPP_INFO(rclcpp::get_logger("AutonomyEngine"), "Behavior Tree Status: %s.",
-              result == BT::NodeStatus::SUCCESS ? "Succeeded" : "Failed");
+  RCLCPP_INFO(rclcpp::get_logger("AutonomyEngine"), "Behavior Tree Status:
+%s.", result == BT::NodeStatus::SUCCESS ? "Succeeded" : "Failed");
 
   return (result == BT::NodeStatus::SUCCESS) ? BtStatus::SUCCEEDED
                                              : BtStatus::FAILED;
