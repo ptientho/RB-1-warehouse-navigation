@@ -5,6 +5,7 @@
 #include "geometry_msgs/msg/polygon.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "rclcpp/client.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -23,6 +24,7 @@ public:
   using CmdVel = geometry_msgs::msg::Twist;
   using Elevator = std_msgs::msg::String;
   using Footprint = geometry_msgs::msg::Polygon;
+  using ClientMsg = rcl_interfaces::srv::SetParameters;
   AttachShelfServer();
 
 private:
@@ -44,4 +46,5 @@ private:
   rclcpp::Publisher<Elevator>::SharedPtr lift_pub_;
   rclcpp::Publisher<Footprint>::SharedPtr foot_pub_glob_;
   rclcpp::Publisher<Footprint>::SharedPtr foot_pub_local_;
+  rclcpp::Client<ClientMsg>::SharedPtr param_pub_;
 };

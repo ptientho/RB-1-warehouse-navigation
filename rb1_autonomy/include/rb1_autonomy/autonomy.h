@@ -1,7 +1,5 @@
 #pragma once
 #include "ament_index_cpp/get_package_share_directory.hpp"
-//#include "behaviortree_cpp_v3/blackboard.h"
-//#include "behaviortree_cpp_v3/bt_factory.h"
 #include "navigation_behavior.h"
 #include "rclcpp/callback_group.hpp"
 #include "rclcpp/node.hpp"

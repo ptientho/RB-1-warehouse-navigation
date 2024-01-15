@@ -39,11 +39,20 @@ def generate_launch_description():
         parameters=[{'activate_elevator': False},{'attach_velocity': 0.2}]
     )
 
+    shelf_detach_server = Node(
+        package='shelf_detach',
+        executable='shelf_detach_server',
+        name='shelf_detach_server',
+        output='screen',
+        parameters=[{'detach_velocity': 0.2}]
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(start_async_slam_toolbox_node)
     ld.add_action(shelf_detection_server)
     ld.add_action(shelf_attach_server)
+    ld.add_action(shelf_detach_server)
 
     return ld
 

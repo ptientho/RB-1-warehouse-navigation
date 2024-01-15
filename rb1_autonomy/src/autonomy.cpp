@@ -13,6 +13,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include "rb1_autonomy/shelf_detach_behavior.h"
 
 /*
 const std::string bt_xml_dir =
@@ -143,6 +144,10 @@ void AutonomyEngine::createBt() {
   params.default_port_value = "attach_shelf";
   params.server_timeout = std::chrono::milliseconds(20000);
   factory_.registerNodeType<AttachShelfClient>("AttachShelf", params);
+
+  params.default_port_value = "detach_shelf";
+  params.server_timeout = std::chrono::milliseconds(20000);
+  factory_.registerNodeType<DetachShelfClient>("DetachShelf", params);
 
   // create BT from XML file using blackboard as data collection. Not require in
   // simple tree

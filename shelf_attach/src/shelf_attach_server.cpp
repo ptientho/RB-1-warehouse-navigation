@@ -30,6 +30,9 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
   this->foot_pub_local_ =
       this->create_publisher<Footprint>("/local_costmap/footprint", 10);
 
+  this->param_pub_ =
+      this->create_client<ClientMsg>("/controller_server/set_parameters");
+
   this->srv_ = this->create_service<AttachShelf>(
       "/attach_shelf", std::bind(&AttachShelfServer::service_callback, this,
                                  std::placeholders::_1, std::placeholders::_2));
@@ -181,8 +184,32 @@ void AttachShelfServer::set_params() {
   footprint.points.push_back(point2);
   footprint.points.push_back(point3);
   footprint.points.push_back(point4);
-  
+
   foot_pub_glob_->publish(footprint);
   foot_pub_local_->publish(footprint);
-  RCLCPP_INFO(this->get_logger(), "Footprint parameter set.");    
+
+  // set ObstacleFoorprint critics
+  auto request = std::make_shared<ClientMsg::Request>();
+  rcl_interfaces::msg::ParameterValue val;
+  val.type = 9;
+  val.string_array_value = {"RotateToGoal", "Oscillation", "ObstacleFootprint",
+                            "GoalAlign",    "PathAlign",   "PathDist",
+                            "GoalDist"};
+
+  rcl_interfaces::msg::Parameter param;
+  param.name = "FollowPath.critics";
+  param.value = val;
+
+  request->parameters.push_back(param);
+
+  while (!param_pub_->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(this->get_logger(),
+                   "Interrupted while waiting for the service. Exiting.");
+      return;
+    }
+    RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+  }
+  auto result = param_pub_->async_send_request(request);
+  RCLCPP_INFO(this->get_logger(), "Footprint parameter set.");
 }

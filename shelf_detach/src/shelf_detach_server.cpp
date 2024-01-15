@@ -30,6 +30,8 @@ DetachShelfServer::DetachShelfServer() : rclcpp::Node("shelf_detach_node") {
       "/global_costmap/global_costmap/set_parameters");
   this->foot_pub_local_ = this->create_client<ClientMsg>(
       "/local_costmap/local_costmap/set_parameters");
+  this->critic_pub_ =
+      this->create_client<ClientMsg>("/controller_server/set_parameters");
 
   this->srv_ = this->create_service<DetachShelf>(
       "/detach_shelf", std::bind(&DetachShelfServer::service_callback, this,
@@ -76,20 +78,33 @@ void DetachShelfServer::detach_shelf() {
 
 void DetachShelfServer::set_params() {
 
-  auto request = std::make_shared<ClientMsg::Request>();
+  auto request1 =
+      std::make_shared<ClientMsg::Request>(); // for setting robot radius
+  auto request2 = std::make_shared<ClientMsg::Request>(); // for setting critics
   ////////////////////////////////////////////////////
   rcl_interfaces::msg::ParameterValue val;
   val.type = 3;
   val.double_value = 0.3;
 
-  rcl_interfaces::msg::Parameter param;
-  param.name = "robot_radius";
-  param.value = val;
-  /////////////////////////////////////////////////////
-  request->parameters.push_back(param);
+  rcl_interfaces::msg::Parameter param1;
+  param1.name = "robot_radius";
+  param1.value = val;
 
-  while (!foot_pub_glob_->wait_for_service(1s) &&
-         !foot_pub_local_->wait_for_service(1s)) {
+  val.type = 9;
+  val.string_array_value = {"RotateToGoal", "Oscillation", "BaseObstacle",
+                            "GoalAlign",    "PathAlign",   "PathDist",
+                            "GoalDist"};
+
+  rcl_interfaces::msg::Parameter param2;
+  param2.name = "FollowPath.critics";
+  param2.value = val;
+  /////////////////////////////////////////////////////
+  request1->parameters.push_back(param1);
+  request2->parameters.push_back(param2);
+
+      while (!foot_pub_glob_->wait_for_service(1s) &&
+             !foot_pub_local_->wait_for_service(1s) &&
+             !critic_pub_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(this->get_logger(),
                    "Interrupted while waiting for the service. Exiting.");
@@ -98,7 +113,8 @@ void DetachShelfServer::set_params() {
     RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
   }
 
-  auto glob_rsp = foot_pub_glob_->async_send_request(request);
-  auto local_rsp = foot_pub_local_->async_send_request(request);
-  RCLCPP_INFO(this->get_logger(), "Robot radius parameter set.");
+  auto glob_rsp = foot_pub_glob_->async_send_request(request1);
+  auto local_rsp = foot_pub_local_->async_send_request(request1);
+  auto critic_rsp = critic_pub_->async_send_request(request2);
+  RCLCPP_INFO(this->get_logger(), "Robot radius  and critic parameters set.");
 }
