@@ -1,16 +1,20 @@
 #pragma once
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/condition_node.h"
+#include "behaviortree_cpp/tree_node.h"
 #include "navigation_behavior.h"
+#include "rcl/publisher.h"
 #include "rclcpp/callback_group.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/timer.hpp"
 #include <string>
 #include <vector>
-
 /* This wrapper status is not required. */
 // enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
-
+using namespace BT;
 class AutonomyEngine : public rclcpp::Node {
 public:
   explicit AutonomyEngine(const std::string &node_name);
@@ -39,4 +43,18 @@ private:
   BT::BehaviorTreeFactory factory_;
   rclcpp::TimerBase::SharedPtr timer_;
   BT::Tree tree;
+};
+
+class CheckShelfFound : public ConditionNode {
+
+public:
+  CheckShelfFound(const std::string &name, const NodeConfiguration &config)
+      : ConditionNode(name, config) {}
+
+  static BT::PortsList providedPorts() {
+    return {BT::InputPort<bool>("shelf_found")};
+  }
+
+  // Override the tick method with your custom implementation
+  NodeStatus tick() override;
 };

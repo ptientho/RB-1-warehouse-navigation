@@ -6,6 +6,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/publisher.hpp"
+#include <ratio>
 #include <string>
 
 using namespace BT;
@@ -23,6 +24,11 @@ public:
 
   virtual NodeStatus tick() override;
   // virtual void halt() override final;
+
+  static BT::PortsList providedPorts() {
+        // Define the ports provided by your node
+        return {};
+    }
 
 private:
   rclcpp::Node::SharedPtr node_;

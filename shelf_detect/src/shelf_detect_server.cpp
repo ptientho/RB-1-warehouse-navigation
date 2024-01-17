@@ -36,7 +36,7 @@ ShelfDetectionServer::ShelfDetectionServer()
   using Odom = nav_msgs::msg::Odometry;
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
-                                   RCUTILS_LOG_SEVERITY_INFO);
+                                   RCUTILS_LOG_SEVERITY_DEBUG);
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
   // define callback group
   this->subGrp_ =
@@ -45,7 +45,7 @@ ShelfDetectionServer::ShelfDetectionServer()
   group.callback_group = subGrp_;
 
   this->timer_group_ =
-      this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);  
+      this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
   // start shelf_detection server
   this->srv_ = this->create_service<GoToShelf>(
@@ -153,12 +153,27 @@ void ShelfDetectionServer::detect_shelf() {
   auto min_pointer_ =
       std::min_element(intensity_list.begin(), intensity_list.end());
 
+  // since in real robot the signal oscillates so only max intensity cannot be
+  // properly used
+  float threshold = 3700.0; // the lowest intensity difference from max value that
+                       // would be considered as a detection
+  //float deviation_max = abs(*max_pointer_ - diff);
+  //float deviation_min = abs(*min_pointer_ - diff);
+  //RCLCPP_INFO(this->get_logger(), "Deviation max: %f", *max_pointer_);
+  //RCLCPP_INFO(this->get_logger(), "Deviation min: %f", *min_pointer_);
   int num_legs = 0;
 
   for (it = intensity_list.begin(), i = 0;
        it != intensity_list.end() && i < intensity_list.size(); it++, i++) {
-    if ((*it == *min_pointer_) &&
-        (*(std::next(it)) == *max_pointer_)) { // signal 0 -> 1
+    //RCLCPP_INFO(this->get_logger(), "current intensity: %f", *it);
+    //RCLCPP_INFO(this->get_logger(), "next intensity: %f", *(std::next(it)));       
+    
+    if ((*it < threshold) &&
+        (*(std::next(it)) >=
+         threshold)) { // signal 0 -> 1 // in real robot the intensity
+                           // varies so CANNOT use max value to detect the leg |
+                           // if ((*it == *min_pointer_) && (*(std::next(it)) ==
+                           // *max_pointer_))
       num_legs += 1;
       // get leg1 range and leg2 range
       if (num_legs == 1) {
@@ -167,12 +182,14 @@ void ShelfDetectionServer::detect_shelf() {
       if (num_legs == 2) {
         leg2_idx_start = i;
       }
-    } else if ((num_legs == 1) && (*it == *max_pointer_) &&
-               (*(std::next(it)) == *min_pointer_)) { // signal 1 -> 0
+    } else if ((num_legs == 1) &&
+               (*it >= threshold) &&              // *it == *max_pointer_
+               (*(std::next(it)) < threshold)) { // signal 1 -> 0
       leg1_idx_end = i;
       leg1_idx_mid = leg1_idx_start + (leg1_idx_end - leg1_idx_start) / 2;
-    } else if ((num_legs == 2) && (*it == *max_pointer_) &&
-               (*(std::next(it)) == *min_pointer_)) {
+    } else if ((num_legs == 2) &&
+               (*it >= threshold) && // *it == *max_pointer_
+               (*(std::next(it)) < threshold)) {
       leg2_idx_end = i;
       leg2_idx_mid = leg2_idx_start + (leg2_idx_end - leg2_idx_start) / 2;
     }
@@ -182,11 +199,11 @@ void ShelfDetectionServer::detect_shelf() {
 
   if (debug_mode) {
     RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
-                num_legs);
+                 num_legs);
     RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
-                leg1_idx_mid);
+                 leg1_idx_mid);
     RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
-                leg2_idx_mid);
+                 leg2_idx_mid);
   }
 
   if (num_legs == 2) {
@@ -240,7 +257,7 @@ void ShelfDetectionServer::publish_shelf_frame() {
                                         // where d1 + d2 = 2*midleg_offset
     /* build tf message */
     auto t = geometry_msgs::msg::TransformStamped();
-    t.header.frame_id = "robot_front_laser_base_link";
+    t.header.frame_id = "robot_front_laser_base_link"; // (sim robot) "robot_front_laser_base_link" (real robot) "robot_front_laser_link"
     t.child_frame_id = "front_shelf";
     t.header.stamp = odom_data->header.stamp;
 

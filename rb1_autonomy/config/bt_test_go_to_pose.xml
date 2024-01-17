@@ -5,9 +5,14 @@
                 <GoToPose name="go_to_shelf" loc="front_shelf"/>
                 <ShelfDetector name="detect_shelf" find_shelf="{shelf_found}"/>
                 <AttachShelf name="attach_shelf" attach_shelf="true" is_success="{is_attached}"/>
-                <!--GoToPose name="go_to_location4" loc="location4"/-->
+                <Fallback>
+                    <GoToPose name="go_to_location4" loc="location4"/>
+                    <Sequence>
+                        <BackUp name="backup_recovery"/>
+                        <GoToPose name="go_to_location4" loc="location4"/>
+                    </Sequence>
+                </Fallback>
                 <DetachShelf name="detach_shelf" detach_shelf="true" is_success="{!is_attached}"/>
-                
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>

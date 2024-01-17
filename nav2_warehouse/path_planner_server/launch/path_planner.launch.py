@@ -1,18 +1,35 @@
 from launch_ros.actions import Node
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
 from ament_index_python.packages import get_package_share_directory
+from launch.substitutions import LaunchConfiguration
 import os
-
+from launch.conditions import IfCondition
+from launch.conditions import UnlessCondition
 
 def generate_launch_description():
 
-    #get config file
-    planner_config = os.path.join(get_package_share_directory('path_planner_server'),'config','planner_config.yaml')
-    controller_config = os.path.join(get_package_share_directory('path_planner_server'),'config','controller_config.yaml')
-    bt_config = os.path.join(get_package_share_directory('path_planner_server'),'config','bt_navigator_config.yaml')
-    behaviors_config = os.path.join(get_package_share_directory('path_planner_server'),'config','behaviors.yaml')
-    rviz_config = os.path.join(get_package_share_directory('path_planner_server'),'rviz','path_planner.rviz')
+    is_real_robot = False
 
+    # enable rviz
+    rviz_config = os.path.join(get_package_share_directory('path_planner_server'),'rviz','path_planner.rviz')
+    
+    if is_real_robot:
+        print('setting real robot arguments...')
+        #get config file
+        planner_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','planner_config_real.yaml')
+        controller_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','controller_config_real.yaml')
+        bt_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','bt_navigator_config_real.yaml')
+        behaviors_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','behaviors_real.yaml')
+
+    else:
+        print('setting sim robot arguments...')
+        #get config file
+        planner_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','planner_config.yaml')
+        controller_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','controller_config.yaml')
+        bt_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','bt_navigator_config.yaml')
+        behaviors_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','behaviors.yaml')
+    
     planner_node = Node(
         package='nav2_planner',
         executable='planner_server',
@@ -28,7 +45,6 @@ def generate_launch_description():
         name='controller_server',
         output='screen',
         parameters=[controller_config]
-    
     
     )
 
@@ -55,7 +71,7 @@ def generate_launch_description():
         executable='lifecycle_manager',
         name='lifecycle_manager_localization',
         output='screen',
-        parameters=[{'use_sim_time': True},
+        parameters=[{'use_sim_time': False},
                     {'autostart': True},
                     {'node_names': ['planner_server',
                                     'controller_server',
@@ -73,7 +89,6 @@ def generate_launch_description():
 
 
     return LaunchDescription([
-        
         rviz_node,
         controller_node,
         behavior_node,

@@ -2,6 +2,7 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "rclcpp/utilities.hpp"
 #include <chrono>
+#include <ratio>
 
 using namespace std::chrono_literals;
 NodeStatus BackUpActionNode::tick(){
@@ -11,10 +12,10 @@ NodeStatus BackUpActionNode::tick(){
     CmdVel vel_msg;
     vel_msg.linear.x = (-1) * vel;
 
-    for (int i = 0; i < 10; i++){
+    for (int i = 0; i < 20; i++){
     
         vel_pub_->publish(vel_msg);
-        std::this_thread::sleep_for(0.5s);
+        std::this_thread::sleep_for(0.5s); //0.5s
     }
 
     vel_msg.linear.x = 0.0;

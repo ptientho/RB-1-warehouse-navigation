@@ -1,4 +1,6 @@
 #include "rb1_autonomy/autonomy.h"
+#include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_ros2/ros_node_params.hpp"
 #include "rb1_autonomy/backup_behavior.h"
 #include "rb1_autonomy/navigation_behavior.h"
@@ -98,7 +100,7 @@ void AutonomyEngine::createBt() {
   // import BT xml file
   const std::string bt_xml_dir =
       ament_index_cpp::get_package_share_directory("rb1_autonomy") + "/config" +
-      "/bt_test_go_to_pose.xml";
+      "/bt_test_shelf_detect.xml";
 
   /*
     setup blackboard vaiable. This may not be necessary as it's for complex
@@ -150,12 +152,13 @@ void AutonomyEngine::createBt() {
   params.server_timeout = std::chrono::milliseconds(20000);
   factory_.registerNodeType<DetachShelfClient>("DetachShelf", params);
 
-  BT::NodeBuilder builder = [=](const std::string &name,
-                                const BT::NodeConfiguration &config) {
-    return std::make_unique<BackUpActionNode>(name, config, shared_from_this());
-  };
+  factory_.registerNodeType<BackUpActionNode>("BackUp", shared_from_this());
 
-  factory_.registerBuilder<BackUpActionNode>("Backup", builder);
+  BT::NodeBuilder builder = [](const std::string &name,
+                                const NodeConfiguration &config) {
+    return std::make_unique<CheckShelfFound>(name, config);
+  };
+  factory_.registerBuilder<CheckShelfFound>("CheckShelfFound", builder);
   // create BT from XML file using blackboard as data collection. Not
   // require in simple tree tree = createTreeFromFile(bt_xml_dir,
   // blackboard_);
@@ -242,3 +245,14 @@ BtStatus AutonomyEngine::run(BT::Tree *tree,
                                              : BtStatus::FAILED;
 }
 */
+
+NodeStatus CheckShelfFound::tick() {
+
+  bool is_found;
+  getInput("shelf_found", is_found);
+  if (is_found) {
+    return BT::NodeStatus::SUCCESS;
+  } else {
+    return BT::NodeStatus::FAILURE;
+  }
+}

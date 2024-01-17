@@ -5,6 +5,7 @@
 //#include "behaviortree_cpp_v3/blackboard.h"
 //#include "behaviortree_cpp_v3/tree_node.h"
 //#include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/basic_types.h"
 #include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "rb1_autonomy/autonomy.h"
@@ -71,22 +72,26 @@ future_result) == rclcpp::FutureReturnCode::SUCCESS) {
 */
 /* Old servide node */
 /*
-ShelfDetectionClient::ShelfDetectionClient(const std::string &service_node_name, const std::string& service_name,
-                                           const BT::NodeConfiguration &conf)
-    : ServiceNode<shelf_detect_msg::srv::GoToShelf>(service_node_name, conf, service_name){}
+ShelfDetectionClient::ShelfDetectionClient(const std::string &service_node_name,
+const std::string& service_name, const BT::NodeConfiguration &conf) :
+ServiceNode<shelf_detect_msg::srv::GoToShelf>(service_node_name, conf,
+service_name){}
 
 void ShelfDetectionClient::on_tick(){
 
-    RCLCPP_INFO(node_->get_logger(), "Shelf detect service request is being sent");
+    RCLCPP_INFO(node_->get_logger(), "Shelf detect service request is being
+sent");
 
 }
 
-BT::NodeStatus ShelfDetectionClient::on_completion(std::shared_ptr<shelf_detect_msg::srv::GoToShelf::Response> resp){
-    
+BT::NodeStatus
+ShelfDetectionClient::on_completion(std::shared_ptr<shelf_detect_msg::srv::GoToShelf::Response>
+resp){
+
     AutonomyEngine::blackboard_->set("find_shelf", resp->shelf_found);
     AutonomyEngine::blackboard_->set("shelf_pose", resp->shelf_pose);
-    RCLCPP_INFO(node_->get_logger(), "Shelf detect done. Shelf found: %s", resp->shelf_found ? "yes" : "no");
-    return BT::NodeStatus::SUCCESS;
+    RCLCPP_INFO(node_->get_logger(), "Shelf detect done. Shelf found: %s",
+resp->shelf_found ? "yes" : "no"); return BT::NodeStatus::SUCCESS;
 }
 */
 
@@ -94,13 +99,14 @@ BT::NodeStatus ShelfDetectionClient::on_completion(std::shared_ptr<shelf_detect_
 
 bool ShelfDetectionClient::setRequest(Request::SharedPtr &request) {
 
-    return true;
+  return true;
 }
 
 BT::NodeStatus
-  ShelfDetectionClient::onResponseReceived(const Response::SharedPtr &response) {
-  
-    RCLCPP_INFO(node_->get_logger(), "%s: Response received. | shelf_found: %s", name().c_str(), response->shelf_found ? "yes":"no");
-    setOutput("find_shelf", response->shelf_found);
-    return BT::NodeStatus::SUCCESS;
-  }
+ShelfDetectionClient::onResponseReceived(const Response::SharedPtr &response) {
+  RCLCPP_INFO(node_->get_logger(), "%s: Response received. | shelf_found: %s",
+              name().c_str(), response->shelf_found ? "yes" : "no");
+  setOutput("find_shelf", response->shelf_found);
+  return BT::NodeStatus::SUCCESS;
+}
+

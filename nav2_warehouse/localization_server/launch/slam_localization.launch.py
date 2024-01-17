@@ -9,13 +9,23 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    config_file = 'mapper_params_online_async.yaml'
+    is_real_robot = False
+    
+    if is_real_robot:
+
+        config_file = 'mapper_params_online_async_real.yaml'
+        sim_time = False
+    else:
+        config_file = 'mapper_params_online_async.yaml'
+        sim_time = True
+
     config_dir = os.path.join(get_package_share_directory('localization_server'),'config',config_file)
+
 
     start_async_slam_toolbox_node = Node(
         parameters=[
           config_dir,
-          {'use_sim_time': True}
+          {'use_sim_time': sim_time}
         ],
         package='slam_toolbox',
         executable='async_slam_toolbox_node',
