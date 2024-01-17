@@ -12,7 +12,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/service.hpp"
 #include "rclcpp/time.hpp"
-#include "shelf_detect_msg/srv/go_to_shelf.hpp"
+#include "shelf_detect_msg/srv/go_to_shelf_real.hpp"
 #include <future>
 #include <memory>
 #include <string>
@@ -20,16 +20,16 @@
 using namespace BT;
 
 /* New service node */
-class ShelfDetectionClient
-    : public RosServiceNode<shelf_detect_msg::srv::GoToShelf> {
+class ShelfDetectionRealClient
+    : public RosServiceNode<shelf_detect_msg::srv::GoToShelfReal> {
 
 public:
-  ShelfDetectionClient(const std::string &name, const BT::NodeConfig &conf,
+  ShelfDetectionRealClient(const std::string &name, const BT::NodeConfig &conf,
                        const BT::RosNodeParams &params)
-      : RosServiceNode<shelf_detect_msg::srv::GoToShelf>(name, conf, params) {}
+      : RosServiceNode<shelf_detect_msg::srv::GoToShelfReal>(name, conf, params) {}
 
   static BT::PortsList providedPorts() {
-    return providedBasicPorts({BT::OutputPort<bool>("find_shelf")});
+    return providedBasicPorts({BT::OutputPort<geometry_msgs::msg::PoseStamped>("shelf_pose"), BT::OutputPort<bool>("find_shelf")});
   }
 
   bool setRequest(Request::SharedPtr &request) override;

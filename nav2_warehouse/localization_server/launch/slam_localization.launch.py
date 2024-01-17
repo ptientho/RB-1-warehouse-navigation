@@ -8,16 +8,19 @@ from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
 def generate_launch_description():
-
-    is_real_robot = False
-    
+    ##########################################
+    is_real_robot = True
+    ##########################################
     if is_real_robot:
 
         config_file = 'mapper_params_online_async_real.yaml'
         sim_time = False
+        real_flag = 'true'
+
     else:
         config_file = 'mapper_params_online_async.yaml'
         sim_time = True
+        real_flag = 'false'
 
     config_dir = os.path.join(get_package_share_directory('localization_server'),'config',config_file)
 
@@ -33,11 +36,13 @@ def generate_launch_description():
         output='screen'
     )
 
+
     shelf_detection_server = Node(
         package='shelf_detect',
         executable='shelf_detect_server',
         name='shelf_detect_server',
-        output='screen'
+        output='screen',
+        arguments=["-real_robot", real_flag]
     
     )
 
@@ -46,7 +51,7 @@ def generate_launch_description():
         executable='shelf_attach_server',
         name='shelf_attach_server',
         output='screen',
-        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2}]
+        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2},{'from_frame':'robot_base_footprint'},{'to_frame':'robot_cart_laser'}]
     )
 
     shelf_detach_server = Node(

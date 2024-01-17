@@ -37,6 +37,7 @@ set(dependencies
 
 add_library(${library_name} SHARED
   src/shelf_detect_server.cpp
+  src/shelf_detect_server_real.cpp
 )
 
 ament_target_dependencies(${library_name}

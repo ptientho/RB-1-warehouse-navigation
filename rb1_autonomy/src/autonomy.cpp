@@ -7,6 +7,7 @@
 #include "rb1_autonomy/shelf_attach_behavior.h"
 #include "rb1_autonomy/shelf_detach_behavior.h"
 #include "rb1_autonomy/shelf_detection_behavior.h"
+#include "rb1_autonomy/shelf_detection_real_behavior.h"
 #include "rclcpp/callback_group.hpp"
 #include "rclcpp/executors/single_threaded_executor.hpp"
 #include "rclcpp/logger.hpp"
@@ -17,6 +18,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <string>
 
 /*
 const std::string bt_xml_dir =
@@ -83,6 +85,8 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
     : rclcpp::Node(node_name) {
   // declare location_file yaml file. This is done for example use.
   this->declare_parameter("location_file", "none");
+  this->declare_parameter("real_robot", false);
+  this->declare_parameter("bt_xml_file", "none");
 }
 
 // create static blackboard to exchange data in BT
@@ -98,9 +102,13 @@ void AutonomyEngine::setUp() {
 
 void AutonomyEngine::createBt() {
   // import BT xml file
+  /////////////////////////////////////////////////////////
+  bool is_real_robot = this->get_parameter("real_robot").as_bool();
+  std::string bt_file = this->get_parameter("bt_xml_file").as_string();
+  ///////////////////////////////////////////////////////
   const std::string bt_xml_dir =
       ament_index_cpp::get_package_share_directory("rb1_autonomy") + "/config" +
-      "/bt_test_shelf_detect.xml";
+      "/" + bt_file;
 
   /*
     setup blackboard vaiable. This may not be necessary as it's for complex
@@ -139,7 +147,12 @@ void AutonomyEngine::createBt() {
   BT::RosNodeParams params;
   params.nh = shared_from_this();
   params.default_port_value = "go_to_shelf";
-  factory_.registerNodeType<ShelfDetectionClient>("ShelfDetector", params);
+  if (is_real_robot) {
+    factory_.registerNodeType<ShelfDetectionRealClient>("ShelfDetector",
+                                                        params);
+  } else {
+    factory_.registerNodeType<ShelfDetectionClient>("ShelfDetector", params);
+  }
 
   params.default_port_value = "navigate_to_pose";
   factory_.registerNodeType<GoToPoseActionClient>("GoToPose", params);
@@ -155,7 +168,7 @@ void AutonomyEngine::createBt() {
   factory_.registerNodeType<BackUpActionNode>("BackUp", shared_from_this());
 
   BT::NodeBuilder builder = [](const std::string &name,
-                                const NodeConfiguration &config) {
+                               const NodeConfiguration &config) {
     return std::make_unique<CheckShelfFound>(name, config);
   };
   factory_.registerBuilder<CheckShelfFound>("CheckShelfFound", builder);

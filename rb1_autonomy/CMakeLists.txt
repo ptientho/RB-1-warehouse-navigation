@@ -35,7 +35,7 @@ install(DIRECTORY
 
 # set variable
 set(NAV_SOURCES src/navigation_behavior.cpp)
-set(SHELF_SOURCES src/shelf_detection_behavior.cpp src/shelf_attach_behavior.cpp src/shelf_detach_behavior.cpp)
+set(SHELF_SOURCES src/shelf_detection_behavior.cpp src/shelf_attach_behavior.cpp src/shelf_detach_behavior.cpp src/shelf_detection_real_behavior.cpp)
 set(AUTONOMY_SOURCE src/autonomy.cpp src/backup_behavior.cpp)
 
 set(TARGET_DEPENDS

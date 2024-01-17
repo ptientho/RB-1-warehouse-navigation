@@ -9,6 +9,7 @@
 #include <chrono>
 #include <functional>
 #include <math.h>
+#include <string>
 
 using namespace std::chrono_literals;
 AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
@@ -18,6 +19,8 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
 
   this->declare_parameter<bool>("activate_elevator", true);
   this->declare_parameter<float>("attach_velocity", 0.3);
+  this->declare_parameter("from_frame", "robot_front_laser_base_link");
+  this->declare_parameter("to_frame", "front_shelf");
 
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
@@ -65,7 +68,9 @@ void AttachShelfServer::service_callback(
 void AttachShelfServer::move_to_front_shelf() {
   rclcpp::Rate loop_rate(10);
   // shelf_pose is wrt map frame. get tf robot_base_link -> front_shelf
-  auto tf_robot_shelf = get_tf("robot_front_laser_base_link", "front_shelf");
+  std::string fromFrame = this->get_parameter("from_frame").as_string();
+  std::string toFrame = this->get_parameter("to_frame").as_string();
+  auto tf_robot_shelf = get_tf(fromFrame, toFrame);
 
   // move forward distance. For the sake of simplicity, use just x distance;
   auto distance = tf_robot_shelf.pose.position.x;
@@ -79,7 +84,7 @@ void AttachShelfServer::move_to_front_shelf() {
     vel_pub_->publish(vel_msg);
 
     // update distance
-    tf_robot_shelf = get_tf("robot_front_laser_base_link", "front_shelf");
+    tf_robot_shelf = get_tf(fromFrame, toFrame);
     distance = tf_robot_shelf.pose.position.x;
     RCLCPP_INFO(this->get_logger(), "Front shelf distance: %f", distance);
     loop_rate.sleep();

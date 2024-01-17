@@ -26,6 +26,7 @@ endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
 	"srv/GoToShelf.srv"
+	"srv/GoToShelfReal.srv"
 	DEPENDENCIES
 	geometry_msgs
 	rosidl_default_generators

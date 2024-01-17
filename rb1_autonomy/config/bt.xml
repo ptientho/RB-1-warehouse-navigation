@@ -5,16 +5,16 @@
 
             <ReactiveSequence>
                 <ReactiveFallback>
-                    <CheckAttachShelf name="check_attach_shelf" status={is_attached}/>
+                    <CheckAttachShelf name="check_attach_shelf" status="{is_attached}"/>
                     <Sequence>
                         <Sequence>
                             <GoToPose name="go_to_shelf" loc="front_shelf"/>
-                            <ShelfDetector name="shelf_detection_client" shelf_pose={shelf_pose} find_shelf={is_found}/>
+                            <ShelfDetector name="shelf_detection_client" shelf_pose="{shelf_pose}" find_shelf="{is_found}"/>
                         </Sequence>
                         <ReactiveSequence>
-                            <CheckShelfFound name="check_shelf_found" status={is_found}/>
-                            <GoToPose name="go_to_shelf_pose" loc={shelf_pose}/>
-                            <AttachShelf name="attach_shelf_client" get_shelf={is_attached}/>
+                            <CheckShelfFound name="check_shelf_found" status="{is_found}"/>
+                            <GoToPose name="go_to_shelf_pose" loc="{shelf_pose}"/>
+                            <AttachShelf name="attach_shelf_client" get_shelf="{is_attached}"/>
                         </ReactiveSequence>
                     </Sequence>
                 </ReactiveFallback>

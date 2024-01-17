@@ -8,9 +8,9 @@ from launch.conditions import IfCondition
 from launch.conditions import UnlessCondition
 
 def generate_launch_description():
-
-    is_real_robot = False
-
+    ##################################
+    is_real_robot = True
+    ##################################
     # enable rviz
     rviz_config = os.path.join(get_package_share_directory('path_planner_server'),'rviz','path_planner.rviz')
     

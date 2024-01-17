@@ -1,0 +1,12 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <RetryUntilSuccessful num_attempts="3">
+            <Sequence>
+                <GoToPose name="go_to_loc1" loc="location1_real"/>
+                <GoToPose name="go_to_loc2" loc="location2_real"/>
+                <GoToPose name="go_to_loc3" loc="location3_real"/>
+                <GoToPose name="go_to_loc4" loc="location4_real"/>
+            </Sequence>
+        </RetryUntilSuccessful>
+    </BehaviorTree>
+</root>
