@@ -116,8 +116,7 @@ void AttachShelfServer::attach_shelf() {
   if (elevator_up) {
     Elevator lift_msg = std_msgs::msg::String();
     lift_pub_->publish(lift_msg);
-
-    // set footprint
+    std::this_thread::sleep_for(5s);
   }
 }
 

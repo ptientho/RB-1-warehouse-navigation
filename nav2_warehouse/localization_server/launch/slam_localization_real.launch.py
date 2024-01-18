@@ -7,13 +7,13 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    config_file = 'mapper_params_online_async.yaml'
+    config_file = 'mapper_params_online_async_real.yaml'
     config_dir = os.path.join(get_package_share_directory('localization_server'),'config',config_file)
 
     start_async_slam_toolbox_node = Node(
         parameters=[
           config_dir,
-          {'use_sim_time': True}
+          {'use_sim_time': False}
         ],
         package='slam_toolbox',
         executable='async_slam_toolbox_node',
@@ -27,7 +27,7 @@ def generate_launch_description():
         executable='shelf_detect_server',
         name='shelf_detect_server',
         output='screen',
-        arguments=["-real_robot", 'false']
+        arguments=["-real_robot", 'true']
     
     )
 
@@ -36,7 +36,8 @@ def generate_launch_description():
         executable='shelf_attach_server',
         name='shelf_attach_server',
         output='screen',
-        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2}]
+        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2},{'from_frame':'robot_base_footprint'},
+                    {'to_frame':'robot_cart_laser'}]
     )
 
     shelf_detach_server = Node(

@@ -172,6 +172,12 @@ void AutonomyEngine::createBt() {
     return std::make_unique<CheckShelfFound>(name, config);
   };
   factory_.registerBuilder<CheckShelfFound>("CheckShelfFound", builder);
+
+  BT::NodeBuilder builder = [](const std::string &name,
+                               const NodeConfiguration &config) {
+    return std::make_unique<CheckShelfAttached>(name, config);
+  };
+  factory_.registerBuilder<CheckShelfAttached>("CheckShelfAttached", builder);
   // create BT from XML file using blackboard as data collection. Not
   // require in simple tree tree = createTreeFromFile(bt_xml_dir,
   // blackboard_);
@@ -264,6 +270,17 @@ NodeStatus CheckShelfFound::tick() {
   bool is_found;
   getInput("shelf_found", is_found);
   if (is_found) {
+    return BT::NodeStatus::SUCCESS;
+  } else {
+    return BT::NodeStatus::FAILURE;
+  }
+}
+
+NodeStatus CheckShelfAttached::tick() {
+
+  bool is_attached;
+  getInput("shelf_attached", is_attached);
+  if (is_attached) {
     return BT::NodeStatus::SUCCESS;
   } else {
     return BT::NodeStatus::FAILURE;

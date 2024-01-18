@@ -11,10 +11,10 @@ def generate_launch_description():
     rviz_config = os.path.join(get_package_share_directory('path_planner_server'),'rviz','path_planner.rviz')
     
     #get config file
-    planner_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','planner_config.yaml')
-    controller_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','controller_config.yaml')
-    bt_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','bt_navigator_config.yaml')
-    behaviors_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','behaviors.yaml')
+    planner_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','planner_config_real.yaml')
+    controller_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','controller_config_real.yaml')
+    bt_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','bt_navigator_config_real.yaml')
+    behaviors_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','behaviors_real.yaml')
 
     planner_node = Node(
         package='nav2_planner',
@@ -57,7 +57,7 @@ def generate_launch_description():
         executable='lifecycle_manager',
         name='lifecycle_manager_localization',
         output='screen',
-        parameters=[{'use_sim_time': True},
+        parameters=[{'use_sim_time': False},
                     {'autostart': True},
                     {'node_names': ['planner_server',
                                     'controller_server',

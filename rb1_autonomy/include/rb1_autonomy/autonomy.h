@@ -58,3 +58,17 @@ public:
   // Override the tick method with your custom implementation
   NodeStatus tick() override;
 };
+
+class CheckShelfAttached : public ConditionNode {
+
+public:
+  CheckShelfAttached(const std::string &name, const NodeConfiguration &config)
+      : ConditionNode(name, config) {}
+
+  static BT::PortsList providedPorts() {
+    return {BT::InputPort<bool>("shelf_attached")};
+  }
+
+  // Override the tick method with your custom implementation
+  NodeStatus tick() override;
+};

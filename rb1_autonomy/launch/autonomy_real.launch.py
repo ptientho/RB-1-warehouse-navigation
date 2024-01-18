@@ -11,7 +11,7 @@ def generate_launch_description():
         executable='autonomy_node',
         name='autonomy_node',
         parameters=[{'location_file': os.path.join(get_package_share_directory('rb1_autonomy'), 'config', 'locations.yaml')},
-                    {'real_robot': False}, {'bt_xml_file':'bt_test_go_to_pose.xml'}]
+                    {'real_robot': True}, {'bt_xml_file':'bt_test_shelf_detect_real.xml'}]
     
     )
 
