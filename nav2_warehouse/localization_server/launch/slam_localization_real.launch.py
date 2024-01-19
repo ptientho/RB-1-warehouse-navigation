@@ -36,7 +36,7 @@ def generate_launch_description():
         executable='shelf_attach_server',
         name='shelf_attach_server',
         output='screen',
-        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2},{'from_frame':'robot_base_footprint'},
+        parameters=[{'activate_elevator': False},{'attach_velocity': 0.1},{'from_frame':'robot_base_footprint'},
                     {'to_frame':'robot_cart_laser'}]
     )
 
@@ -45,7 +45,7 @@ def generate_launch_description():
         executable='shelf_detach_server',
         name='shelf_detach_server',
         output='screen',
-        parameters=[{'detach_velocity': 0.2}]
+        parameters=[{'detach_velocity': 0.1}]
     )
 
 

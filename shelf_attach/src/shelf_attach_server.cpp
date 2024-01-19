@@ -19,8 +19,8 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
 
   this->declare_parameter<bool>("activate_elevator", true);
   this->declare_parameter<float>("attach_velocity", 0.3);
-  this->declare_parameter("from_frame", "robot_front_laser_base_link");
-  this->declare_parameter("to_frame", "front_shelf");
+  this->declare_parameter<std::string>("from_frame", "robot_front_laser_base_link");
+  this->declare_parameter<std::string>("to_frame", "front_shelf");
 
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
@@ -76,7 +76,7 @@ void AttachShelfServer::move_to_front_shelf() {
   auto distance = tf_robot_shelf.pose.position.x;
   // create vel message
   CmdVel vel_msg = geometry_msgs::msg::Twist();
-  auto vx = 0.2;
+  auto vx = 0.1;
 
   while (distance > 0.15) {
     // move forward
@@ -116,7 +116,7 @@ void AttachShelfServer::attach_shelf() {
   if (elevator_up) {
     Elevator lift_msg = std_msgs::msg::String();
     lift_pub_->publish(lift_msg);
-    std::this_thread::sleep_for(5s);
+    std::this_thread::sleep_for(7s);
   }
 }
 
@@ -166,21 +166,37 @@ void AttachShelfServer::set_params() {
   Footprint footprint;
   // Initialize each Point32 in the points array separately
   geometry_msgs::msg::Point32 point1, point2, point3, point4;
+  /*
+point1.x = 0.325;
+point1.y = 0.325;
+point1.z = 0.0;
 
-  point1.x = 0.325;
-  point1.y = 0.325;
+point2.x = 0.325;
+point2.y = -0.325;
+point2.z = 0.0;
+
+point3.x = -0.325;
+point3.y = -0.325;
+point3.z = 0.0;
+
+point4.x = -0.325;
+point4.y = 0.325;
+point4.z = 0.0;
+  */
+  point1.x = 0.43;
+  point1.y = 0.43;
   point1.z = 0.0;
 
-  point2.x = 0.325;
-  point2.y = -0.325;
+  point2.x = 0.43;
+  point2.y = -0.43;
   point2.z = 0.0;
 
-  point3.x = -0.325;
-  point3.y = -0.325;
+  point3.x = -0.43;
+  point3.y = -0.43;
   point3.z = 0.0;
 
-  point4.x = -0.325;
-  point4.y = 0.325;
+  point4.x = -0.43;
+  point4.y = 0.43;
   point4.z = 0.0;
 
   // Fill the points array

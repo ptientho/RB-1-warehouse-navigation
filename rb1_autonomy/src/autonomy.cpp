@@ -1,6 +1,7 @@
 #include "rb1_autonomy/autonomy.h"
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/tree_node.h"
+#include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_ros2/ros_node_params.hpp"
 #include "rb1_autonomy/backup_behavior.h"
 #include "rb1_autonomy/navigation_behavior.h"
@@ -16,9 +17,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/utilities.hpp"
 #include <chrono>
+#include <fstream>
 #include <functional>
 #include <memory>
 #include <string>
+#include "behaviortree_cpp/loggers/groot2_publisher.h"
+#include "rb1_autonomy/navigation_pose_behavior.h"
 
 /*
 const std::string bt_xml_dir =
@@ -87,6 +91,7 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
   this->declare_parameter("location_file", "none");
   this->declare_parameter("real_robot", false);
   this->declare_parameter("bt_xml_file", "none");
+  this->declare_parameter("tree_node_xml_file", "none");
 }
 
 // create static blackboard to exchange data in BT
@@ -146,16 +151,20 @@ void AutonomyEngine::createBt() {
     */
   BT::RosNodeParams params;
   params.nh = shared_from_this();
-  params.default_port_value = "go_to_shelf";
+
+  params.server_timeout = std::chrono::milliseconds(20000);
   if (is_real_robot) {
-    factory_.registerNodeType<ShelfDetectionRealClient>("ShelfDetector",
+    params.default_port_value = "go_to_shelf_real";
+    factory_.registerNodeType<ShelfDetectionRealClient>("ShelfDetectorReal",
                                                         params);
   } else {
+    params.default_port_value = "go_to_shelf";
     factory_.registerNodeType<ShelfDetectionClient>("ShelfDetector", params);
   }
 
   params.default_port_value = "navigate_to_pose";
   factory_.registerNodeType<GoToPoseActionClient>("GoToPose", params);
+  factory_.registerNodeType<GoToPose2ActionClient>("GoToPose2", params);
 
   params.default_port_value = "attach_shelf";
   params.server_timeout = std::chrono::milliseconds(20000);
@@ -167,22 +176,28 @@ void AutonomyEngine::createBt() {
 
   factory_.registerNodeType<BackUpActionNode>("BackUp", shared_from_this());
 
-  BT::NodeBuilder builder = [](const std::string &name,
-                               const NodeConfiguration &config) {
+  BT::NodeBuilder builder1 = [](const std::string &name,
+                                const NodeConfiguration &config) {
     return std::make_unique<CheckShelfFound>(name, config);
   };
-  factory_.registerBuilder<CheckShelfFound>("CheckShelfFound", builder);
+  factory_.registerBuilder<CheckShelfFound>("CheckShelfFound", builder1);
 
-  BT::NodeBuilder builder = [](const std::string &name,
-                               const NodeConfiguration &config) {
+  BT::NodeBuilder builder2 = [](const std::string &name,
+                                const NodeConfiguration &config) {
     return std::make_unique<CheckShelfAttached>(name, config);
   };
-  factory_.registerBuilder<CheckShelfAttached>("CheckShelfAttached", builder);
+  factory_.registerBuilder<CheckShelfAttached>("CheckShelfAttached", builder2);
   // create BT from XML file using blackboard as data collection. Not
   // require in simple tree tree = createTreeFromFile(bt_xml_dir,
   // blackboard_);
-
+  ///////////////////////////////////////////////////////////////////////////////////
+  createTreeNodeXML();
+  //////////////////////////////////////////////////////////////////////////
   tree = factory_.createTreeFromFile(bt_xml_dir);
+  // Connect the Groot2Publisher. This will allow Groot2 to
+  // get the tree and poll status updates.
+  //BT::Groot2Publisher publish(tree);
+  //RCLCPP_INFO(this->get_logger(), "Connecting to Groot2...");
 }
 
 void AutonomyEngine::tickBt() {
@@ -209,6 +224,32 @@ void AutonomyEngine::tickBt() {
   } else if (tree_status == BT::NodeStatus::FAILURE) {
     RCLCPP_INFO(this->get_logger(), "BT tasks failed");
     return;
+  }
+}
+
+void AutonomyEngine::createTreeNodeXML() {
+  /* This method has to be called after registering all custom nodes */
+  // Generate TreeNodes for Groot2
+  std::string tree_xml = this->get_parameter("tree_node_xml_file").as_string();
+  std::string xml_models = BT::writeTreeNodesModelXML(factory_);
+
+  // save TreeNode model to a file
+  std::string file_path =
+      "/home/user/ros2_ws/src/rb1_autonomy/config/" + tree_xml;
+
+  // Open the file for writing
+  std::ofstream file(file_path);
+  // Check if the file is open
+  if (file.is_open()) {
+    // Write the XML string to the file
+    file << xml_models;
+
+    // Close the file
+    file.close();
+
+    std::cout << "XML models saved to: " << file_path << std::endl;
+  } else {
+    std::cerr << "Error opening the file for writing." << std::endl;
   }
 }
 

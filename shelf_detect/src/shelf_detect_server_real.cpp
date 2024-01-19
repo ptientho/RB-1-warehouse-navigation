@@ -41,7 +41,12 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
   // parameter frame to get tf from map
   this->declare_parameter("frame", "robot_cart_laser");
-  
+
+  // tf listener
+  this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+  this->tf_listener_ =
+      std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
   // define callback group
   this->subGrp_ =
       this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
@@ -53,8 +58,9 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
 
   // start shelf_detection server
   this->srv_ = this->create_service<GoToShelf>(
-      "/go_to_shelf", std::bind(&ShelfDetectionServerReal::service_callback, this,
-                                std::placeholders::_1, std::placeholders::_2));
+      "/go_to_shelf_real",
+      std::bind(&ShelfDetectionServerReal::service_callback, this,
+                std::placeholders::_1, std::placeholders::_2));
   // rmw_qos_profile_services_default, srv_group_
   // start sensor callback
   this->odomSub_ = this->create_subscription<Odom>(
@@ -78,7 +84,8 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
   //     timer_group_);
 
   this->timer1_ = this->create_wall_timer(
-      10ms, std::bind(&ShelfDetectionServerReal::detect_shelf, this), timer_group_);
+      10ms, std::bind(&ShelfDetectionServerReal::detect_shelf, this),
+      timer_group_);
   RCLCPP_INFO(this->get_logger(), "Initialized go_to_shelf Service");
 }
 

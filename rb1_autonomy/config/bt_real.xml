@@ -8,17 +8,23 @@
                     <CheckShelfAttached name="check_attach_shelf" shelf_attached="{is_attached}"/>
                     <Sequence>
                         <Sequence>
-                            <GoToPose name="go_to_shelf" loc="front_shelf"/>
-                            <ShelfDetector name="shelf_detection_client" find_shelf="{is_found}"/>
+                            <ShelfDetectorReal name="shelf_detection_client" shelf_pose="{front_shelf}" find_shelf="{is_found}"/>
+                            <GoToPose2 name="go_to_shelf" pose="{front_shelf}"/>
                         </Sequence>
                         <ReactiveSequence>
                             <CheckShelfFound name="check_shelf_found" shelf_found="{is_found}"/>
-                            <GoToPose name="go_to_shelf_pose" loc="{shelf_pose}"/>
                             <AttachShelf name="attach_shelf_client" is_success="{is_attached}"/>
                         </ReactiveSequence>
                     </Sequence>
                 </ReactiveFallback>
-                <GoToPose name="go_to_desired_location" loc="desired_location"/>
+                <Fallback>
+                    <GoToPose name="go_to_desired_location" loc="desired_location"/>
+                    <Sequence>
+                        <BackUp name="backup_recovery"/>
+                        <GoToPose name="go_to_desired_location" loc="desired_location"/>
+                    </Sequence>
+                </Fallback>
+                <DetachShelf name="detach_shelf" detach_shelf="true" is_success="{!is_attached}"/>
             </ReactiveSequence>
         </ReactiveSequence>
     </BehaviorTree>

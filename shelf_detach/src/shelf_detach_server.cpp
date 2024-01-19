@@ -61,6 +61,7 @@ void DetachShelfServer::detach_shelf() {
   // unloading shelf
   Elevator lift_msg = std_msgs::msg::String();
   lift_pub_->publish(lift_msg);
+  std::this_thread::sleep_for(10s);
 
   CmdVel vel_msg;
   float back_vel;
@@ -102,9 +103,9 @@ void DetachShelfServer::set_params() {
   request1->parameters.push_back(param1);
   request2->parameters.push_back(param2);
 
-      while (!foot_pub_glob_->wait_for_service(1s) &&
-             !foot_pub_local_->wait_for_service(1s) &&
-             !critic_pub_->wait_for_service(1s)) {
+  while (!foot_pub_glob_->wait_for_service(1s) &&
+         !foot_pub_local_->wait_for_service(1s) &&
+         !critic_pub_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(this->get_logger(),
                    "Interrupted while waiting for the service. Exiting.");

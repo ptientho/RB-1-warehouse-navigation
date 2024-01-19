@@ -27,6 +27,7 @@ public:
 
   void createBt();
 
+  void createTreeNodeXML();
   /* Not neccessary */
   /*
 template <typename ClassT>

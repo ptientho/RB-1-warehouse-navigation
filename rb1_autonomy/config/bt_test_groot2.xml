@@ -1,0 +1,29 @@
+<root BTCPP_format="4">
+    <TreeNodesModel>
+        <Action ID="AttachShelf">
+            <input_port name="attach_shelf" type="bool"/>
+            <output_port name="is_success" type="bool"/>
+            <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
+        </Action>
+        <Action ID="BackUp"/>
+        <Condition ID="CheckShelfAttached">
+            <input_port name="shelf_attached" type="bool"/>
+        </Condition>
+        <Condition ID="CheckShelfFound">
+            <input_port name="shelf_found" type="bool"/>
+        </Condition>
+        <Action ID="DetachShelf">
+            <input_port name="detach_shelf" type="bool"/>
+            <output_port name="is_success" type="bool"/>
+            <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
+        </Action>
+        <Action ID="GoToPose">
+            <input_port name="loc" type="std::string"/>
+            <input_port name="action_name" type="std::string" default="__default__placeholder__">Action server name</input_port>
+        </Action>
+        <Action ID="ShelfDetector">
+            <output_port name="find_shelf" type="bool"/>
+            <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
+        </Action>
+    </TreeNodesModel>
+</root>

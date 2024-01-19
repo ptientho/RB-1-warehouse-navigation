@@ -2,8 +2,7 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="3">
             <Sequence>
-                <ShelfDetectorReal name="detect_shelf" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
-                <CheckShelfFound name="flag_shelf_found" shelf_found="{shelf_found}"/>
+                <BackUp name="backup_recovery"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>

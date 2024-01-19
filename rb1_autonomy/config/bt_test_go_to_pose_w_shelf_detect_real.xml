@@ -2,8 +2,8 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="3">
             <Sequence>
-                <ShelfDetector name="detect_shelf" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
-                <GoToPose name="go_to_shelf" loc="{front_shelf}"/>
+                <ShelfDetectorReal name="detect_shelf" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
+                <GoToPose2 name="go_to_shelf" pose="{front_shelf}"/>
                 <AttachShelf name="attach_shelf" attach_shelf="true" is_success="{is_attached}"/>
                 <Fallback>
                     <GoToPose name="go_to_location4" loc="location4"/>

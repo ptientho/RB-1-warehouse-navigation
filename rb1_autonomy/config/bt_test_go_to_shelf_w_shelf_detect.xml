@@ -4,6 +4,8 @@
             <Sequence>
                 <ShelfDetectorReal name="detect_shelf" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
                 <CheckShelfFound name="flag_shelf_found" shelf_found="{shelf_found}"/>
+                <GoToPose2 name="go_to_shelf" pose="{front_shelf}"/>
+                <AttachShelf name="attach_shelf" attach_shelf="false" is_success="{is_attached}"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>
