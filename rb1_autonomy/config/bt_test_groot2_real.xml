@@ -21,6 +21,10 @@
             <input_port name="loc" type="std::string"/>
             <input_port name="action_name" type="std::string" default="__default__placeholder__">Action server name</input_port>
         </Action>
+        <Action ID="GoToPose2">
+            <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="action_name" type="std::string" default="__default__placeholder__">Action server name</input_port>
+        </Action>
         <Action ID="ShelfDetectorReal">
             <output_port name="shelf_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
             <output_port name="find_shelf" type="bool"/>

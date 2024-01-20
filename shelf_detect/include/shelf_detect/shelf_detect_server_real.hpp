@@ -41,11 +41,14 @@ private:
 
   // timer use for dynamic tf publishing
   rclcpp::TimerBase::SharedPtr timer1_;
-  //rclcpp::TimerBase::SharedPtr timer2_;
+  // rclcpp::TimerBase::SharedPtr timer2_;
 
   // tf listener
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+
+  // tf broadcaster
+  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_pub_;
 
   // odom data
   double robot_yaw;
@@ -80,6 +83,9 @@ private:
   /* listen to existing robot_cart_laser frame */
   geometry_msgs::msg::PoseStamped get_tf(std::string fromFrame,
                                          std::string toFrame);
+
+  /* publish frame */
+  void publish_shelf_frame();
 };
 
 #endif // SHELF_DETECT__SHELF_DETECT_SERVER_REAL_HPP_

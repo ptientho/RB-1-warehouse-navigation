@@ -19,7 +19,7 @@ bool GoToPose2ActionClient::setGoal(Goal &goal) {
 
   // build new goal based on goal_ variable
   auto goal_ = nav2_msgs::action::NavigateToPose::Goal();
-  goal.pose.header.frame_id = shelf_pose->header.frame_id;
+  goal.pose.header.frame_id = "map";
   goal.pose.header.stamp = node_->get_clock()->now();
   goal.pose.pose.position.x = shelf_pose->pose.position.x;
   goal.pose.pose.position.y = shelf_pose->pose.position.y;

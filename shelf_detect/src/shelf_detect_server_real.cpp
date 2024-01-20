@@ -41,8 +41,9 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
   // parameter frame to get tf from map
   this->declare_parameter("frame", "robot_cart_laser");
+  this->declare_parameter("front_shelf_offset", 0.3);
 
-  // tf listener
+  // tf listener from "front_shelf" to "map"
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
       std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -75,8 +76,7 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
       group);
 
   // start tf objects
-  // this->tf_pub_ =
-  // std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
+  this->tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
   shelf_found = false;
 
   // this->timer1_ = this->create_wall_timer(
@@ -100,12 +100,14 @@ void ShelfDetectionServerReal::service_callback(
   RCLCPP_INFO(this->get_logger(), "Found Shelf: %s",
               shelf_found ? "YES" : "NO");
   if (shelf_found) {
+    // publish front_shelf frame
+    publish_shelf_frame();
     // get shelf_pose
-    rsp->shelf_pose = get_tf(frame, "map");
+    rsp->shelf_pose = get_tf("front_shelf", "map");
     rsp->shelf_found = true;
 
   } else {
-    rsp->shelf_pose = get_tf(frame, "map");
+    rsp->shelf_pose = get_tf("front_shelf", "map");
     rsp->shelf_found = false;
   }
 }
@@ -298,4 +300,32 @@ ShelfDetectionServerReal::get_tf(std::string fromFrame, std::string toFrame) {
   shelf_pose.pose.orientation.w = rotation_pose.w;
 
   return shelf_pose;
+}
+
+void ShelfDetectionServerReal::publish_shelf_frame() {
+
+  if (odom_data == nullptr) {
+    return;
+  }
+
+  /* build tf message */
+  std::string frame = this->get_parameter("frame").as_string();
+  double offset = this->get_parameter("front_shelf_offset").as_double();
+  auto t = geometry_msgs::msg::TransformStamped();
+  t.header.frame_id = frame;
+  t.child_frame_id = "front_shelf";
+  t.header.stamp = odom_data->header.stamp;
+
+  t.transform.translation.x = (-1) * (float)offset;
+  t.transform.translation.y = 0.0;
+  t.transform.translation.z = 0.0;
+  t.transform.rotation.x = 0.0;
+  t.transform.rotation.y = 0.0;
+  t.transform.rotation.z = 0.0;
+  t.transform.rotation.w = 1.0;
+
+  /* broadcast tf topic. For static transform, broadcast once */
+  // tf_pub_->sendTransform(t);
+  tf_pub_->sendTransform(t);
+  RCLCPP_INFO(this->get_logger(), "Front shelf frame published");
 }

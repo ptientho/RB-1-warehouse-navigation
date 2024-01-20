@@ -27,7 +27,8 @@ def generate_launch_description():
         executable='shelf_detect_server',
         name='shelf_detect_server',
         output='screen',
-        arguments=["-real_robot", 'true']
+        arguments=["-real_robot", 'true'],
+        parameters=[{'frame': 'robot_cart_laser'},{'front_shelf_offset': 0.3}]
     
     )
 
