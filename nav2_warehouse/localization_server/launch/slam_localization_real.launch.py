@@ -28,7 +28,7 @@ def generate_launch_description():
         name='shelf_detect_server',
         output='screen',
         arguments=["-real_robot", 'true'],
-        parameters=[{'frame': 'robot_cart_laser'},{'front_shelf_offset': 0.3}]
+        parameters=[{'frame': 'robot_cart_laser'},{'front_shelf_offset': 0.6}]
     
     )
 
@@ -37,8 +37,8 @@ def generate_launch_description():
         executable='shelf_attach_server',
         name='shelf_attach_server',
         output='screen',
-        parameters=[{'activate_elevator': False},{'attach_velocity': 0.1},{'from_frame':'robot_base_footprint'},
-                    {'to_frame':'robot_cart_laser'}]
+        parameters=[{'activate_elevator': False},{'attach_velocity': 0.15},{'from_frame':'robot_base_footprint'},
+                    {'to_frame':'robot_cart_laser'}, {'front_offset': 0.5}]
     )
 
     shelf_detach_server = Node(

@@ -36,7 +36,7 @@ def generate_launch_description():
         executable='shelf_attach_server',
         name='shelf_attach_server',
         output='screen',
-        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2}]
+        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2}, {'front_offset': 0.15}]
     )
 
     shelf_detach_server = Node(

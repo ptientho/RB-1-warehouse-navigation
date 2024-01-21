@@ -24,12 +24,25 @@ bool ShelfDetectionRealClient::setRequest(Request::SharedPtr &request) {
   return true;
 }
 
-BT::NodeStatus
-ShelfDetectionRealClient::onResponseReceived(const Response::SharedPtr &response) {
+BT::NodeStatus ShelfDetectionRealClient::onResponseReceived(
+    const Response::SharedPtr &response) {
   RCLCPP_INFO(node_->get_logger(), "%s: Response received. | shelf_found: %s",
               name().c_str(), response->shelf_found ? "yes" : "no");
+  RCLCPP_INFO(node_->get_logger(),
+              "%s: Response received. | shelf_pose: X:%f Y:%f", name().c_str(),
+              response->shelf_pose.pose.position.x,
+              response->shelf_pose.pose.position.y);
+
   setOutput("find_shelf", response->shelf_found);
   setOutput("shelf_pose", response->shelf_pose);
-  return BT::NodeStatus::SUCCESS;
-}
+  
+  // check shelf_pose transform
+  float x = response->shelf_pose.pose.position.x;
+  float y = response->shelf_pose.pose.position.y;
+  if (x == 0.0 && y == 0.0) {
+    return BT::NodeStatus::FAILURE;
+  }else {
+    return BT::NodeStatus::SUCCESS;
+  }
 
+}

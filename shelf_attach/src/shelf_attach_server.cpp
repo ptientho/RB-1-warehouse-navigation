@@ -7,6 +7,7 @@
 #include "rclcpp/utilities.hpp"
 #include "std_msgs/msg/detail/string__struct.hpp"
 #include <chrono>
+#include <cmath>
 #include <functional>
 #include <math.h>
 #include <string>
@@ -17,10 +18,12 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
                                    RCUTILS_LOG_SEVERITY_INFO);
 
-  this->declare_parameter<bool>("activate_elevator", true);
-  this->declare_parameter<float>("attach_velocity", 0.3);
-  this->declare_parameter<std::string>("from_frame", "robot_front_laser_base_link");
+  this->declare_parameter<bool>("activate_elevator", false);
+  this->declare_parameter<float>("attach_velocity", 0.1);
+  this->declare_parameter<std::string>("from_frame",
+                                       "robot_front_laser_base_link");
   this->declare_parameter<std::string>("to_frame", "front_shelf");
+  this->declare_parameter<float>("front_offset", 0.15);
 
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
@@ -66,19 +69,23 @@ void AttachShelfServer::service_callback(
 }
 
 void AttachShelfServer::move_to_front_shelf() {
-  rclcpp::Rate loop_rate(10);
+  rclcpp::Rate loop_rate(5);
   // shelf_pose is wrt map frame. get tf robot_base_link -> front_shelf
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("to_frame").as_string();
+
+  float offset;
+  this->get_parameter("front_offset", offset);
   auto tf_robot_shelf = get_tf(fromFrame, toFrame);
 
   // move forward distance. For the sake of simplicity, use just x distance;
   auto distance = tf_robot_shelf.pose.position.x;
+
   // create vel message
   CmdVel vel_msg = geometry_msgs::msg::Twist();
   auto vx = 0.1;
 
-  while (distance > 0.15) {
+  while (distance > offset) { // sim robot offset = 0.15
     // move forward
     vel_msg.linear.x = vx; // m/s
     vel_pub_->publish(vel_msg);
@@ -89,10 +96,32 @@ void AttachShelfServer::move_to_front_shelf() {
     RCLCPP_INFO(this->get_logger(), "Front shelf distance: %f", distance);
     loop_rate.sleep();
   }
-
   // stop robot
   vel_msg.linear.x = 0.0;
   vel_pub_->publish(vel_msg);
+
+  /////////////////////////////////////////////////////////
+  auto diff_y = tf_robot_shelf.pose.position.y;
+  auto alpha = M_PI/2 - atan2(distance, diff_y);
+  if (diff_y >= 0) {
+    for (int i = 0; i < 10; i++) {
+
+      vel_msg.angular.z = -(float)alpha;
+      vel_pub_->publish(vel_msg);
+      std::this_thread::sleep_for(0.1s);
+    }
+  } else {
+    for (int i = 0; i < 10; i++) {
+      vel_msg.angular.z = (float)alpha;
+      vel_pub_->publish(vel_msg);
+      std::this_thread::sleep_for(0.1s);
+    }
+  }
+  // stop robot
+  vel_msg.linear.x = 0.0;
+  vel_msg.angular.z = 0.0;
+  vel_pub_->publish(vel_msg);
+  /////////////////////////////////////////////////////////
 }
 
 void AttachShelfServer::attach_shelf() {

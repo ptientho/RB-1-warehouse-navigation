@@ -67,7 +67,7 @@ void DetachShelfServer::detach_shelf() {
   float back_vel;
   this->get_parameter("detach_velocity", back_vel);
   // move to center shelf
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 20; i++) {
     vel_msg.linear.x = (-1) * back_vel;
     vel_pub_->publish(vel_msg);
     std::this_thread::sleep_for(0.5s);

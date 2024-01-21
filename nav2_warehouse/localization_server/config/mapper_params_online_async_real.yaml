@@ -10,7 +10,7 @@ slam_toolbox:
     ceres_loss_function: None
 
     # ROS Parameters
-    odom_frame: robot_odom # (sim robot) odom (real robot) robot_odom
+    odom_frame: robot_odom
     map_frame: map
     base_frame: robot_base_footprint # (sim robot) robot_base_link (real robot) robot_base_footprint
     scan_topic: /scan

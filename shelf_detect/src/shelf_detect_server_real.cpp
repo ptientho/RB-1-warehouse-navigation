@@ -96,18 +96,18 @@ void ShelfDetectionServerReal::service_callback(
   RCLCPP_INFO(this->get_logger(), "Start go_to_shelf service");
 
   /* detect shelf: if shelf is found, compute front shelf distance */
-  std::string frame = this->get_parameter("frame").as_string();
   RCLCPP_INFO(this->get_logger(), "Found Shelf: %s",
               shelf_found ? "YES" : "NO");
   if (shelf_found) {
     // publish front_shelf frame
     publish_shelf_frame();
     // get shelf_pose
-    rsp->shelf_pose = get_tf("front_shelf", "map");
+    std::this_thread::sleep_for(0.5s);
+    rsp->shelf_pose = get_tf("map", "front_shelf"); // try robot_cart_laser
     rsp->shelf_found = true;
 
   } else {
-    rsp->shelf_pose = get_tf("front_shelf", "map");
+    rsp->shelf_pose = get_tf("map", "front_shelf"); // robot_cart_laser
     rsp->shelf_found = false;
   }
 }
