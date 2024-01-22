@@ -2,11 +2,14 @@
 
 <head>
     <title>My first web page for ROS!</title>
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <!-- Vuejs 3-->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Roslibjs -->
+    <script src="https://s3.eu-west-1.amazonaws.com/rosject.io/js/roslib.min.js"></script>
 
     <script type="text/javascript">
         console.log("Hello from JavaScript")
@@ -18,7 +21,7 @@
         //
         // BUT we were having caching-related problems.
         // Loading main.js with a Date.now() in the URL we avoid using cache
-        
+
         var script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = 'main.js?v=2.' + Date.now();
@@ -29,15 +32,17 @@
 <body id="vueApp" class="d-flex flex-column h-100">
     <!-- header of the page -->
     <header class="header">
-        <div class="container" >
+        <div class="container">
             <div class="jumbotron text-center">
                 <h3>Connection Status</h3>
                 <!-- input for ROS address -->
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" placeholder="ROSbridge Address"
-                        aria-label="ROSbridge Address" aria-describedby="button-addon2" :value="ros_address" @input="get_address"/>
+                        aria-label="ROSbridge Address" aria-describedby="button-addon2" :value="rosbridge_address"
+                        @input="get_address" />
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="toggle">{{ status }}</button>
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="toggle">{{
+                            status }}</button>
                     </div>
                 </div>
                 <!-- connection status-->
@@ -46,6 +51,14 @@
                 </div>
                 <div v-else class="alert alert-warning" role="alert">
                     Disconnected!
+                </div>
+                <!-- flag to select real/sim robot -->
+                <div class="form-group">
+                    <label for="EnvironmentID">Environment</label>
+                    <select class="form-control text-center" id="EnvironmentID" :value="selectedEnvi" @input="onSelectEnvi">
+                        <option>Simulated Robot</option>
+                        <option>Real Robot</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -56,18 +69,89 @@
         <!-- all contents place here -->
         <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-12">
+                <!-- Left -->
+                <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
-                            <h3>{{menu_title}}</h3>
-                            <p>{{paragraph1}}</p>
+                            <h3 class="card-title text-center">{{main_title1}}</h3>
+                            <br />
+
+                            <div class="row">
+                                <!-- Speed setting -->
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="speedVal">Speed (m/s)</label>
+                                        <select class="form-control" id="speedVal" :value="selectedSpeed"
+                                            @input="onSelectSpeed">
+                                            <option>0.1</option>
+                                            <option>0.2</option>
+                                            <option>0.3</option>
+                                            <option>0.4</option>
+                                            <option>0.5</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="turnVal">Turn (rad/s)</label>
+                                        <select class="form-control" id="turnVal" :value="selectedTurn"
+                                            @input="onSelectTurn">
+                                            <option>0.1</option>
+                                            <option>0.2</option>
+                                            <option>0.3</option>
+                                            <option>0.4</option>
+                                            <option>0.5</option>
+                                        </select>
+                                    </div>
+                                    <br><br>
+                                </div>
+
+                                <!-- 1st row -->
+                                <div class="col-md-12 text-center">
+                                    <button class="btn btn-primary" @click="goForward" :disabled="!connected">Go
+                                        forward</button>
+                                    <br><br>
+                                </div>
+                                <!-- 2nd row -->
+                                <div class="col-md-6 text-center">
+                                    <button class="btn btn-primary" @click="turnLeft" :disabled="!connected">Turn
+                                        left</button>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <button class="btn btn-primary" @click="turnRight" :disabled="!connected">Turn
+                                        right</button>
+                                    <br><br>
+                                </div>
+                                <!-- 3rd row -->
+                                <div class="col-md-12 text-center">
+                                    <button class="btn btn-primary" @click="goBackward" :disabled="!connected">Go
+                                        backward</button>
+                                    <br><br><br><br>
+                                </div>
+
+                            </div>
+                            <div class="row justify-content-md-center">
+                                <!-- Elevator up/down -->
+                                <div class="col-md-3 text-center">
+                                    <button class="btn btn-secondary" :disabled="!connected"
+                                        @click="activateLift">Elevator up</button>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <button class="btn btn-secondary" :disabled="!connected"
+                                        @click="deactivateLift">Elevator down</button>
+                                </div>
+
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-12">
+                <!-- Right -->
+                <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
-                            <h2 class="text-center">{{main_title}}</h2>
+                            <h2 class="text-center">{{main_title2}}</h2>
                             <p>{{paragraph2}}</p>
                         </div>
                     </div>
@@ -80,7 +164,7 @@
     <footer class="footer mt-auto bg-dark text-light">
 
     </footer>
-    
+
 </body>
 
 </html>
