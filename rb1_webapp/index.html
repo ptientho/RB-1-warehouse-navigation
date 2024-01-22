@@ -1,0 +1,86 @@
+<html>
+
+<head>
+    <title>My first web page for ROS!</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Vuejs 3-->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <script type="text/javascript">
+        console.log("Hello from JavaScript")
+    </script>
+
+    <script type="text/javascript" defer>
+        // We could have loaded main.js simply with:
+        //  <script type="text/javascript" src="main.js">
+        //
+        // BUT we were having caching-related problems.
+        // Loading main.js with a Date.now() in the URL we avoid using cache
+        
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'main.js?v=2.' + Date.now();
+        document.head.appendChild(script);
+    </script>
+</head>
+
+<body id="vueApp" class="d-flex flex-column h-100">
+    <!-- header of the page -->
+    <header class="header">
+        <div class="container" >
+            <div class="jumbotron text-center">
+                <h3>Connection Status</h3>
+                <!-- input for ROS address -->
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="ROSbridge Address"
+                        aria-label="ROSbridge Address" aria-describedby="button-addon2" :value="ros_address" @input="get_address"/>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="toggle">{{ status }}</button>
+                    </div>
+                </div>
+                <!-- connection status-->
+                <div v-if="connected" class="alert alert-success" role="alert">
+                    Connected!
+                </div>
+                <div v-else class="alert alert-warning" role="alert">
+                    Disconnected!
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- main content -->
+    <main>
+        <!-- all contents place here -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>{{menu_title}}</h3>
+                            <p>{{paragraph1}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="text-center">{{main_title}}</h2>
+                            <p>{{paragraph2}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- footer -->
+    <footer class="footer mt-auto bg-dark text-light">
+
+    </footer>
+    
+</body>
+
+</html>
