@@ -1,10 +1,12 @@
 #include "rb1_autonomy/autonomy.h"
 #include "behaviortree_cpp/basic_types.h"
+#include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/tree_node.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_ros2/ros_node_params.hpp"
 #include "rb1_autonomy/backup_behavior.h"
 #include "rb1_autonomy/navigation_behavior.h"
+#include "rb1_autonomy/navigation_pose_behavior.h"
 #include "rb1_autonomy/shelf_attach_behavior.h"
 #include "rb1_autonomy/shelf_detach_behavior.h"
 #include "rb1_autonomy/shelf_detection_behavior.h"
@@ -21,8 +23,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include "behaviortree_cpp/loggers/groot2_publisher.h"
-#include "rb1_autonomy/navigation_pose_behavior.h"
 
 /*
 const std::string bt_xml_dir =
@@ -90,30 +90,38 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
   // declare location_file yaml file. This is done for example use.
   this->declare_parameter("location_file", "none");
   this->declare_parameter("real_robot", false);
-  this->declare_parameter("bt_xml_file", "none");
   this->declare_parameter("tree_node_xml_file", "none");
+
+  // initialize service server
+  this->autonomy_server_ = this->create_service<TickBT>(
+      "/rb1_autonomy_server",
+      std::bind(&AutonomyEngine::service_callback, this, std::placeholders::_1,
+                std::placeholders::_2));
+  RCLCPP_INFO(this->get_logger(), "Starting RB-1 autonomy service...");
 }
 
 // create static blackboard to exchange data in BT
 // BT::Blackboard::Ptr AutonomyEngine::blackboard_ = BT::Blackboard::create();
 
-void AutonomyEngine::setUp() {
+/* Never use this since use service to serve other nodes */
+// void AutonomyEngine::setUp() {
 
-  createBt();
+//  createBt();
 
-  timer_ =
-      this->create_wall_timer(500ms, std::bind(&AutonomyEngine::tickBt, this));
-}
+//  timer_ =
+//      this->create_wall_timer(500ms, std::bind(&AutonomyEngine::tickBt,
+//      this));
+//}
 
-void AutonomyEngine::createBt() {
+void AutonomyEngine::createBt(const std::string &xml_file) {
   // import BT xml file
   /////////////////////////////////////////////////////////
   bool is_real_robot = this->get_parameter("real_robot").as_bool();
-  std::string bt_file = this->get_parameter("bt_xml_file").as_string();
+  // std::string bt_file = this->get_parameter("bt_xml_file").as_string();
   ///////////////////////////////////////////////////////
   const std::string bt_xml_dir =
       ament_index_cpp::get_package_share_directory("rb1_autonomy") + "/config" +
-      "/" + bt_file;
+      "/" + xml_file;
 
   /*
     setup blackboard vaiable. This may not be necessary as it's for complex
@@ -196,36 +204,39 @@ void AutonomyEngine::createBt() {
   tree = factory_.createTreeFromFile(bt_xml_dir);
   // Connect the Groot2Publisher. This will allow Groot2 to
   // get the tree and poll status updates.
-  //BT::Groot2Publisher publish(tree);
-  //RCLCPP_INFO(this->get_logger(), "Connecting to Groot2...");
+  // BT::Groot2Publisher publish(tree);
+  // RCLCPP_INFO(this->get_logger(), "Connecting to Groot2...");
 }
 
-void AutonomyEngine::tickBt() {
-  // run BT
-  /* user-defined callback. Not necessary */
-  // std::function<void()> onLoop =
-  //     std::bind(&AutonomyEngine::loop_callback, this);
-  // std::function<bool()> cancelRequested =
-  //     std::bind(&AutonomyEngine::cancel_callback, this);
-  // BtStatus status = run(&tree, std::chrono::milliseconds(100));
+/* Never use this. Use service instead */
+// void AutonomyEngine::tickBt() {
+//  run BT
+/* user-defined callback. Not necessary */
+// std::function<void()> onLoop =
+//     std::bind(&AutonomyEngine::loop_callback, this);
+// std::function<bool()> cancelRequested =
+//     std::bind(&AutonomyEngine::cancel_callback, this);
+// BtStatus status = run(&tree, std::chrono::milliseconds(100));
 
-  // if (status == BtStatus::SUCCEEDED) {
-  //   this->timer_->cancel();
-  // }
-  auto tree_status = tree.tickWhileRunning();
-  if (tree_status == BT::NodeStatus::RUNNING) {
-    RCLCPP_INFO(this->get_logger(), "BT is running");
-    return;
-  } else if (tree_status == BT::NodeStatus::SUCCESS) {
-    RCLCPP_INFO(this->get_logger(), "All BT tasks done");
-    timer_->cancel();
-    rclcpp::shutdown();
-    return;
-  } else if (tree_status == BT::NodeStatus::FAILURE) {
-    RCLCPP_INFO(this->get_logger(), "BT tasks failed");
-    return;
-  }
-}
+// if (status == BtStatus::SUCCEEDED) {
+//   this->timer_->cancel();
+// }
+//  auto tree_status = tree.tickWhileRunning();
+//  if (tree_status == BT::NodeStatus::RUNNING) {
+//    RCLCPP_INFO(this->get_logger(), "BT is running");
+//    tree_success = false;
+//    return;
+//  } else if (tree_status == BT::NodeStatus::SUCCESS) {
+//    RCLCPP_INFO(this->get_logger(), "All BT tasks done");
+//    tree_success = true;
+//    timer_->cancel();
+//    return;
+//  } else if (tree_status == BT::NodeStatus::FAILURE) {
+//    RCLCPP_INFO(this->get_logger(), "BT tasks failed");
+//    tree_success = false;
+//    return;
+//  }
+//}
 
 void AutonomyEngine::createTreeNodeXML() {
   /* This method has to be called after registering all custom nodes */
@@ -250,6 +261,39 @@ void AutonomyEngine::createTreeNodeXML() {
     std::cout << "XML models saved to: " << file_path << std::endl;
   } else {
     std::cerr << "Error opening the file for writing." << std::endl;
+  }
+}
+
+void AutonomyEngine::service_callback(
+    const std::shared_ptr<TickBT::Request> req,
+    const std::shared_ptr<TickBT::Response> rsp) {
+
+  // get request
+  std::string bt_xml = req->bt_xml_file;
+
+  // create BT
+  createBt(bt_xml);
+
+  // tick BT using timer. This will not work with service callback since we
+  // expect tree status from timer but the timer return nothing
+  // timer_ =
+  //  this->create_wall_timer(500ms, std::bind(&AutonomyEngine::tickBt, this));
+
+  // loop for return value from tickBT
+  auto tree_status = tree.tickOnce();
+
+  while (tree_status == BT::NodeStatus::RUNNING) {
+    RCLCPP_INFO(this->get_logger(), "BT is running");
+    tree.sleep(std::chrono::milliseconds(500));
+    tree_status = tree.tickOnce();
+  }
+
+  if (tree_status == BT::NodeStatus::SUCCESS) {
+    RCLCPP_INFO(this->get_logger(), "All BT tasks done");
+    rsp->bt_status = true;
+  } else if (tree_status == BT::NodeStatus::FAILURE) {
+    RCLCPP_INFO(this->get_logger(), "BT tasks failed");
+    rsp->bt_status = false;
   }
 }
 

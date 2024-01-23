@@ -5,11 +5,14 @@
 #include "behaviortree_cpp/condition_node.h"
 #include "behaviortree_cpp/tree_node.h"
 #include "navigation_behavior.h"
+#include "rb1_autonomy_msg/srv/tick_bt.hpp"
 #include "rcl/publisher.h"
 #include "rclcpp/callback_group.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/service.hpp"
 #include "rclcpp/timer.hpp"
+#include <memory>
 #include <string>
 #include <vector>
 /* This wrapper status is not required. */
@@ -17,17 +20,21 @@
 using namespace BT;
 class AutonomyEngine : public rclcpp::Node {
 public:
+  using TickBT = rb1_autonomy_msg::srv::TickBT;
   explicit AutonomyEngine(const std::string &node_name);
   virtual ~AutonomyEngine() {}
   // static BT::Blackboard::Ptr blackboard_;
 
-  void setUp();
+  //void setUp();
 
-  void tickBt();
+  //NodeStatus tickBt();
 
-  void createBt();
+  /* create a tree object. Request a xml file from client */
+  void createBt(const std::string &xml_file);
 
+  /* create tree nodes for Groot2 */
   void createTreeNodeXML();
+
   /* Not neccessary */
   /*
 template <typename ClassT>
@@ -42,8 +49,13 @@ std::chrono::milliseconds(10));
   */
 private:
   BT::BehaviorTreeFactory factory_;
-  rclcpp::TimerBase::SharedPtr timer_;
+  //rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::Service<TickBT>::SharedPtr autonomy_server_;
   BT::Tree tree;
+
+  /* service callback for processing external app */
+  void service_callback(const std::shared_ptr<TickBT::Request> req,
+                        const std::shared_ptr<TickBT::Response> rsp);
 };
 
 class CheckShelfFound : public ConditionNode {

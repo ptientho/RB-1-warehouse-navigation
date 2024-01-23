@@ -2,8 +2,7 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="3">
             <Sequence>
-                <GoToPose name="go_to_shelf" loc="front_shelf"/>
-                <ShelfDetector name="detect_shelf" find_shelf="{shelf_found}"/>
+                <DetachShelf name="detach_shelf" detach_shelf="true" is_success="{!is_attached}"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>
