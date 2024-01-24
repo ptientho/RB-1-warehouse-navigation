@@ -10,8 +10,8 @@ def generate_launch_description():
         package='rb1_autonomy',
         executable='autonomy_node',
         name='autonomy_node',
-        parameters=[{'location_file': os.path.join(get_package_share_directory('rb1_autonomy'), 'config', 'locations.yaml')},
-                    {'real_robot': False}, {'tree_node_xml_file':'bt_test_groot2.xml'}]
+        parameters=[{'location_file': os.path.join(get_package_share_directory('rb1_autonomy'), 'config', 'locations.yaml')}],
+        remappings=[('/cmd_vel','/diffbot_base_controller/cmd_vel_unstamped')]
     
     )
 

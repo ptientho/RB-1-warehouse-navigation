@@ -25,15 +25,17 @@ public:
   virtual ~AutonomyEngine() {}
   // static BT::Blackboard::Ptr blackboard_;
 
-  //void setUp();
+  // void setUp();
 
-  //NodeStatus tickBt();
+  // NodeStatus tickBt();
+
+  void registerNodes();
 
   /* create a tree object. Request a xml file from client */
-  void createBt(const std::string &xml_file);
+  void createBt(const std::string &xml_file, const bool &robot_config);
 
   /* create tree nodes for Groot2 */
-  void createTreeNodeXML();
+  void createTreeNodeXML(const bool &robot_config);
 
   /* Not neccessary */
   /*
@@ -49,7 +51,7 @@ std::chrono::milliseconds(10));
   */
 private:
   BT::BehaviorTreeFactory factory_;
-  //rclcpp::TimerBase::SharedPtr timer_;
+  // rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Service<TickBT>::SharedPtr autonomy_server_;
   BT::Tree tree;
 

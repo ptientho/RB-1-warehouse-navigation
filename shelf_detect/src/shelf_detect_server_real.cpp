@@ -31,7 +31,7 @@
 #include <vector>
 
 ShelfDetectionServerReal::ShelfDetectionServerReal()
-    : rclcpp::Node("shelf_detection_node") {
+    : rclcpp::Node("shelf_detection_real_node") {
   using GoToShelf = shelf_detect_msg::srv::GoToShelfReal;
   using LaserScan = sensor_msgs::msg::LaserScan;
   using Odom = nav_msgs::msg::Odometry;

@@ -16,12 +16,13 @@ def generate_launch_description():
     bt_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','bt_navigator_config.yaml')
     behaviors_config = os.path.join(get_package_share_directory('path_planner_server'),'config','sim_robot','behaviors.yaml')
 
+    remapping = [('/cmd_vel', '/diffbot_base_controller/cmd_vel_unstamped')]
     planner_node = Node(
         package='nav2_planner',
         executable='planner_server',
         name='planner_server',
         output='screen',
-        parameters=[planner_config]
+        parameters=[planner_config],
 
     )
 
@@ -30,8 +31,8 @@ def generate_launch_description():
         executable='controller_server',
         name='controller_server',
         output='screen',
-        parameters=[controller_config]
-    
+        parameters=[controller_config],
+        remappings=remapping
     )
 
     behavior_node = Node(
@@ -39,8 +40,8 @@ def generate_launch_description():
         executable='behavior_server',
         name='behavior_server',
         output='screen',
-        parameters=[behaviors_config]
-    
+        parameters=[behaviors_config],
+        remappings=remapping
     )
 
     bt_navigator_node = Node(
@@ -48,7 +49,8 @@ def generate_launch_description():
         executable='bt_navigator',
         name='bt_navigator',
         output='screen',
-        parameters=[bt_config]
+        parameters=[bt_config],
+        
     
     )
 

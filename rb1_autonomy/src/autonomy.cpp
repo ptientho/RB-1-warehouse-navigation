@@ -89,15 +89,16 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
     : rclcpp::Node(node_name) {
   // declare location_file yaml file. This is done for example use.
   this->declare_parameter("location_file", "none");
-  this->declare_parameter("real_robot", false);
-  this->declare_parameter("tree_node_xml_file", "none");
-
+  // this->declare_parameter("real_robot", false);
+  // this->declare_parameter("tree_node_xml_file", "none");
+  
   // initialize service server
   this->autonomy_server_ = this->create_service<TickBT>(
       "/rb1_autonomy_server",
       std::bind(&AutonomyEngine::service_callback, this, std::placeholders::_1,
                 std::placeholders::_2));
   RCLCPP_INFO(this->get_logger(), "Starting RB-1 autonomy service...");
+
 }
 
 // create static blackboard to exchange data in BT
@@ -113,15 +114,12 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
 //      this));
 //}
 
-void AutonomyEngine::createBt(const std::string &xml_file) {
+void AutonomyEngine::registerNodes() {
   // import BT xml file
   /////////////////////////////////////////////////////////
-  bool is_real_robot = this->get_parameter("real_robot").as_bool();
-  // std::string bt_file = this->get_parameter("bt_xml_file").as_string();
+  // bool is_real_robot = this->get_parameter("real_robot").as_bool();
+  //  std::string bt_file = this->get_parameter("bt_xml_file").as_string();
   ///////////////////////////////////////////////////////
-  const std::string bt_xml_dir =
-      ament_index_cpp::get_package_share_directory("rb1_autonomy") + "/config" +
-      "/" + xml_file;
 
   /*
     setup blackboard vaiable. This may not be necessary as it's for complex
@@ -134,24 +132,6 @@ void AutonomyEngine::createBt(const std::string &xml_file) {
   // blackboard_->set("server_timeout", server_timeout);
   // blackboard_->set("wait_for_service_timeout", wait_for_service_timeout);
 
-  /*
-    register shelf_detector BT using NodeBuilder
-  */
-  // BT::NodeBuilder builder1 = [](const std::string &name,
-  //                              const BT::NodeConfiguration &config) {
-  //  return std::make_unique<ShelfDetectionClient>(name, "/go_to_shelf",
-  //  config);
-  //};
-  // register_bt_node<ShelfDetectionClient>("ShelfDetector", builder1);
-
-  // BT::NodeBuilder builder2 = [=](const std::string &name,
-  //                                const BT::NodeConfiguration &config) {
-  //   return std::make_unique<GoToPoseActionClient>(name, "/navigate_to_pose",
-  //                                                 config,
-  //                                                 shared_from_this());
-  // };
-  // register_bt_node<GoToPoseActionClient>("GoToPose", builder2);
-
   ////////////////////////////////////////////////////////////////////////////////////////
   /*
   register shelf_detector BT using registerNodeType. Reccommend as it is
@@ -161,14 +141,12 @@ void AutonomyEngine::createBt(const std::string &xml_file) {
   params.nh = shared_from_this();
 
   params.server_timeout = std::chrono::milliseconds(20000);
-  if (is_real_robot) {
-    params.default_port_value = "go_to_shelf_real";
-    factory_.registerNodeType<ShelfDetectionRealClient>("ShelfDetectorReal",
-                                                        params);
-  } else {
-    params.default_port_value = "go_to_shelf";
-    factory_.registerNodeType<ShelfDetectionClient>("ShelfDetector", params);
-  }
+
+  params.default_port_value = "go_to_shelf_real";
+  factory_.registerNodeType<ShelfDetectionRealClient>("ShelfDetectorReal",
+                                                      params);
+  params.default_port_value = "go_to_shelf";
+  factory_.registerNodeType<ShelfDetectionClient>("ShelfDetector", params);
 
   params.default_port_value = "navigate_to_pose";
   factory_.registerNodeType<GoToPoseActionClient>("GoToPose", params);
@@ -199,13 +177,25 @@ void AutonomyEngine::createBt(const std::string &xml_file) {
   // require in simple tree tree = createTreeFromFile(bt_xml_dir,
   // blackboard_);
   ///////////////////////////////////////////////////////////////////////////////////
-  createTreeNodeXML();
+
   //////////////////////////////////////////////////////////////////////////
-  tree = factory_.createTreeFromFile(bt_xml_dir);
+
   // Connect the Groot2Publisher. This will allow Groot2 to
   // get the tree and poll status updates.
   // BT::Groot2Publisher publish(tree);
   // RCLCPP_INFO(this->get_logger(), "Connecting to Groot2...");
+}
+
+void AutonomyEngine::createBt(const std::string &xml_file,
+                              const bool &robot_config) {
+
+  const std::string bt_xml_dir =
+      ament_index_cpp::get_package_share_directory("rb1_autonomy") + "/config" +
+      "/" + xml_file;
+
+  createTreeNodeXML(robot_config);
+
+  tree = factory_.createTreeFromFile(bt_xml_dir);
 }
 
 /* Never use this. Use service instead */
@@ -238,10 +228,16 @@ void AutonomyEngine::createBt(const std::string &xml_file) {
 //  }
 //}
 
-void AutonomyEngine::createTreeNodeXML() {
+void AutonomyEngine::createTreeNodeXML(const bool &robot_config) {
   /* This method has to be called after registering all custom nodes */
   // Generate TreeNodes for Groot2
-  std::string tree_xml = this->get_parameter("tree_node_xml_file").as_string();
+  std::string tree_xml;
+  if (robot_config) {
+    tree_xml = "bt_test_groot2_real.xml";
+  } else {
+    tree_xml = "bt_test_groot2.xml";
+  }
+
   std::string xml_models = BT::writeTreeNodesModelXML(factory_);
 
   // save TreeNode model to a file
@@ -270,9 +266,10 @@ void AutonomyEngine::service_callback(
 
   // get request
   std::string bt_xml = req->bt_xml_file;
+  bool real_robot = req->real_robot;
 
   // create BT
-  createBt(bt_xml);
+  createBt(bt_xml, real_robot);
 
   // tick BT using timer. This will not work with service callback since we
   // expect tree status from timer but the timer return nothing

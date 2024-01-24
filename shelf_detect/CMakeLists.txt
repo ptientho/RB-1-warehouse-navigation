@@ -21,7 +21,9 @@ include_directories(
 	include
 )
 
-set(executable_name shelf_detect_server)
+set(executable_name1 shelf_detect_server)
+set(executable_name2 shelf_detect_real_server)
+
 set(library_name ${executable_name}_core)
 
 set(dependencies
@@ -44,13 +46,23 @@ ament_target_dependencies(${library_name}
   ${dependencies}
 )
 
-add_executable(${executable_name}
+add_executable(${executable_name1}
   src/main.cpp
 )
 
-target_link_libraries(${executable_name} ${library_name})
+target_link_libraries(${executable_name1} ${library_name})
 
-ament_target_dependencies(${executable_name}
+ament_target_dependencies(${executable_name1}
+  ${dependencies}
+)
+# another executable
+add_executable(${executable_name2}
+  src/main2.cpp
+)
+
+target_link_libraries(${executable_name2} ${library_name})
+
+ament_target_dependencies(${executable_name2}
   ${dependencies}
 )
 
@@ -60,7 +72,7 @@ install(TARGETS ${library_name}
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS ${executable_name}
+install(TARGETS ${executable_name1} ${executable_name2}
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

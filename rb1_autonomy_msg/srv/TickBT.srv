@@ -1,6 +1,8 @@
 # this message is used to make rb1_autonomy callable from ROS client
 # xml file: to be processed by autonomy server
+# real_robot: choose robot environment
 # bt_status: tree status (handle SUCCESS/FAILURE)
 string bt_xml_file
+bool real_robot
 ---
 bool bt_status

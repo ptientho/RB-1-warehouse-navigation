@@ -24,10 +24,9 @@ def generate_launch_description():
 
     shelf_detection_server = Node(
         package='shelf_detect',
-        executable='shelf_detect_server',
-        name='shelf_detect_server',
+        executable='shelf_detect_real_server',
+        name='shelf_detection_real_server',
         output='screen',
-        arguments=["-real_robot", 'true'],
         parameters=[{'frame': 'robot_cart_laser'},{'front_shelf_offset': 0.6}]
     
     )
