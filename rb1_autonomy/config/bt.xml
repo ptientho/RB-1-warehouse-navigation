@@ -1,25 +1,104 @@
-<root BTCPP_format="4">
-    <BehaviorTree ID="MainTree">
-        <ReactiveSequence>
-            <!--implement battery checking-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4"
+      main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Fallback>
+        <CheckShelfAttached name="check_attach_shelf"
+                            shelf_attached="{is_attached}"/>
+        <Sequence>
+          <SubTree ID="ShelfDetection" shelf_found="{shelf_found}"/>
+          <SubTree ID="ShelfApproach" shelf_found="{shelf_found}" is_attached="{is_attached}"/>
+        </Sequence>
+      </Fallback>
+      <Fallback>
+        <GoToPose loc="desired_location"
+                  action_name="__default__placeholder__"/>
+        <AsyncSequence>
+          <BackUp/>
+          <GoToPose loc="desired_location"
+                    action_name="__default__placeholder__"/>
+        </AsyncSequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
 
-            <ReactiveSequence>
-                <ReactiveFallback>
-                    <CheckShelfAttached name="check_attach_shelf" shelf_attached="{is_attached}"/>
-                    <Sequence>
-                        <Sequence>
-                            <GoToPose name="go_to_shelf" loc="front_shelf"/>
-                            <ShelfDetector name="shelf_detection_client" find_shelf="{is_found}"/>
-                        </Sequence>
-                        <ReactiveSequence>
-                            <CheckShelfFound name="check_shelf_found" shelf_found="{is_found}"/>
-                            <GoToPose name="go_to_shelf_pose" loc="{shelf_pose}"/>
-                            <AttachShelf name="attach_shelf_client" is_success="{is_attached}"/>
-                        </ReactiveSequence>
-                    </Sequence>
-                </ReactiveFallback>
-                <GoToPose name="go_to_desired_location" loc="desired_location"/>
-            </ReactiveSequence>
-        </ReactiveSequence>
-    </BehaviorTree>
+  <BehaviorTree ID="ShelfApproach">
+    <AsyncSequence>
+      <CheckShelfFound shelf_found="{shelf_found}"/>
+      <GoToPose loc="front_shelf"
+                action_name="__default__placeholder__"/>
+      <AttachShelf attach_shelf="true"
+                   is_success="{is_attached}"
+                   service_name="__default__placeholder__"/>
+    </AsyncSequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="ShelfDetection">
+    <AsyncFallback>
+      <ShelfDetector find_shelf="{shelf_found}"
+                     service_name="__default__placeholder__"/>
+      <Sequence>
+        <GoToPose loc="location1"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetector find_shelf="{shelf_found}"
+                       service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location2"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetector find_shelf="{shelf_found}"
+                       service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location3"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetector find_shelf="{shelf_found}"
+                       service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location4"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetector find_shelf="{shelf_found}"
+                       service_name="__default__placeholder__"/>
+      </Sequence>
+    </AsyncFallback>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="AttachShelf">
+      <input_port name="attach_shelf"
+                  type="bool"/>
+      <output_port name="is_success"
+                   type="bool"/>
+      <input_port name="service_name"
+                  default="__default__placeholder__"
+                  type="std::string">Service name</input_port>
+    </Action>
+    <Action ID="BackUp"/>
+    <Condition ID="CheckShelfAttached">
+      <input_port name="shelf_attached"
+                  type="bool"/>
+    </Condition>
+    <Condition ID="CheckShelfFound">
+      <input_port name="shelf_found"
+                  type="bool"/>
+    </Condition>
+    <Action ID="GoToPose">
+      <input_port name="loc"
+                  type="std::string"/>
+      <input_port name="action_name"
+                  default="__default__placeholder__"
+                  type="std::string">Action server name</input_port>
+    </Action>
+    <Action ID="ShelfDetector">
+      <output_port name="find_shelf"
+                   type="bool"/>
+      <input_port name="service_name"
+                  default="__default__placeholder__"
+                  type="std::string">Service name</input_port>
+    </Action>
+  </TreeNodesModel>
+
 </root>

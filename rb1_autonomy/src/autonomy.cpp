@@ -140,15 +140,16 @@ void AutonomyEngine::registerNodes() {
   BT::RosNodeParams params;
   params.nh = shared_from_this();
 
-  params.server_timeout = std::chrono::milliseconds(20000);
-
   params.default_port_value = "go_to_shelf_real";
+  params.server_timeout = std::chrono::milliseconds(20000);
   factory_.registerNodeType<ShelfDetectionRealClient>("ShelfDetectorReal",
                                                       params);
   params.default_port_value = "go_to_shelf";
+  params.server_timeout = std::chrono::milliseconds(20000);
   factory_.registerNodeType<ShelfDetectionClient>("ShelfDetector", params);
 
   params.default_port_value = "navigate_to_pose";
+  params.server_timeout = std::chrono::milliseconds(100000);
   factory_.registerNodeType<GoToPoseActionClient>("GoToPose", params);
   factory_.registerNodeType<GoToPose2ActionClient>("GoToPose2", params);
 

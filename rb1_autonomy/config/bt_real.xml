@@ -1,31 +1,118 @@
-<root BTCPP_format="4">
-    <BehaviorTree ID="MainTree">
-        <ReactiveSequence>
-            <!--implement battery checking-->
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4"
+      main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence>
+      <Fallback>
+        <CheckShelfAttached name="check_attach_shelf"
+                            shelf_attached="{is_attached}"/>
+        <Sequence>
+          <SubTree ID="ShelfDetection" front_shelf="{front_shelf}" shelf_found="{shelf_found}"/>
+          <SubTree ID="ShelfApproach" shelf_found="{shelf_found}" front_shelf="{front_shelf}" is_attached="{is_attached}"/>
+        </Sequence>
+      </Fallback>
+      <Fallback>
+        <GoToPose loc="desired_location_real"
+                  action_name="__default__placeholder__"/>
+        <AsyncSequence>
+          <BackUp/>
+          <GoToPose loc="desired_location_real"
+                    action_name="__default__placeholder__"/>
+        </AsyncSequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
 
-            <ReactiveSequence>
-                <ReactiveFallback>
-                    <CheckShelfAttached name="check_attach_shelf" shelf_attached="{is_attached}"/>
-                    <Sequence>
-                        <Sequence>
-                            <ShelfDetectorReal name="shelf_detection_client" shelf_pose="{front_shelf}" find_shelf="{is_found}"/>
-                            <GoToPose2 name="go_to_shelf" pose="{front_shelf}"/>
-                        </Sequence>
-                        <ReactiveSequence>
-                            <CheckShelfFound name="check_shelf_found" shelf_found="{is_found}"/>
-                            <AttachShelf name="attach_shelf_client" is_success="{is_attached}"/>
-                        </ReactiveSequence>
-                    </Sequence>
-                </ReactiveFallback>
-                <Fallback>
-                    <GoToPose name="go_to_desired_location" loc="desired_location"/>
-                    <Sequence>
-                        <BackUp name="backup_recovery"/>
-                        <GoToPose name="go_to_desired_location" loc="desired_location"/>
-                    </Sequence>
-                </Fallback>
-                <DetachShelf name="detach_shelf" detach_shelf="true" is_success="{!is_attached}"/>
-            </ReactiveSequence>
-        </ReactiveSequence>
-    </BehaviorTree>
+  <BehaviorTree ID="ShelfApproach">
+    <AsyncSequence>
+      <CheckShelfFound shelf_found="{shelf_found}"/>
+      <GoToPose2 pose="{front_shelf}"
+                 action_name="__default__placeholder__"/>
+      <AttachShelf attach_shelf="true"
+                   is_success="{is_attached}"
+                   service_name="__default__placeholder__"/>
+    </AsyncSequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="ShelfDetection">
+    <AsyncFallback>
+      <ShelfDetectorReal shelf_pose="{front_shelf}"
+                         find_shelf="{shelf_found}"
+                         service_name="__default__placeholder__"/>
+      <Sequence>
+        <GoToPose loc="location1_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location2_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location3_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location4_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+    </AsyncFallback>
+  </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="AttachShelf">
+      <input_port name="attach_shelf"
+                  type="bool"/>
+      <output_port name="is_success"
+                   type="bool"/>
+      <input_port name="service_name"
+                  default="__default__placeholder__"
+                  type="std::string">Service name</input_port>
+    </Action>
+    <Action ID="BackUp"/>
+    <Condition ID="CheckShelfAttached">
+      <input_port name="shelf_attached"
+                  type="bool"/>
+    </Condition>
+    <Condition ID="CheckShelfFound">
+      <input_port name="shelf_found"
+                  type="bool"/>
+    </Condition>
+    <Action ID="GoToPose">
+      <input_port name="loc"
+                  type="std::string"/>
+      <input_port name="action_name"
+                  default="__default__placeholder__"
+                  type="std::string">Action server name</input_port>
+    </Action>
+    <Action ID="GoToPose2">
+      <input_port name="pose"
+                  type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <input_port name="action_name"
+                  default="__default__placeholder__"
+                  type="std::string">Action server name</input_port>
+    </Action>
+    <Action ID="ShelfDetectorReal">
+      <output_port name="shelf_pose"
+                   type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <output_port name="find_shelf"
+                   type="bool"/>
+      <input_port name="service_name"
+                  default="__default__placeholder__"
+                  type="std::string">Service name</input_port>
+    </Action>
+  </TreeNodesModel>
+
 </root>

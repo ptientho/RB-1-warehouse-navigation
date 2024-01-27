@@ -36,8 +36,8 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
   using LaserScan = sensor_msgs::msg::LaserScan;
   using Odom = nav_msgs::msg::Odometry;
 
-  rcutils_logging_set_logger_level(this->get_logger().get_name(),
-                                   RCUTILS_LOG_SEVERITY_DEBUG);
+  //rcutils_logging_set_logger_level(this->get_logger().get_name(),
+  //                                  RCUTILS_LOG_SEVERITY_DEBUG);
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
   // parameter frame to get tf from map
   this->declare_parameter("frame", "robot_cart_laser");
@@ -79,10 +79,6 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
   this->tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
   shelf_found = false;
 
-  // this->timer1_ = this->create_wall_timer(
-  //     50ms, std::bind(&ShelfDetectionServer::publish_shelf_frame, this),
-  //     timer_group_);
-
   this->timer1_ = this->create_wall_timer(
       10ms, std::bind(&ShelfDetectionServerReal::detect_shelf, this),
       timer_group_);
@@ -103,22 +99,26 @@ void ShelfDetectionServerReal::service_callback(
     publish_shelf_frame();
     // get shelf_pose
     std::this_thread::sleep_for(0.5s);
-    rsp->shelf_pose = get_tf("map", "front_shelf"); // try robot_cart_laser
+    rsp->shelf_pose = get_tf("map", "front_shelf");
     rsp->shelf_found = true;
 
   } else {
-    rsp->shelf_pose = get_tf("map", "front_shelf"); // robot_cart_laser
+    rsp->shelf_pose = get_tf("map", "front_shelf");
     rsp->shelf_found = false;
   }
 }
 
 void ShelfDetectionServerReal::laser_callback(
     const std::shared_ptr<LaserScan> msg) {
+
+  if (msg == nullptr) {
+    return;
+  }
   std::vector<float> intensity_list = msg->intensities;
-  bool debug_mode = true;
+  bool debug_mode = false;
 
   laser_data = msg;
-
+  
   if (debug_mode) {
     int intensity_length = intensity_list.size();
     RCLCPP_DEBUG(this->get_logger(), "INTENSITY LENGTH ==> %d",
@@ -129,13 +129,9 @@ void ShelfDetectionServerReal::laser_callback(
     // min intensity
     auto min_pointer_ =
         std::min_element(intensity_list.begin(), intensity_list.end());
-    RCLCPP_INFO(this->get_logger(), "INTENSITY VALUES | MAX: %f, MIN: %f",
-                *max_pointer_, *min_pointer_);
-    RCLCPP_INFO(this->get_logger(), "FRONT LASER RANGE: %f",
-                msg->ranges[intensity_length / 2 - 1]);
-    // if (detect_shelf()) {
-    //   float front_shelf_distance = compute_front_shelf_distance();
-    // }
+    RCLCPP_DEBUG(this->get_logger(), "INTENSITY VALUES | MAX: %f, MIN: %f",
+                 *max_pointer_, *min_pointer_);
+
     detect_shelf();
     if (shelf_found) {
       auto ranges = compute_front_shelf_distance();
@@ -147,7 +143,7 @@ void ShelfDetectionServerReal::detect_shelf() {
   // intensity array
   bool debug_mode = true;
   if (laser_data == nullptr) {
-    RCLCPP_INFO(this->get_logger(), "Laser data not received.");
+    RCLCPP_ERROR(this->get_logger(), "Laser data not received.");
     return;
   }
   std::vector<float> intensity_list = laser_data->intensities;
@@ -211,6 +207,7 @@ void ShelfDetectionServerReal::detect_shelf() {
                  leg1_idx_mid);
     RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
                  leg2_idx_mid);
+    auto test_vec = compute_front_shelf_distance();
   }
 
   if (num_legs == 2) {
@@ -224,7 +221,7 @@ std::vector<float> ShelfDetectionServerReal::compute_front_shelf_distance() {
   /* use this method to compute mid shelf length */
   // get angle_increment
   std::vector<float> ranges;
-  bool debug_mode = false;
+  bool debug_mode = true;
   if (laser_data == nullptr) {
     ranges = {0, 0, 0, 0};
     return ranges;
@@ -253,6 +250,10 @@ std::vector<float> ShelfDetectionServerReal::compute_front_shelf_distance() {
 }
 
 void ShelfDetectionServerReal::odom_callback(const std::shared_ptr<Odom> msg) {
+
+  if (msg == nullptr) {
+    return;
+  }
   tf2::Quaternion q(msg->pose.pose.orientation.x, msg->pose.pose.orientation.y,
                     msg->pose.pose.orientation.z, msg->pose.pose.orientation.w);
   tf2::Matrix3x3 mat(q);
@@ -272,8 +273,8 @@ ShelfDetectionServerReal::get_tf(std::string fromFrame, std::string toFrame) {
     t = tf_buffer_->lookupTransform(fromFrame, toFrame, tf2::TimePointZero);
   } catch (const tf2::TransformException &ex) {
 
-    RCLCPP_INFO(this->get_logger(), "Could not transform %s to %s: %s",
-                fromFrame.c_str(), toFrame.c_str(), ex.what());
+    RCLCPP_ERROR(this->get_logger(), "Could not transform %s to %s: %s",
+                 fromFrame.c_str(), toFrame.c_str(), ex.what());
     rclcpp::Clock::SharedPtr clock = this->get_clock();
     shelf_pose.header.stamp = clock->now();
     shelf_pose.header.frame_id = "robot_base_footprint";
@@ -305,6 +306,7 @@ ShelfDetectionServerReal::get_tf(std::string fromFrame, std::string toFrame) {
 void ShelfDetectionServerReal::publish_shelf_frame() {
 
   if (odom_data == nullptr) {
+    RCLCPP_ERROR(this->get_logger(), "odom data not received");
     return;
   }
 

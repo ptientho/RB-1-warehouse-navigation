@@ -28,6 +28,7 @@ def generate_launch_description():
         executable='shelf_detect_server',
         name='shelf_detection_server',
         output='screen',
+        remappings=remapping
     
     )
 
@@ -36,7 +37,7 @@ def generate_launch_description():
         executable='shelf_attach_server',
         name='shelf_attach_server',
         output='screen',
-        parameters=[{'activate_elevator': False},{'attach_velocity': 0.2}, {'front_offset': 0.15}],
+        parameters=[{'activate_elevator': False}],
         remappings=remapping
     )
 
@@ -45,7 +46,7 @@ def generate_launch_description():
         executable='shelf_detach_server',
         name='shelf_detach_server',
         output='screen',
-        parameters=[{'detach_velocity': 0.2}],
+        parameters=[{'detach_velocity': 0.1}],
         remappings=remapping
     )
 

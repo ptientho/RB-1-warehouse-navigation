@@ -104,9 +104,17 @@ bool ShelfDetectionClient::setRequest(Request::SharedPtr &request) {
 
 BT::NodeStatus
 ShelfDetectionClient::onResponseReceived(const Response::SharedPtr &response) {
+  
+  bool shelf_found = response->shelf_found;
   RCLCPP_INFO(node_->get_logger(), "%s: Response received. | shelf_found: %s",
-              name().c_str(), response->shelf_found ? "yes" : "no");
-  setOutput("find_shelf", response->shelf_found);
-  return BT::NodeStatus::SUCCESS;
+              name().c_str(), shelf_found ? "yes" : "no");
+  setOutput("find_shelf", shelf_found);
+
+  if (!shelf_found){
+    return BT::NodeStatus::FAILURE;
+  }else {
+    return BT::NodeStatus::SUCCESS;
+  }
+  
 }
 

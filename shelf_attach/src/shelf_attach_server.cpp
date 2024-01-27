@@ -19,11 +19,11 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
                                    RCUTILS_LOG_SEVERITY_INFO);
 
   this->declare_parameter<bool>("activate_elevator", false);
-  this->declare_parameter<float>("attach_velocity", 0.1);
-  this->declare_parameter<std::string>("from_frame",
-                                       "robot_front_laser_base_link");
+  this->declare_parameter<bool>("real_robot", false);
+  this->declare_parameter<float>("attach_velocity", 0.2);
+  this->declare_parameter<std::string>("from_frame", "robot_base_link");
   this->declare_parameter<std::string>("to_frame", "front_shelf");
-  this->declare_parameter<float>("front_offset", 0.15);
+  this->declare_parameter<float>("front_offset", 0.2);
 
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
@@ -73,6 +73,7 @@ void AttachShelfServer::move_to_front_shelf() {
   // shelf_pose is wrt map frame. get tf robot_base_link -> front_shelf
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("to_frame").as_string();
+  bool real_robot = this->get_parameter("real_robot").as_bool();
 
   float offset;
   this->get_parameter("front_offset", offset);
@@ -102,21 +103,42 @@ void AttachShelfServer::move_to_front_shelf() {
 
   /////////////////////////////////////////////////////////
   auto diff_y = tf_robot_shelf.pose.position.y;
-  auto alpha = M_PI/2 - atan2(distance, diff_y);
-  if (diff_y >= 0) {
-    for (int i = 0; i < 10; i++) {
+  auto alpha = abs(M_PI / 2 - atan2(distance, diff_y));
+  RCLCPP_INFO(this->get_logger(), "alpha: %f", alpha);
 
-      vel_msg.angular.z = -(float)alpha;
-      vel_pub_->publish(vel_msg);
-      std::this_thread::sleep_for(0.1s);
+  // the axis direction of real robot vs sim robot is different
+  if (real_robot) {
+    if (diff_y >= 0) {
+      for (int i = 0; i < 10; i++) {
+
+        vel_msg.angular.z = (float)alpha;
+        vel_pub_->publish(vel_msg);
+        std::this_thread::sleep_for(0.1s);
+      }
+    } else {
+      for (int i = 0; i < 10; i++) {
+        vel_msg.angular.z = -(float)alpha;
+        vel_pub_->publish(vel_msg);
+        std::this_thread::sleep_for(0.1s);
+      }
     }
   } else {
-    for (int i = 0; i < 10; i++) {
-      vel_msg.angular.z = (float)alpha;
-      vel_pub_->publish(vel_msg);
-      std::this_thread::sleep_for(0.1s);
+    if (diff_y >= 0) {
+      for (int i = 0; i < 10; i++) {
+
+        vel_msg.angular.z = -(float)alpha;
+        vel_pub_->publish(vel_msg);
+        std::this_thread::sleep_for(0.1s);
+      }
+    } else {
+      for (int i = 0; i < 10; i++) {
+        vel_msg.angular.z = (float)alpha;
+        vel_pub_->publish(vel_msg);
+        std::this_thread::sleep_for(0.1s);
+      }
     }
   }
+
   // stop robot
   vel_msg.linear.x = 0.0;
   vel_msg.angular.z = 0.0;
