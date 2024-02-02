@@ -16,17 +16,17 @@ controller_server:
       movement_time_allowance: 10.0
     goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
-      yaw_goal_tolerance: 0.25
+      xy_goal_tolerance: 0.25 # xy error when achieving the goal
+      yaw_goal_tolerance: 0.5 # yaw error when achieving the goal
       stateful: True
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: True
       min_vel_x: 0.0
       min_vel_y: 0.0
-      max_vel_x: 0.26
+      max_vel_x: 0.26 #0.12
       max_vel_y: 0.0
-      max_vel_theta: 1.0
+      max_vel_theta: 1.0 #0.3
       min_speed_xy: 0.0
       max_speed_xy: 0.26
       min_speed_theta: 0.0
@@ -36,10 +36,10 @@ controller_server:
       decel_lim_x: -2.5
       decel_lim_y: 0.0
       decel_lim_theta: -3.2
-      vx_samples: 20
-      vy_samples: 5
-      vtheta_samples: 20
-      sim_time: 1.7
+      vx_samples: 20 # generally vx samples < vt samples
+      vy_samples: 0 # since robot moves in x+ and max_vel_y = 0, this is not required
+      vtheta_samples: 30 # turning samples; should be higher than vx and vy since turning requires more complexity
+      sim_time: 4.0 # increase this results in higher arch of the local path
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.2
@@ -75,8 +75,8 @@ local_costmap:
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.45
+        cost_scaling_factor: 2.7 # slope of the cost; if steep, the robot will keep close to an obstacle (default: 3)
+        inflation_radius: 0.5 # control how far away the zero cost point from an obstacle (default: 0.3)
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True

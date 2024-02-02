@@ -31,7 +31,8 @@ private:
   rclcpp::Service<AttachShelf>::SharedPtr srv_;
   void service_callback(const std::shared_ptr<AttachShelf::Request> req,
                         const std::shared_ptr<AttachShelf::Response> res);
-  void move_to_front_shelf();
+  void move_to_front_shelf(const float& front_offset);
+  void move_to_front_shelf_real(const float& front_offset);
   void attach_shelf();
   void set_params();
 

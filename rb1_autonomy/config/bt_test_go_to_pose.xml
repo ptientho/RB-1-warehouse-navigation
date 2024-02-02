@@ -2,8 +2,8 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="1">
             <Sequence>
-                <GoToPose name="go_to_shelf" loc="front_shelf"/>
-                <ShelfDetector name="detect_shelf" find_shelf="{shelf_found}"/>
+                <ShelfDetector name="detect_shelf" front_offset="20.0" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
+                <GoToPose2 name="go_to_shelf" pose="{front_shelf}"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>

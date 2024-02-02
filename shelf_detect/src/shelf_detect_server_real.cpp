@@ -32,12 +32,9 @@
 
 ShelfDetectionServerReal::ShelfDetectionServerReal()
     : rclcpp::Node("shelf_detection_real_node") {
-  using GoToShelf = shelf_detect_msg::srv::GoToShelfReal;
-  using LaserScan = sensor_msgs::msg::LaserScan;
-  using Odom = nav_msgs::msg::Odometry;
 
-  //rcutils_logging_set_logger_level(this->get_logger().get_name(),
-  //                                  RCUTILS_LOG_SEVERITY_DEBUG);
+  rcutils_logging_set_logger_level(this->get_logger().get_name(),
+                                   RCUTILS_LOG_SEVERITY_DEBUG);
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
   // parameter frame to get tf from map
   this->declare_parameter("frame", "robot_cart_laser");
@@ -62,7 +59,7 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
       "/go_to_shelf_real",
       std::bind(&ShelfDetectionServerReal::service_callback, this,
                 std::placeholders::_1, std::placeholders::_2));
-  // rmw_qos_profile_services_default, srv_group_
+
   // start sensor callback
   this->odomSub_ = this->create_subscription<Odom>(
       "/odom", 10,
@@ -115,35 +112,25 @@ void ShelfDetectionServerReal::laser_callback(
     return;
   }
   std::vector<float> intensity_list = msg->intensities;
-  bool debug_mode = false;
 
   laser_data = msg;
-  
-  if (debug_mode) {
-    int intensity_length = intensity_list.size();
-    RCLCPP_DEBUG(this->get_logger(), "INTENSITY LENGTH ==> %d",
-                 intensity_length);
-    // max intensity
-    auto max_pointer_ =
-        std::max_element(intensity_list.begin(), intensity_list.end());
-    // min intensity
-    auto min_pointer_ =
-        std::min_element(intensity_list.begin(), intensity_list.end());
-    RCLCPP_DEBUG(this->get_logger(), "INTENSITY VALUES | MAX: %f, MIN: %f",
-                 *max_pointer_, *min_pointer_);
 
-    detect_shelf();
-    if (shelf_found) {
-      auto ranges = compute_front_shelf_distance();
-    }
-  }
+  int intensity_length = intensity_list.size();
+  RCLCPP_DEBUG(this->get_logger(), "INTENSITY LENGTH ==> %d", intensity_length);
+  // max intensity
+  auto max_pointer_ =
+      std::max_element(intensity_list.begin(), intensity_list.end());
+  // min intensity
+  auto min_pointer_ =
+      std::min_element(intensity_list.begin(), intensity_list.end());
+  RCLCPP_DEBUG(this->get_logger(), "INTENSITY VALUES | MAX: %f, MIN: %f",
+               *max_pointer_, *min_pointer_);
 }
 
 void ShelfDetectionServerReal::detect_shelf() {
   // intensity array
-  bool debug_mode = true;
   if (laser_data == nullptr) {
-    RCLCPP_ERROR(this->get_logger(), "Laser data not received.");
+    RCLCPP_INFO(this->get_logger(), "Laser data not received.");
     return;
   }
   std::vector<float> intensity_list = laser_data->intensities;
@@ -200,15 +187,12 @@ void ShelfDetectionServerReal::detect_shelf() {
   leg1_range = range_list[leg1_idx_mid];
   leg2_range = range_list[leg2_idx_mid];
 
-  if (debug_mode) {
-    RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
-                 num_legs);
-    RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
-                 leg1_idx_mid);
-    RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
-                 leg2_idx_mid);
-    auto test_vec = compute_front_shelf_distance();
-  }
+  RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
+               num_legs);
+  RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
+               leg1_idx_mid);
+  RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
+               leg2_idx_mid);
 
   if (num_legs == 2) {
     shelf_found = true;
@@ -221,7 +205,6 @@ std::vector<float> ShelfDetectionServerReal::compute_front_shelf_distance() {
   /* use this method to compute mid shelf length */
   // get angle_increment
   std::vector<float> ranges;
-  bool debug_mode = true;
   if (laser_data == nullptr) {
     ranges = {0, 0, 0, 0};
     return ranges;
@@ -242,9 +225,8 @@ std::vector<float> ShelfDetectionServerReal::compute_front_shelf_distance() {
   float front_range = abs(leg1_range * cos(angle1_diff));
 
   ranges = {front_range, midleg_offset, d1, d2};
-  if (debug_mode) {
-    RCLCPP_INFO(this->get_logger(), "FRONT SHELF RANGE: %f", front_range);
-  }
+
+  RCLCPP_DEBUG(this->get_logger(), "FRONT SHELF RANGE: %f", front_range);
 
   return ranges;
 }
@@ -306,7 +288,7 @@ ShelfDetectionServerReal::get_tf(std::string fromFrame, std::string toFrame) {
 void ShelfDetectionServerReal::publish_shelf_frame() {
 
   if (odom_data == nullptr) {
-    RCLCPP_ERROR(this->get_logger(), "odom data not received");
+    RCLCPP_INFO(this->get_logger(), "odom data not received");
     return;
   }
 

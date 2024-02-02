@@ -9,6 +9,7 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/parameter.hpp"
 #include "rclcpp/parameter_value.hpp"
+#include "rclcpp/rate.hpp"
 #include "rclcpp/utilities.hpp"
 #include "std_msgs/msg/detail/string__struct.hpp"
 #include <chrono>
@@ -65,12 +66,13 @@ void DetachShelfServer::detach_shelf() {
 
   CmdVel vel_msg;
   float back_vel;
+  rclcpp::Rate loop_rate(20);
   this->get_parameter("detach_velocity", back_vel);
   // move to center shelf
   for (int i = 0; i < 20; i++) {
     vel_msg.linear.x = (-1) * back_vel;
     vel_pub_->publish(vel_msg);
-    std::this_thread::sleep_for(0.5s);
+    loop_rate.sleep();
   }
 
   vel_msg.linear.x = 0.0;

@@ -1,8 +1,9 @@
-# request 
+# request
+# front_distance: the offset between the robot and front shelf (m) 
 # attach_shelf: whether the robot go underneath shelf and lift it
 # result
 # is_success: True if attach_shelf is true. False otherwise.
-
+float32 front_distance
 bool attach_shelf
 ---
 bool is_success 

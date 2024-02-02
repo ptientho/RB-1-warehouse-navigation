@@ -80,10 +80,10 @@ private:
 
   /* helper method to design algorithm for front shelf range computation. used
    * with publish_shelf_frame */
-  std::vector<float> compute_front_shelf_distance();
+  float compute_front_shelf_distance();
 
   /* service method to orient robot toward front shelf and publish frame */
-  void orient_robot();
+  void orient_robot(const float& offset);
   void publish_shelf_frame();
 
   /* listen to existing robot_cart_laser frame */

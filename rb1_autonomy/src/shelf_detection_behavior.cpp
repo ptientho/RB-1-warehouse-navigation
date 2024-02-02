@@ -1,10 +1,4 @@
 #include "rb1_autonomy/shelf_detection_behavior.h"
-//#include "behaviortree_cpp_v3/action_node.h"
-//#include "behaviortree_cpp_v3/actions/set_blackboard_node.h"
-//#include "behaviortree_cpp_v3/basic_types.h"
-//#include "behaviortree_cpp_v3/blackboard.h"
-//#include "behaviortree_cpp_v3/tree_node.h"
-//#include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/basic_types.h"
 #include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -99,22 +93,29 @@ resp->shelf_found ? "yes" : "no"); return BT::NodeStatus::SUCCESS;
 
 bool ShelfDetectionClient::setRequest(Request::SharedPtr &request) {
 
+  getInput("front_offset", request->front_offset);
   return true;
 }
 
 BT::NodeStatus
 ShelfDetectionClient::onResponseReceived(const Response::SharedPtr &response) {
-  
-  bool shelf_found = response->shelf_found;
-  RCLCPP_INFO(node_->get_logger(), "%s: Response received. | shelf_found: %s",
-              name().c_str(), shelf_found ? "yes" : "no");
-  setOutput("find_shelf", shelf_found);
 
-  if (!shelf_found){
+  RCLCPP_INFO(node_->get_logger(), "%s: Response received. | shelf_found: %s",
+              name().c_str(), response->shelf_found ? "yes" : "no");
+  RCLCPP_INFO(node_->get_logger(),
+              "%s: Response received. | shelf_pose: X:%f Y:%f", name().c_str(),
+              response->shelf_pose.pose.position.x,
+              response->shelf_pose.pose.position.y);
+
+  setOutput("find_shelf", response->shelf_found);
+  setOutput("shelf_pose", response->shelf_pose);
+
+  // check shelf_pose transform
+  float x = response->shelf_pose.pose.position.x;
+  float y = response->shelf_pose.pose.position.y;
+  if (x == 0.0 && y == 0.0) {
     return BT::NodeStatus::FAILURE;
-  }else {
+  } else {
     return BT::NodeStatus::SUCCESS;
   }
-  
 }
-

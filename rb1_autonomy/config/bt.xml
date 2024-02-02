@@ -7,8 +7,12 @@
         <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="{is_attached}"/>
         <Sequence>
-          <SubTree ID="ShelfDetection" shelf_found="{shelf_found}"/>
-          <SubTree ID="ShelfApproach" shelf_found="{shelf_found}" is_attached="{is_attached}"/>
+          <SubTree ID="ShelfDetection"
+                   shelf_found="{shelf_found}" shelf_pose="{front_shelf}"/>
+          <SubTree ID="ShelfApproach"
+                   is_attached="{is_attached}"
+                   shelf_found="{shelf_found}"
+                   shelf_pose="{front_shelf}"/>
         </Sequence>
       </Fallback>
       <Fallback>
@@ -26,8 +30,8 @@
   <BehaviorTree ID="ShelfApproach">
     <AsyncSequence>
       <CheckShelfFound shelf_found="{shelf_found}"/>
-      <GoToPose loc="front_shelf"
-                action_name="__default__placeholder__"/>
+      <GoToPose2 pose="{front_shelf}"
+                 action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="true"
                    is_success="{is_attached}"
                    service_name="__default__placeholder__"/>
@@ -36,30 +40,35 @@
 
   <BehaviorTree ID="ShelfDetection">
     <AsyncFallback>
-      <ShelfDetector find_shelf="{shelf_found}"
+      <ShelfDetector shelf_pose="{front_shelf}"
+                     find_shelf="{shelf_found}"
                      service_name="__default__placeholder__"/>
       <Sequence>
         <GoToPose loc="location1"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector find_shelf="{shelf_found}"
+        <ShelfDetector shelf_pose="{front_shelf}"
+                       find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
       </Sequence>
       <Sequence>
         <GoToPose loc="location2"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector find_shelf="{shelf_found}"
+        <ShelfDetector shelf_pose="{front_shelf}"
+                       find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
       </Sequence>
       <Sequence>
         <GoToPose loc="location3"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector find_shelf="{shelf_found}"
+        <ShelfDetector shelf_pose="{front_shelf}"
+                       find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
       </Sequence>
       <Sequence>
         <GoToPose loc="location4"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector find_shelf="{shelf_found}"
+        <ShelfDetector shelf_pose="{front_shelf}"
+                       find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
       </Sequence>
     </AsyncFallback>
@@ -92,7 +101,16 @@
                   default="__default__placeholder__"
                   type="std::string">Action server name</input_port>
     </Action>
+    <Action ID="GoToPose2">
+      <input_port name="pose"
+                  type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <input_port name="action_name"
+                  default="__default__placeholder__"
+                  type="std::string">Action server name</input_port>
+    </Action>
     <Action ID="ShelfDetector">
+      <output_port name="shelf_pose"
+                   type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
       <output_port name="find_shelf"
                    type="bool"/>
       <input_port name="service_name"

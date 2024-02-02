@@ -1,5 +1,7 @@
-# request detect_shelf service. If attach_shelf = true, go underneath shelf after complete navigation, else stop right before shelf
+# request front_offset (deg) - the angle different between front_shelf and front of the robot (default = 0)
 # result shelf_found
+# result shelf_pose in map frame
+float32 front_offset
 ---
 geometry_msgs/PoseStamped shelf_pose
 bool shelf_found 

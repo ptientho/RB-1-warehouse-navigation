@@ -29,7 +29,7 @@ public:
       : RosServiceNode<shelf_detect_msg::srv::GoToShelf>(name, conf, params) {}
 
   static BT::PortsList providedPorts() {
-    return providedBasicPorts({BT::OutputPort<bool>("find_shelf")});
+    return providedBasicPorts({BT::InputPort<float>("front_offset"),BT::OutputPort<geometry_msgs::msg::PoseStamped>("shelf_pose"), BT::OutputPort<bool>("find_shelf")});
   }
 
   bool setRequest(Request::SharedPtr &request) override;
