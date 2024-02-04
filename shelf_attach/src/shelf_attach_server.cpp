@@ -40,6 +40,12 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
   this->param_pub_ =
       this->create_client<ClientMsg>("/controller_server/set_parameters");
 
+  this->param_pub2_ = this->create_client<ClientMsg>(
+      "/global_costmap/global_costmap/set_parameters");
+
+  this->param_pub3_ = this->create_client<ClientMsg>(
+      "/local_costmap/local_costmap/set_parameters");
+
   this->srv_ = this->create_service<AttachShelf>(
       "/attach_shelf", std::bind(&AttachShelfServer::service_callback, this,
                                  std::placeholders::_1, std::placeholders::_2));
@@ -132,7 +138,7 @@ void AttachShelfServer::move_to_front_shelf(const float &front_offset) {
   CmdVel vel_msg = geometry_msgs::msg::Twist();
   auto vx = 0.3;
   auto sleep = std::ceil(front_offset / vx) * 1000 / 20; // ms
-  rclcpp::Rate loop_rate((1 / sleep)*1000);
+  rclcpp::Rate loop_rate((1 / sleep) * 1000);
   // move forward
   for (int i = 0; i < 20; i++) {
     vel_msg.linear.x = vx; // m/s
@@ -215,23 +221,7 @@ void AttachShelfServer::set_params() {
   Footprint footprint;
   // Initialize each Point32 in the points array separately
   geometry_msgs::msg::Point32 point1, point2, point3, point4;
-  /*
-point1.x = 0.325;
-point1.y = 0.325;
-point1.z = 0.0;
 
-point2.x = 0.325;
-point2.y = -0.325;
-point2.z = 0.0;
-
-point3.x = -0.325;
-point3.y = -0.325;
-point3.z = 0.0;
-
-point4.x = -0.325;
-point4.y = 0.325;
-point4.z = 0.0;
-  */
   point1.x = 0.43;
   point1.y = 0.43;
   point1.z = 0.0;
@@ -259,6 +249,10 @@ point4.z = 0.0;
 
   // set ObstacleFoorprint critics
   auto request = std::make_shared<ClientMsg::Request>();
+  // Change inflation layer parameters
+  auto request2 = std::make_shared<ClientMsg::Request>();
+  auto request3 = std::make_shared<ClientMsg::Request>();
+
   rcl_interfaces::msg::ParameterValue val;
   val.type = 9;
   val.string_array_value = {"RotateToGoal", "Oscillation", "ObstacleFootprint",
@@ -270,6 +264,25 @@ point4.z = 0.0;
   param.value = val;
 
   request->parameters.push_back(param);
+  ////////////////////////////////////////////
+  // set inflation_radius
+  val.type = 3;
+  val.double_value = 0.5;
+  param.name = "inflation_layer.inflation_radius";
+  param.value = val;
+
+  request2->parameters.push_back(param);
+  request3->parameters.push_back(param);
+  ////////////////////////////////////////////
+  // set cost_scaling_factor
+  val.type = 3;
+  val.double_value = 2.7;
+  param.name = "inflation_layer.cost_scaling_factor";
+  param.value = val;
+
+  request2->parameters.push_back(param);
+  request3->parameters.push_back(param);
+  ////////////////////////////////////////////
 
   while (!param_pub_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
@@ -280,5 +293,8 @@ point4.z = 0.0;
     RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
   }
   auto result = param_pub_->async_send_request(request);
-  RCLCPP_INFO(this->get_logger(), "Footprint parameter set.");
+  auto result2 = param_pub2_->async_send_request(request2);
+  auto result3 = param_pub3_->async_send_request(request3);
+  
+  RCLCPP_INFO(this->get_logger(), "Footprint and inflation parameters set.");
 }

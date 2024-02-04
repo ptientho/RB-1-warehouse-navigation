@@ -37,10 +37,10 @@ private:
   rclcpp::Subscription<LaserScan>::SharedPtr laserSub_;
   rclcpp::Subscription<Odom>::SharedPtr odomSub_;
   rclcpp::CallbackGroup::SharedPtr subGrp_;
-  rclcpp::CallbackGroup::SharedPtr timer_group_;
+  //rclcpp::CallbackGroup::SharedPtr timer_group_;
 
   // timer use for dynamic tf publishing
-  rclcpp::TimerBase::SharedPtr timer1_;
+  //rclcpp::TimerBase::SharedPtr timer1_;
   // rclcpp::TimerBase::SharedPtr timer2_;
 
   // tf listener
@@ -76,9 +76,6 @@ private:
   /* method to design algorithm for shelf detection whether it's available or
    * not */
   void detect_shelf();
-
-  /* method to design algorithm for front shelf range computation */
-  std::vector<float> compute_front_shelf_distance();
 
   /* listen to existing robot_cart_laser frame */
   geometry_msgs::msg::PoseStamped get_tf(std::string fromFrame,

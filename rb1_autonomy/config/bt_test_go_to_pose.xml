@@ -2,7 +2,7 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="1">
             <Sequence>
-                <ShelfDetector name="detect_shelf" front_offset="20.0" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
+                <ShelfDetector name="detect_shelf" front_offset="0.0" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
                 <GoToPose2 name="go_to_shelf" pose="{front_shelf}"/>
             </Sequence>
         </RetryUntilSuccessful>

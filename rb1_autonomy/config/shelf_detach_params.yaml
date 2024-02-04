@@ -1,6 +1,6 @@
 shelf_detach_server:
   ros__parameters:
-    detach_velocity: 0.3
+    detach_velocity: 0.4
     qos_overrides:
       /parameter_events:
         publisher:

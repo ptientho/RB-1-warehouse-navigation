@@ -17,6 +17,7 @@ using namespace std::chrono_literals;
 bool AttachShelfClient::setRequest(Request::SharedPtr &request) {
 
     getInput("attach_shelf", request->attach_shelf);
+    getInput("front_distance", request->front_distance);
     RCLCPP_INFO(node_->get_logger(), "%s: Request sent. attach_shelf = %s", name().c_str(), request->attach_shelf ? "true" : "false");
     return true;
 }

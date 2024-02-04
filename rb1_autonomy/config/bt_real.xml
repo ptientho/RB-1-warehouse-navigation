@@ -7,8 +7,13 @@
         <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="{is_attached}"/>
         <Sequence>
-          <SubTree ID="ShelfDetection" front_shelf="{front_shelf}" shelf_found="{shelf_found}"/>
-          <SubTree ID="ShelfApproach" shelf_found="{shelf_found}" front_shelf="{front_shelf}" is_attached="{is_attached}"/>
+          <SubTree ID="ShelfDetection"
+                   shelf_found="{shelf_found}"
+                   front_shelf="{front_shelf}"/>
+          <SubTree ID="ShelfApproach"
+                   is_attached="{is_attached}"
+                   front_shelf="{front_shelf}"
+                   shelf_found="{shelf_found}"/>
         </Sequence>
       </Fallback>
       <Fallback>
@@ -20,6 +25,9 @@
                     action_name="__default__placeholder__"/>
         </AsyncSequence>
       </Fallback>
+      <DetachShelf detach_shelf="true"
+                   is_success="{!is_attached}"
+                   service_name="__default__placeholder__"/>
     </Sequence>
   </BehaviorTree>
 
@@ -29,6 +37,7 @@
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="true"
+                   front_distance="0.5"
                    is_success="{is_attached}"
                    service_name="__default__placeholder__"/>
     </AsyncSequence>
@@ -75,6 +84,8 @@
     <Action ID="AttachShelf">
       <input_port name="attach_shelf"
                   type="bool"/>
+      <input_port name="front_distance"
+                  type="bool"/>
       <output_port name="is_success"
                    type="bool"/>
       <input_port name="service_name"
@@ -90,6 +101,15 @@
       <input_port name="shelf_found"
                   type="bool"/>
     </Condition>
+    <Action ID="DetachShelf">
+      <input_port name="detach_shelf"
+                  type="bool"/>
+      <output_port name="is_success"
+                   type="bool"/>
+      <input_port name="service_name"
+                  default="__default__placeholder__"
+                  type="std::string">Service name</input_port>
+    </Action>
     <Action ID="GoToPose">
       <input_port name="loc"
                   type="std::string"/>

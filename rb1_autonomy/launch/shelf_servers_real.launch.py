@@ -15,8 +15,8 @@ def generate_launch_description():
     
     shelf_detection_server = Node(
         package='shelf_detect',
-        executable='shelf_detect_server',
-        name='shelf_detection_server',
+        executable='shelf_detect_real_server',
+        name='shelf_detection_real_server',
         output='screen',
         parameters=[detect_dir],
     

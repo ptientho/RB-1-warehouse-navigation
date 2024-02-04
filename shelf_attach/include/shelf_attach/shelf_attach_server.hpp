@@ -48,4 +48,7 @@ private:
   rclcpp::Publisher<Footprint>::SharedPtr foot_pub_glob_;
   rclcpp::Publisher<Footprint>::SharedPtr foot_pub_local_;
   rclcpp::Client<ClientMsg>::SharedPtr param_pub_;
+  rclcpp::Client<ClientMsg>::SharedPtr param_pub2_;
+  rclcpp::Client<ClientMsg>::SharedPtr param_pub3_;
+  
 };

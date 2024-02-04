@@ -66,7 +66,7 @@ void DetachShelfServer::detach_shelf() {
 
   CmdVel vel_msg;
   float back_vel;
-  rclcpp::Rate loop_rate(20);
+  rclcpp::Rate loop_rate(5);
   this->get_parameter("detach_velocity", back_vel);
   // move to center shelf
   for (int i = 0; i < 20; i++) {
@@ -89,7 +89,7 @@ void DetachShelfServer::set_params() {
   val.type = 3;
   val.double_value = 0.3;
 
-  rcl_interfaces::msg::Parameter param1;
+  rcl_interfaces::msg::Parameter param1; // for setting costmap parameters
   param1.name = "robot_radius";
   param1.value = val;
 
@@ -104,6 +104,23 @@ void DetachShelfServer::set_params() {
   /////////////////////////////////////////////////////
   request1->parameters.push_back(param1);
   request2->parameters.push_back(param2);
+
+  ///////////////////////////////////////////////////
+  // set inflation_radius
+  val.type = 3;
+  val.double_value = 0.5;
+  param1.name = "inflation_layer.inflation_radius";
+  param1.value = val;
+
+  request1->parameters.push_back(param1);
+  ///////////////////////////////////////////////////
+  // set cost_scaling_factor
+  val.type = 3;
+  val.double_value = 2.7;
+  param1.name = "inflation_layer.cost_scaling_factor";
+  param1.value = val;
+
+  request1->parameters.push_back(param1);
 
   while (!foot_pub_glob_->wait_for_service(1s) &&
          !foot_pub_local_->wait_for_service(1s) &&

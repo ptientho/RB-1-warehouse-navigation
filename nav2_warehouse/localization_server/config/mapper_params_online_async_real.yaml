@@ -14,12 +14,12 @@ slam_toolbox:
     map_frame: map
     base_frame: robot_base_footprint # (sim robot) robot_base_link (real robot) robot_base_footprint
     scan_topic: /scan
-    mode: mapping # mapping localization
+    mode: localization # mapping localization
 
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given
     # will use pose
-    # map_file_name: /home/user/ros2_ws/src/nav2_warehouse/map_server/config/real_robot_map
+    map_file_name: /home/user/ros2_ws/src/nav2_warehouse/map_server/config/real_robot_map
     # map_start_pose: [0.0, 0.0, 0.0]
     map_start_at_dock: true
 

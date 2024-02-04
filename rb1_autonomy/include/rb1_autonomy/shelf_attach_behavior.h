@@ -30,7 +30,7 @@ public:
 
   static BT::PortsList providedPorts() {
     return providedBasicPorts(
-        {BT::InputPort<bool>("attach_shelf"),BT::OutputPort<bool>("is_success")});
+        {BT::InputPort<bool>("attach_shelf"),BT::InputPort<bool>("front_distance"),BT::OutputPort<bool>("is_success")});
   }
 
   bool setRequest(Request::SharedPtr &request) override;

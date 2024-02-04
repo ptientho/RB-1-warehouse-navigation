@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "behaviortree_cpp/loggers/groot2_publisher.h"
 /* This wrapper status is not required. */
 // enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 using namespace BT;
@@ -32,10 +33,10 @@ public:
   void registerNodes();
 
   /* create a tree object. Request a xml file from client */
-  void createBt(const std::string &xml_file, const bool &robot_config);
+  void createBt(const std::string &xml_file);
 
   /* create tree nodes for Groot2 */
-  void createTreeNodeXML(const bool &robot_config);
+  void createTreeNodeXML(const std::string& xml_dir);
 
   /* Not neccessary */
   /*
@@ -51,9 +52,10 @@ std::chrono::milliseconds(10));
   */
 private:
   BT::BehaviorTreeFactory factory_;
-  // rclcpp::TimerBase::SharedPtr timer_;
+  std::unique_ptr<BT::Groot2Publisher> publisher_;
   rclcpp::Service<TickBT>::SharedPtr autonomy_server_;
   BT::Tree tree;
+  const unsigned port = 1667;
 
   /* service callback for processing external app */
   void service_callback(const std::shared_ptr<TickBT::Request> req,
