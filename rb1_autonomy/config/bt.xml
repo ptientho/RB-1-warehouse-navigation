@@ -14,11 +14,13 @@
                    is_attached="{is_attached}"/>
         </Sequence>
       </Fallback>
-      <AsyncSequence>
-        <BackUp/>
-        <GoToPose loc="desired_location"
-                  action_name="__default__placeholder__"/>
-      </AsyncSequence>
+      <RetryUntilSuccessful num_attempts="2">
+        <AsyncSequence>
+            <BackUp/>
+            <GoToPose loc="desired_location"
+                    action_name="__default__placeholder__"/>   
+        </AsyncSequence>
+      </RetryUntilSuccessful>
       <DetachShelf detach_shelf="true"
                    is_success="{!is_attached}"
                    service_name="__default__placeholder__"/>
@@ -77,6 +79,14 @@
       </Sequence>
       <Sequence>
         <GoToPose loc="location4"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetector front_offset="0.0"
+                       shelf_pose="{front_shelf}"
+                       find_shelf="{shelf_found}"
+                       service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location5"
                   action_name="__default__placeholder__"/>
         <ShelfDetector front_offset="0.0"
                        shelf_pose="{front_shelf}"

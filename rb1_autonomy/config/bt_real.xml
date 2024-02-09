@@ -7,9 +7,11 @@
         <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="{is_attached}"/>
         <Sequence>
+        <RetryUntilSuccessful num_attempts="5">
           <SubTree ID="ShelfDetection"
                    shelf_found="{shelf_found}"
                    front_shelf="{front_shelf}"/>
+               </RetryUntilSuccessful>    
           <SubTree ID="ShelfApproach"
                    is_attached="{is_attached}"
                    front_shelf="{front_shelf}"
@@ -26,13 +28,13 @@
         </AsyncSequence>
       </Fallback>
       <DetachShelf detach_shelf="true"
-                   is_success="{!is_attached}"
+                   is_success="{is_detached}"
                    service_name="__default__placeholder__"/>
     </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="ShelfApproach">
-    <AsyncSequence>
+    <Sequence>
       <CheckShelfFound shelf_found="{shelf_found}"/>
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
@@ -40,11 +42,11 @@
                    front_distance="0.5"
                    is_success="{is_attached}"
                    service_name="__default__placeholder__"/>
-    </AsyncSequence>
+    </Sequence>
   </BehaviorTree>
 
   <BehaviorTree ID="ShelfDetection">
-    <AsyncFallback>
+    <Fallback>
       <ShelfDetectorReal shelf_pose="{front_shelf}"
                          find_shelf="{shelf_found}"
                          service_name="__default__placeholder__"/>
@@ -76,7 +78,21 @@
                            find_shelf="{shelf_found}"
                            service_name="__default__placeholder__"/>
       </Sequence>
-    </AsyncFallback>
+      <Sequence>
+        <GoToPose loc="location5_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location6_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+    </Fallback>
   </BehaviorTree>
 
   <!-- Description of Node Models (used by Groot) -->

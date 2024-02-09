@@ -1,8 +1,8 @@
 from launch_ros.actions import Node
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import FindExecutable
 import os
 
 def generate_launch_description():
@@ -54,6 +54,7 @@ def generate_launch_description():
     
     )
 
+
     lifecycle_node = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
@@ -61,7 +62,8 @@ def generate_launch_description():
         output='screen',
         parameters=[{'use_sim_time': True},
                     {'autostart': True},
-                    {'node_names': ['planner_server',
+                    {'node_names': [
+                                    'planner_server',
                                     'controller_server',
                                     'behavior_server',
                                     'bt_navigator']}]
@@ -82,6 +84,6 @@ def generate_launch_description():
         behavior_node,
         bt_navigator_node,
         planner_node,
-        lifecycle_node
+        lifecycle_node,
     
     ])

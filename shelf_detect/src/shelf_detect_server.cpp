@@ -34,7 +34,7 @@ ShelfDetectionServer::ShelfDetectionServer()
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
-                                   RCUTILS_LOG_SEVERITY_INFO);
+                                   RCUTILS_LOG_SEVERITY_DEBUG);
 
   this->declare_parameter("front_offset_x", 0.0);
   shelf_found = false;
@@ -82,7 +82,7 @@ void ShelfDetectionServer::service_callback(
   auto front_range = compute_front_shelf_distance();
   float Inf = std::numeric_limits<float>::infinity();
 
-  if (shelf_found && (front_range != Inf)) {
+  if (shelf_found && (front_range != Inf) && (leg1_range <= 1.5)) {
 
     orient_robot(front_offset);
     publish_shelf_frame();
@@ -147,7 +147,7 @@ void ShelfDetectionServer::detect_shelf() {
   int num_legs = 0;
 
   for (it = intensity_list.begin(), i = 0;
-       it != intensity_list.end() && i < intensity_list.size(); it++, i++) {
+       it != intensity_list.end() && std::next(it) != intensity_list.end(); it++, i++) {
 
     if ((*it < threshold) && (*(std::next(it)) >= threshold)) {
       num_legs += 1;

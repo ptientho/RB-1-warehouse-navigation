@@ -8,11 +8,11 @@ using namespace std::chrono_literals;
 NodeStatus BackUpActionNode::tick(){
 
     // publish cmd_vel to back up for 5 second and then stop
-    float vel = 0.2;
+    float vel = 0.15;
     CmdVel vel_msg;
     vel_msg.linear.x = (-1) * vel;
 
-    for (int i = 0; i < 15; i++){
+    for (int i = 0; i < 20; i++){
     
         vel_pub_->publish(vel_msg);
         std::this_thread::sleep_for(0.5s); //0.5s

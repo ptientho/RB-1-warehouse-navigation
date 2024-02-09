@@ -4,6 +4,7 @@
 #include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
+#include "mutex"
 #include "nav_msgs/msg/detail/odometry__struct.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/callback_group.hpp"
@@ -27,6 +28,7 @@
 #include <functional>
 #include <iterator>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -34,8 +36,9 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
     : rclcpp::Node("shelf_detection_real_node") {
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
-                                   RCUTILS_LOG_SEVERITY_INFO);
+                                   RCUTILS_LOG_SEVERITY_DEBUG);
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
+
   shelf_found = false;
   // parameter frame to get tf from map
   this->declare_parameter("frame", "robot_cart_laser");
@@ -52,8 +55,8 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
   rclcpp::SubscriptionOptions group;
   group.callback_group = subGrp_;
 
-  //this->timer_group_ =
-  //    this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+  this->timer_group_ =
+      this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
   // start shelf_detection server
   this->srv_ = this->create_service<GoToShelf>(
@@ -74,12 +77,12 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
       group);
 
   // start tf objects
-  this->tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
+  this->tf_pub_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
   shelf_found = false;
 
-  //this->timer1_ = this->create_wall_timer(
-  //    10ms, std::bind(&ShelfDetectionServerReal::detect_shelf, this),
-  //    timer_group_);
+  this->timer1_ = this->create_wall_timer(
+      20ms, std::bind(&ShelfDetectionServerReal::detect_shelf, this),
+      timer_group_);
   RCLCPP_INFO(this->get_logger(), "Initialized go_to_shelf Service");
 }
 
@@ -89,27 +92,23 @@ void ShelfDetectionServerReal::service_callback(
 
   RCLCPP_INFO(this->get_logger(), "Start go_to_shelf service");
 
-  /* detect shelf: if shelf is found, compute front shelf distance */
-  detect_shelf();
+  // delay to wait for detect_shelf method
+  std::this_thread::sleep_for(0.5s);
   RCLCPP_INFO(this->get_logger(), "Found Shelf: %s",
               shelf_found ? "YES" : "NO");
+  std::lock_guard<std::mutex> guard(find_shelf_mutex);
   if (shelf_found) {
     // publish front_shelf frame
     publish_shelf_frame();
     // get shelf_pose
     std::this_thread::sleep_for(0.5s);
     auto pose = get_tf("map", "front_shelf");
-    if (pose.pose.position.x == 0 && pose.pose.position.y == 0 && pose.pose.position.z == 0){
-        rsp->shelf_pose = pose;
-        rsp->shelf_found = false;
-    }else {
-        rsp->shelf_pose = pose;
-        rsp->shelf_found = true;
-    }
+    rsp->shelf_pose = pose;
+    rsp->shelf_found = shelf_found;
     
   } else {
     rsp->shelf_pose = get_tf("map", "front_shelf");
-    rsp->shelf_found = false;
+    rsp->shelf_found = shelf_found;
   }
 }
 
@@ -155,7 +154,7 @@ void ShelfDetectionServerReal::detect_shelf() {
 
   // since in real robot the signal oscillates so only max intensity cannot be
   // properly used
-  float threshold = 3500.0; // the lowest intensity difference from max value
+  float threshold = 4500.0; // the lowest intensity difference from max value
                             // that would be considered as a detection
   // float deviation_max = abs(*max_pointer_ - diff);
   // float deviation_min = abs(*min_pointer_ - diff);
@@ -164,7 +163,8 @@ void ShelfDetectionServerReal::detect_shelf() {
   int num_legs = 0;
 
   for (it = intensity_list.begin(), i = 0;
-       it != intensity_list.end() && i < intensity_list.size(); it++, i++) {
+       it != intensity_list.end() && std::next(it) != intensity_list.end();
+       it++, i++) {
     // RCLCPP_INFO(this->get_logger(), "current intensity: %f", *it);
     // RCLCPP_INFO(this->get_logger(), "next intensity: %f", *(std::next(it)));
 
@@ -202,10 +202,13 @@ void ShelfDetectionServerReal::detect_shelf() {
   RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
                leg2_idx_mid);
 
-  if (num_legs == 2) {
+  std::lock_guard<std::mutex> guard(find_shelf_mutex);
+  if (num_legs >= 2) {
     shelf_found = true;
+    // reset pointer
   } else {
     shelf_found = false;
+    // reset pointer
   }
 }
 

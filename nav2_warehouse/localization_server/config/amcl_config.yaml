@@ -5,7 +5,7 @@ amcl:
     alpha3: 0.2
     alpha4: 0.2
     alpha5: 0.2
-    base_frame_id: "robot_base_footprint" # (sim robot) "robot_base_link" (real robot) "robot_base_footprint"
+    base_frame_id: "robot_base_link"
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
     beam_skip_threshold: 0.3
@@ -17,9 +17,9 @@ amcl:
     laser_min_range: -1.0
     laser_model_type: "likelihood_field"
     max_beams: 60
-    max_particles: 2000
-    min_particles: 500
-    odom_frame_id: "robot_odom" # (sim robot) "odom" (real robot) "robot_odom"
+    max_particles: 40000
+    min_particles: 1000
+    odom_frame_id: "odom"
     pf_err: 0.05
     pf_z: 0.99
     recovery_alpha_fast: 0.0

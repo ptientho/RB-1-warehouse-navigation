@@ -14,7 +14,7 @@ slam_toolbox:
     map_frame: map
     base_frame: robot_base_link
     scan_topic: /scan
-    mode: mapping # mapping localization
+    mode: localization # mapping localization
 
     # if you'd like to immediately start continuing a map at a given pose
     # or at the dock, but they are mutually exclusive, if pose is given

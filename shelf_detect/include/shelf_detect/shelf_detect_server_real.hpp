@@ -37,10 +37,10 @@ private:
   rclcpp::Subscription<LaserScan>::SharedPtr laserSub_;
   rclcpp::Subscription<Odom>::SharedPtr odomSub_;
   rclcpp::CallbackGroup::SharedPtr subGrp_;
-  //rclcpp::CallbackGroup::SharedPtr timer_group_;
+  rclcpp::CallbackGroup::SharedPtr timer_group_;
 
   // timer use for dynamic tf publishing
-  //rclcpp::TimerBase::SharedPtr timer1_;
+  rclcpp::TimerBase::SharedPtr timer1_;
   // rclcpp::TimerBase::SharedPtr timer2_;
 
   // tf listener
@@ -48,7 +48,7 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   // tf broadcaster
-  std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_pub_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_pub_;
 
   // odom data
   double robot_yaw;
@@ -59,13 +59,16 @@ private:
   float leg1_range = NULL;
   float leg2_range = NULL;
   float angle_diff = NULL;
-  int leg1_idx_start;
-  int leg2_idx_start;
-  int leg1_idx_end;
-  int leg2_idx_end;
-  int leg1_idx_mid;
-  int leg2_idx_mid;
+  int leg1_idx_start = 0;
+  int leg2_idx_start = 0;
+  int leg1_idx_end = 0;
+  int leg2_idx_end = 0;
+  int leg1_idx_mid = 0;
+  int leg2_idx_mid = 0;
   bool shelf_found;
+
+  // mutex declaration
+  std::mutex find_shelf_mutex;
 
   /* send shelf_pose and shelf_found to client */
   void service_callback(const std::shared_ptr<GoToShelf::Request> req,
