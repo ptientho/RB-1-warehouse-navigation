@@ -92,6 +92,20 @@
                            find_shelf="{shelf_found}"
                            service_name="__default__placeholder__"/>
       </Sequence>
+      <Sequence>
+        <GoToPose loc="location7_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location8_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
     </Fallback>
   </BehaviorTree>
 
