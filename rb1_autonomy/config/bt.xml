@@ -14,13 +14,17 @@
                    is_attached="{is_attached}"/>
         </Sequence>
       </Fallback>
+      <Delay delay_msec="3000">
       <RetryUntilSuccessful num_attempts="2">
         <AsyncSequence>
-            <BackUp/>
+            <Repeat num_cycles="3">
+                <BackUp/>
+            </Repeat>
             <GoToPose loc="desired_location"
                     action_name="__default__placeholder__"/>   
         </AsyncSequence>
       </RetryUntilSuccessful>
+      </Delay>
       <DetachShelf detach_shelf="true"
                    is_success="{!is_attached}"
                    service_name="__default__placeholder__"/>
@@ -32,14 +36,18 @@
       <CheckShelfFound shelf_found="{shelf_found}"/>
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
-      <AttachShelf attach_shelf="false"
-                   front_distance="0.2"
-                   is_success="{is_attached}"
-                   service_name="__default__placeholder__"/>
-      <ShelfDetector front_offset="0.0"
-                     shelf_pose="{front_shelf}"
-                     find_shelf="{shelf_found}"
-                     service_name="__default__placeholder__"/>
+      <Repeat num_cycles="2">
+        <Sequence>
+            <AttachShelf attach_shelf="false"
+                        front_distance="0.15"
+                        is_success="{is_attached}"
+                        service_name="__default__placeholder__"/>
+            <ShelfDetector front_offset="0.0"
+                            shelf_pose="{front_shelf}"
+                            find_shelf="{shelf_found}"
+                            service_name="__default__placeholder__"/>
+        </Sequence>
+      </Repeat>
       <AttachShelf attach_shelf="true"
                    front_distance="0.0"
                    is_success="{is_attached}"
@@ -49,14 +57,14 @@
 
   <BehaviorTree ID="ShelfDetection">
     <AsyncFallback>
-      <ShelfDetector front_offset="0.0"
+      <ShelfDetector front_offset="22.0"
                      shelf_pose="{front_shelf}"
                      find_shelf="{shelf_found}"
                      service_name="__default__placeholder__"/>
       <Sequence>
         <GoToPose loc="location1"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="0.0"
+        <ShelfDetector front_offset="22.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -64,7 +72,7 @@
       <Sequence>
         <GoToPose loc="location2"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="0.0"
+        <ShelfDetector front_offset="22.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -72,7 +80,7 @@
       <Sequence>
         <GoToPose loc="location3"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="0.0"
+        <ShelfDetector front_offset="22.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -80,7 +88,7 @@
       <Sequence>
         <GoToPose loc="location4"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="0.0"
+        <ShelfDetector front_offset="22.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -88,7 +96,7 @@
       <Sequence>
         <GoToPose loc="location5"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="0.0"
+        <ShelfDetector front_offset="22.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>

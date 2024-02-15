@@ -22,7 +22,9 @@
         <GoToPose loc="desired_location_real"
                   action_name="__default__placeholder__"/>
         <AsyncSequence>
-          <BackUp/>
+          <Repeat num_cycles="3">
+                <BackUp/>
+            </Repeat>
           <GoToPose loc="desired_location_real"
                     action_name="__default__placeholder__"/>
         </AsyncSequence>

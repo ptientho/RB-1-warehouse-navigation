@@ -26,7 +26,7 @@ controller_server:
       min_vel_y: 0.0
       max_vel_x: 0.26 #0.12
       max_vel_y: 0.0
-      max_vel_theta: 1.0 #0.3
+      max_vel_theta: 0.5 #0.3
       min_speed_xy: 0.0
       max_speed_xy: 0.26
       min_speed_theta: 0.0
@@ -62,21 +62,21 @@ controller_server:
 local_costmap:
   local_costmap:
     ros__parameters:
-      use_sim_time: True
       update_frequency: 4.0
       publish_frequency: 2.0
       global_frame: odom
       robot_base_frame: robot_base_link
+      use_sim_time: True
       rolling_window: true
       width: 3
       height: 3
       resolution: 0.05
-      robot_radius: 0.3
+      robot_radius: 0.4
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 2.7 # slope of the cost; if steep, the robot will keep close to an obstacle (default: 3)
-        inflation_radius: 0.5 # control how far away the zero cost point from an obstacle (default: 0.3)
+        cost_scaling_factor: 2.5
+        inflation_radius: 0.5
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -93,10 +93,11 @@ local_costmap:
           clearing: True
           marking: True
           data_type: "LaserScan"
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
+          raytrace_max_range: 19.5
+          raytrace_min_range: 0.5
+          obstacle_max_range: 19.0
+          obstacle_min_range: 0.5
       static_layer:
         map_subscribe_transient_local: True
       always_send_full_costmap: True
+        

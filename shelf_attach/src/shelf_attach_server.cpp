@@ -11,6 +11,7 @@
 #include <cmath>
 #include <functional>
 #include <math.h>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -87,31 +88,13 @@ void AttachShelfServer::move_to_front_shelf_real(const float &front_offset) {
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("to_frame").as_string();
   auto tf_robot_shelf = get_tf(fromFrame, toFrame);
-
-  // move forward distance. For the sake of simplicity, use just x distance;
   auto distance = tf_robot_shelf.pose.position.x;
-  // create vel message
-  CmdVel vel_msg = geometry_msgs::msg::Twist();
-  auto vx = 0.1;
-  while (distance > front_offset) {
-    // move forward
-    vel_msg.linear.x = vx; // m/s
-    vel_pub_->publish(vel_msg);
-
-    // update distance
-    tf_robot_shelf = get_tf(fromFrame, toFrame);
-    distance = tf_robot_shelf.pose.position.x;
-    RCLCPP_INFO(this->get_logger(), "Front shelf distance: %f", distance);
-    loop_rate.sleep();
-  }
-  // stop robot
-  vel_msg.linear.x = 0.0;
-  vel_pub_->publish(vel_msg);
-
   auto diff_y = tf_robot_shelf.pose.position.y;
+
+  CmdVel vel_msg = geometry_msgs::msg::Twist();
+  // 1. orient to align to front shelf
   auto alpha = abs(M_PI / 2 - atan2(distance, diff_y));
   RCLCPP_INFO(this->get_logger(), "alpha: %f", alpha);
-  // orientation alignment
   if (diff_y >= 0) {
     for (int i = 0; i < 10; i++) {
 
@@ -129,6 +112,23 @@ void AttachShelfServer::move_to_front_shelf_real(const float &front_offset) {
   // stop robot
   vel_msg.linear.x = 0.0;
   vel_msg.angular.z = 0.0;
+  vel_pub_->publish(vel_msg);
+
+  // 2. move forward distance
+  auto vx = 0.1;
+  while (distance > front_offset) {
+    // move forward
+    vel_msg.linear.x = vx; // m/s
+    vel_pub_->publish(vel_msg);
+
+    // update distance
+    tf_robot_shelf = get_tf(fromFrame, toFrame);
+    distance = tf_robot_shelf.pose.position.x;
+    RCLCPP_INFO(this->get_logger(), "Front shelf distance: %f", distance);
+    loop_rate.sleep();
+  }
+  // stop robot
+  vel_msg.linear.x = 0.0;
   vel_pub_->publish(vel_msg);
 }
 
@@ -222,20 +222,20 @@ void AttachShelfServer::set_params() {
   // Initialize each Point32 in the points array separately
   geometry_msgs::msg::Point32 point1, point2, point3, point4;
 
-  point1.x = 0.43;
-  point1.y = 0.43;
+  point1.x = 0.5;
+  point1.y = 0.5;
   point1.z = 0.0;
 
-  point2.x = 0.43;
-  point2.y = -0.43;
+  point2.x = 0.5;
+  point2.y = -0.5;
   point2.z = 0.0;
 
-  point3.x = -0.43;
-  point3.y = -0.43;
+  point3.x = -0.5;
+  point3.y = -0.5;
   point3.z = 0.0;
 
-  point4.x = -0.43;
-  point4.y = 0.43;
+  point4.x = -0.5;
+  point4.y = 0.5;
   point4.z = 0.0;
 
   // Fill the points array
@@ -252,7 +252,7 @@ void AttachShelfServer::set_params() {
   // Change inflation layer parameters
   auto request2 = std::make_shared<ClientMsg::Request>();
   auto request3 = std::make_shared<ClientMsg::Request>();
-
+  //////////////////////////////////////////////////////////
   rcl_interfaces::msg::ParameterValue val;
   val.type = 9;
   val.string_array_value = {"RotateToGoal", "Oscillation", "ObstacleFootprint",
@@ -264,7 +264,7 @@ void AttachShelfServer::set_params() {
   param.value = val;
 
   request->parameters.push_back(param);
-  ////////////////////////////////////////////
+  ///////////////////////////////////////////////
   // set inflation_radius
   val.type = 3;
   val.double_value = 0.5;
@@ -276,14 +276,21 @@ void AttachShelfServer::set_params() {
   ////////////////////////////////////////////
   // set cost_scaling_factor
   val.type = 3;
-  val.double_value = 2.7;
+  val.double_value = 1.8;
   param.name = "inflation_layer.cost_scaling_factor";
   param.value = val;
 
   request2->parameters.push_back(param);
   request3->parameters.push_back(param);
   ////////////////////////////////////////////
+  // set plugin layers for global costmap
+  val.type = 9;
+  val.string_array_value = {"static_layer", "inflation_layer"};
+  param.name = "plugins";
+  param.value = val;
 
+  request2->parameters.push_back(param);
+  ///////////////////////////////////////////
   while (!param_pub_->wait_for_service(1s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(this->get_logger(),
@@ -295,6 +302,6 @@ void AttachShelfServer::set_params() {
   auto result = param_pub_->async_send_request(request);
   auto result2 = param_pub2_->async_send_request(request2);
   auto result3 = param_pub3_->async_send_request(request3);
-  
+
   RCLCPP_INFO(this->get_logger(), "Footprint and inflation parameters set.");
 }

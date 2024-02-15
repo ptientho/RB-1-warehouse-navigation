@@ -81,47 +81,58 @@ void DetachShelfServer::detach_shelf() {
 
 void DetachShelfServer::set_params() {
 
-  auto request1 =
-      std::make_shared<ClientMsg::Request>(); // for setting robot radius
-  auto request2 = std::make_shared<ClientMsg::Request>(); // for setting critics
+  auto request1 = std::make_shared<ClientMsg::Request>(); // for global costmap
+  auto request2 = std::make_shared<ClientMsg::Request>(); // for local costmap
+  auto request3 = std::make_shared<ClientMsg::Request>(); // for setting critics
   ////////////////////////////////////////////////////
+  // set robot radius
   rcl_interfaces::msg::ParameterValue val;
   val.type = 3;
-  val.double_value = 0.3;
+  val.double_value = 0.4;
 
-  rcl_interfaces::msg::Parameter param1; // for setting costmap parameters
-  param1.name = "robot_radius";
-  param1.value = val;
-
+  rcl_interfaces::msg::Parameter param;
+  param.name = "robot_radius";
+  param.value = val;
+  request1->parameters.push_back(param);
+  request2->parameters.push_back(param);
+  ///////////////////////////////////////////////////
+  // set critics
   val.type = 9;
   val.string_array_value = {"RotateToGoal", "Oscillation", "BaseObstacle",
                             "GoalAlign",    "PathAlign",   "PathDist",
                             "GoalDist"};
 
-  rcl_interfaces::msg::Parameter param2;
-  param2.name = "FollowPath.critics";
-  param2.value = val;
+  param.name = "FollowPath.critics";
+  param.value = val;
+  request3->parameters.push_back(param);
   /////////////////////////////////////////////////////
-  request1->parameters.push_back(param1);
-  request2->parameters.push_back(param2);
+  // set plugin layers only for global costmap
+  val.type = 9;
+  val.string_array_value = {"static_layer", "inflation_layer", "obstacle_layer",
+                            "voxel_layer"};
 
-  ///////////////////////////////////////////////////
+  param.name = "plugins";
+  param.value = val;
+  request1->parameters.push_back(param);
+  /////////////////////////////////////////////////////
   // set inflation_radius
   val.type = 3;
   val.double_value = 0.5;
-  param1.name = "inflation_layer.inflation_radius";
-  param1.value = val;
+  param.name = "inflation_layer.inflation_radius";
+  param.value = val;
 
-  request1->parameters.push_back(param1);
+  request1->parameters.push_back(param);
+  request2->parameters.push_back(param);
   ///////////////////////////////////////////////////
   // set cost_scaling_factor
   val.type = 3;
   val.double_value = 2.7;
-  param1.name = "inflation_layer.cost_scaling_factor";
-  param1.value = val;
+  param.name = "inflation_layer.cost_scaling_factor";
+  param.value = val;
 
-  request1->parameters.push_back(param1);
-
+  request1->parameters.push_back(param);
+  request2->parameters.push_back(param);
+  ////////////////////////////////////////////
   while (!foot_pub_glob_->wait_for_service(1s) &&
          !foot_pub_local_->wait_for_service(1s) &&
          !critic_pub_->wait_for_service(1s)) {
@@ -134,7 +145,7 @@ void DetachShelfServer::set_params() {
   }
 
   auto glob_rsp = foot_pub_glob_->async_send_request(request1);
-  auto local_rsp = foot_pub_local_->async_send_request(request1);
-  auto critic_rsp = critic_pub_->async_send_request(request2);
+  auto local_rsp = foot_pub_local_->async_send_request(request2);
+  auto critic_rsp = critic_pub_->async_send_request(request3);
   RCLCPP_INFO(this->get_logger(), "Robot radius  and critic parameters set.");
 }

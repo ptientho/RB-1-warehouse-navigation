@@ -6,9 +6,6 @@ from launch.substitutions import LaunchConfiguration
 import os
 
 def generate_launch_description():
-
-    # enable rviz
-    rviz_config = os.path.join(get_package_share_directory('path_planner_server'),'rviz','path_planner.rviz')
     
     #get config file
     planner_config = os.path.join(get_package_share_directory('path_planner_server'),'config','real_robot','planner_config_real.yaml')
@@ -65,17 +62,7 @@ def generate_launch_description():
                                     'bt_navigator']}]
     )
 
-    rviz_node = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        arguments=['-d', rviz_config]
-    
-    )
-
-
     return LaunchDescription([
-        rviz_node,
         controller_node,
         behavior_node,
         bt_navigator_node,

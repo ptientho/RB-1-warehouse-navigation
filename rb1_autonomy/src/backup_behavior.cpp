@@ -8,7 +8,7 @@ using namespace std::chrono_literals;
 NodeStatus BackUpActionNode::tick(){
 
     // publish cmd_vel to back up for 5 second and then stop
-    float vel = 0.15;
+    float vel = 0.05;
     CmdVel vel_msg;
     vel_msg.linear.x = (-1) * vel;
 
