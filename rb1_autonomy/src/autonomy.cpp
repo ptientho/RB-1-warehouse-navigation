@@ -5,6 +5,7 @@
 #include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_ros2/ros_node_params.hpp"
 #include "rb1_autonomy/backup_behavior.h"
+#include "rb1_autonomy/navigate_to_des_behavior.h"
 #include "rb1_autonomy/navigation_behavior.h"
 #include "rb1_autonomy/navigation_pose_behavior.h"
 #include "rb1_autonomy/shelf_attach_behavior.h"
@@ -60,13 +61,14 @@ void AutonomyEngine::registerNodes() {
   params.server_timeout = std::chrono::milliseconds(100000);
   factory_.registerNodeType<GoToPoseActionClient>("GoToPose", params);
   factory_.registerNodeType<GoToPose2ActionClient>("GoToPose2", params);
+  factory_.registerNodeType<GoToPoseDes>("GoToDes", params);
 
   params.default_port_value = "attach_shelf";
-  params.server_timeout = std::chrono::milliseconds(20000);
+  params.server_timeout = std::chrono::milliseconds(100000);
   factory_.registerNodeType<AttachShelfClient>("AttachShelf", params);
 
   params.default_port_value = "detach_shelf";
-  params.server_timeout = std::chrono::milliseconds(20000);
+  params.server_timeout = std::chrono::milliseconds(100000);
   factory_.registerNodeType<DetachShelfClient>("DetachShelf", params);
 
   factory_.registerNodeType<BackUpActionNode>("BackUp", shared_from_this());

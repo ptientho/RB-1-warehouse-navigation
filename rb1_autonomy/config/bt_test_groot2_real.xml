@@ -2,7 +2,7 @@
     <TreeNodesModel>
         <Action ID="AttachShelf">
             <input_port name="attach_shelf" type="bool"/>
-            <input_port name="front_distance" type="bool"/>
+            <input_port name="front_distance" type="float"/>
             <output_port name="is_success" type="bool"/>
             <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
         </Action>
@@ -17,6 +17,10 @@
             <input_port name="detach_shelf" type="bool"/>
             <output_port name="is_success" type="bool"/>
             <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
+        </Action>
+        <Action ID="GoToDes">
+            <input_port name="goal_degree" type="double"/>
+            <input_port name="action_name" type="std::string" default="__default__placeholder__">Action server name</input_port>
         </Action>
         <Action ID="GoToPose">
             <input_port name="loc" type="std::string"/>

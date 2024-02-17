@@ -20,8 +20,9 @@
             <Repeat num_cycles="3">
                 <BackUp/>
             </Repeat>
-            <GoToPose loc="desired_location"
-                    action_name="__default__placeholder__"/>   
+            <!--GoToPose loc="desired_location"
+                    action_name="__default__placeholder__"/-->
+            <GoToDes goal_degree="-90" action_name="__default__placeholder__"/>   
         </AsyncSequence>
       </RetryUntilSuccessful>
       </Delay>
@@ -36,10 +37,14 @@
       <CheckShelfFound shelf_found="{shelf_found}"/>
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
-      <Repeat num_cycles="2">
+      <Repeat num_cycles="1">
         <Sequence>
+            <ShelfDetector front_offset="15.0"
+                            shelf_pose="{front_shelf}"
+                            find_shelf="{shelf_found}"
+                            service_name="__default__placeholder__"/>
             <AttachShelf attach_shelf="false"
-                        front_distance="0.15"
+                        front_distance="0.2"
                         is_success="{is_attached}"
                         service_name="__default__placeholder__"/>
             <ShelfDetector front_offset="0.0"

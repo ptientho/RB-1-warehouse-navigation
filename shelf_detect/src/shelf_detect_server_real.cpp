@@ -36,7 +36,7 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
     : rclcpp::Node("shelf_detection_real_node") {
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
-                                   RCUTILS_LOG_SEVERITY_DEBUG);
+                                   RCUTILS_LOG_SEVERITY_INFO);
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
 
   shelf_found = false;
@@ -71,7 +71,7 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
                 std::placeholders::_1),
       group);
   this->laserSub_ = this->create_subscription<LaserScan>(
-      "/scan", 10,
+      "/scan", 5,
       std::bind(&ShelfDetectionServerReal::laser_callback, this,
                 std::placeholders::_1),
       group);
@@ -105,7 +105,7 @@ void ShelfDetectionServerReal::service_callback(
     auto pose = get_tf("map", "front_shelf");
     rsp->shelf_pose = pose;
     rsp->shelf_found = shelf_found;
-    
+
   } else {
     rsp->shelf_pose = get_tf("map", "front_shelf");
     rsp->shelf_found = shelf_found;
@@ -118,20 +118,21 @@ void ShelfDetectionServerReal::laser_callback(
   if (msg == nullptr) {
     return;
   }
-  std::vector<float> intensity_list = msg->intensities;
+  // std::vector<float> intensity_list = msg->intensities;
 
   laser_data = msg;
-
-  int intensity_length = intensity_list.size();
-  RCLCPP_DEBUG(this->get_logger(), "INTENSITY LENGTH ==> %d", intensity_length);
-  // max intensity
-  auto max_pointer_ =
-      std::max_element(intensity_list.begin(), intensity_list.end());
-  // min intensity
-  auto min_pointer_ =
-      std::min_element(intensity_list.begin(), intensity_list.end());
-  RCLCPP_DEBUG(this->get_logger(), "INTENSITY VALUES | MAX: %f, MIN: %f",
-               *max_pointer_, *min_pointer_);
+  /*
+int intensity_length = intensity_list.size();
+RCLCPP_DEBUG(this->get_logger(), "INTENSITY LENGTH ==> %d", intensity_length);
+// max intensity
+auto max_pointer_ =
+    std::max_element(intensity_list.begin(), intensity_list.end());
+// min intensity
+auto min_pointer_ =
+    std::min_element(intensity_list.begin(), intensity_list.end());
+RCLCPP_DEBUG(this->get_logger(), "INTENSITY VALUES | MAX: %f, MIN: %f",
+             *max_pointer_, *min_pointer_);
+             */
 }
 
 void ShelfDetectionServerReal::detect_shelf() {
@@ -139,76 +140,80 @@ void ShelfDetectionServerReal::detect_shelf() {
   if (laser_data == nullptr) {
     RCLCPP_INFO(this->get_logger(), "Laser data not received.");
     return;
-  }
-  std::vector<float> intensity_list = laser_data->intensities;
-  std::vector<float>::iterator it;
-  // range values
-  std::vector<float> range_list = laser_data->ranges;
-
-  int i;
-  auto max_pointer_ =
-      std::max_element(intensity_list.begin(), intensity_list.end());
-  // min intensity
-  auto min_pointer_ =
-      std::min_element(intensity_list.begin(), intensity_list.end());
-
-  // since in real robot the signal oscillates so only max intensity cannot be
-  // properly used
-  float threshold = 4300.0; // the lowest intensity difference from max value
-                            // that would be considered as a detection
-  // float deviation_max = abs(*max_pointer_ - diff);
-  // float deviation_min = abs(*min_pointer_ - diff);
-  // RCLCPP_INFO(this->get_logger(), "Deviation max: %f", *max_pointer_);
-  // RCLCPP_INFO(this->get_logger(), "Deviation min: %f", *min_pointer_);
-  int num_legs = 0;
-
-  for (it = intensity_list.begin(), i = 0;
-       it != intensity_list.end() && std::next(it) != intensity_list.end();
-       it++, i++) {
-    // RCLCPP_INFO(this->get_logger(), "current intensity: %f", *it);
-    // RCLCPP_INFO(this->get_logger(), "next intensity: %f", *(std::next(it)));
-
-    if ((*it < threshold) &&
-        (*(std::next(it)) >=
-         threshold)) { // signal 0 -> 1 // in real robot the intensity
-                       // varies so CANNOT use max value to detect the leg |
-                       // if ((*it == *min_pointer_) && (*(std::next(it)) ==
-                       // *max_pointer_))
-      num_legs += 1;
-      // get leg1 range and leg2 range
-      if (num_legs == 1) {
-        leg1_idx_start = i;
-      }
-      if (num_legs == 2) {
-        leg2_idx_start = i;
-      }
-    } else if ((num_legs == 1) && (*it >= threshold) && // *it == *max_pointer_
-               (*(std::next(it)) < threshold)) {        // signal 1 -> 0
-      leg1_idx_end = i;
-      leg1_idx_mid = leg1_idx_start + (leg1_idx_end - leg1_idx_start) / 2;
-    } else if ((num_legs == 2) && (*it >= threshold) && // *it == *max_pointer_
-               (*(std::next(it)) < threshold)) {
-      leg2_idx_end = i;
-      leg2_idx_mid = leg2_idx_start + (leg2_idx_end - leg2_idx_start) / 2;
-    }
-  }
-  leg1_range = range_list[leg1_idx_mid];
-  leg2_range = range_list[leg2_idx_mid];
-
-  RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
-               num_legs);
-  RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
-               leg1_idx_mid);
-  RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
-               leg2_idx_mid);
-
-  std::lock_guard<std::mutex> guard(find_shelf_mutex);
-  if (num_legs >= 2) {
-    shelf_found = true;
-    // reset pointer
   } else {
-    shelf_found = false;
-    // reset pointer
+    std::vector<float> intensity_list = laser_data->intensities;
+    std::vector<float>::iterator it;
+    // range values
+    std::vector<float> range_list = laser_data->ranges;
+
+    int i;
+    auto max_pointer_ =
+        std::max_element(intensity_list.begin(), intensity_list.end());
+    // min intensity
+    auto min_pointer_ =
+        std::min_element(intensity_list.begin(), intensity_list.end());
+
+    // since in real robot the signal oscillates so only max intensity cannot be
+    // properly used
+    float threshold = 4300.0; // the lowest intensity difference from max value
+                              // that would be considered as a detection
+    // float deviation_max = abs(*max_pointer_ - diff);
+    // float deviation_min = abs(*min_pointer_ - diff);
+    // RCLCPP_INFO(this->get_logger(), "Deviation max: %f", *max_pointer_);
+    // RCLCPP_INFO(this->get_logger(), "Deviation min: %f", *min_pointer_);
+    int num_legs = 0;
+
+    for (it = intensity_list.begin(), i = 0;
+         it != intensity_list.end() && std::next(it) != intensity_list.end();
+         it++, i++) {
+      // RCLCPP_INFO(this->get_logger(), "current intensity: %f", *it);
+      // RCLCPP_INFO(this->get_logger(), "next intensity: %f",
+      // *(std::next(it)));
+
+      if ((*it < threshold) &&
+          (*(std::next(it)) >=
+           threshold)) { // signal 0 -> 1 // in real robot the intensity
+                         // varies so CANNOT use max value to detect the leg |
+                         // if ((*it == *min_pointer_) && (*(std::next(it)) ==
+                         // *max_pointer_))
+        num_legs += 1;
+        // get leg1 range and leg2 range
+        if (num_legs == 1) {
+          leg1_idx_start = i;
+        }
+        if (num_legs == 2) {
+          leg2_idx_start = i;
+        }
+      } else if ((num_legs == 1) &&
+                 (*it >= threshold) &&             // *it == *max_pointer_
+                 (*(std::next(it)) < threshold)) { // signal 1 -> 0
+        leg1_idx_end = i;
+        leg1_idx_mid = leg1_idx_start + (leg1_idx_end - leg1_idx_start) / 2;
+      } else if ((num_legs == 2) &&
+                 (*it >= threshold) && // *it == *max_pointer_
+                 (*(std::next(it)) < threshold)) {
+        leg2_idx_end = i;
+        leg2_idx_mid = leg2_idx_start + (leg2_idx_end - leg2_idx_start) / 2;
+      }
+    }
+    leg1_range = range_list[leg1_idx_mid];
+    leg2_range = range_list[leg2_idx_mid];
+
+    RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
+                 num_legs);
+    RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
+                 leg1_idx_mid);
+    RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
+                 leg2_idx_mid);
+
+    std::lock_guard<std::mutex> guard(find_shelf_mutex);
+    if (num_legs >= 2) {
+      shelf_found = true;
+      // reset pointer
+    } else {
+      shelf_found = false;
+      // reset pointer
+    }
   }
 }
 

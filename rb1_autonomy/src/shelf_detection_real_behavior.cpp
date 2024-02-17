@@ -20,6 +20,7 @@ bool ShelfDetectionRealClient::setRequest(Request::SharedPtr &request) {
 
 BT::NodeStatus ShelfDetectionRealClient::onResponseReceived(
     const Response::SharedPtr &response) {
+    
   RCLCPP_INFO(node_->get_logger(), "%s: Response received. | shelf_found: %s",
               name().c_str(), response->shelf_found ? "yes" : "no");
   RCLCPP_INFO(node_->get_logger(),

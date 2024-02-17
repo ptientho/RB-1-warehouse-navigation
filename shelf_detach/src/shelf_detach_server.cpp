@@ -88,7 +88,7 @@ void DetachShelfServer::set_params() {
   // set robot radius
   rcl_interfaces::msg::ParameterValue val;
   val.type = 3;
-  val.double_value = 0.4;
+  val.double_value = 0.3;
 
   rcl_interfaces::msg::Parameter param;
   param.name = "robot_radius";
