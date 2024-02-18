@@ -19,19 +19,24 @@
         </Sequence>
       </Fallback>
       <Fallback>
-        <GoToPose loc="desired_location_real"
-                  action_name="__default__placeholder__"/>
+        <!--GoToPose loc="desired_location_real"
+                  action_name="__default__placeholder__"/-->
+        <GoToDes goal_degree="156.5"/>
         <AsyncSequence>
           <Repeat num_cycles="3">
                 <BackUp/>
             </Repeat>
-          <GoToPose loc="desired_location_real"
-                    action_name="__default__placeholder__"/>
+          <!--GoToPose loc="desired_location_real"
+                    action_name="__default__placeholder__"/-->
+         <GoToDes goal_degree="156.5"/>
         </AsyncSequence>
       </Fallback>
       <DetachShelf detach_shelf="true"
                    is_success="{is_detached}"
                    service_name="__default__placeholder__"/>
+        <Repeat num_cycles="1">
+            <BackUp/>
+        </Repeat>
     </Sequence>
   </BehaviorTree>
 
@@ -41,7 +46,7 @@
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="true"
-                   front_distance="0.5"
+                   front_distance="0.05"
                    is_success="{is_attached}"
                    service_name="__default__placeholder__"/>
     </Sequence>

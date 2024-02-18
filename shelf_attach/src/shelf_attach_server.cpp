@@ -143,7 +143,7 @@ void AttachShelfServer::move_to_front_shelf_real(const float &front_offset) {
   tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
   CmdVel vel_msg = geometry_msgs::msg::Twist();
-  auto vx = 0.03;
+  auto vx = 0.05;
   auto vt = 0.03;
 
   // orient to goal
@@ -344,7 +344,7 @@ void AttachShelfServer::set_params() {
   ///////////////////////////////////////////////
   // set inflation_radius
   val.type = 3;
-  val.double_value = 0.5;
+  val.double_value = 0.4;
   param.name = "inflation_layer.inflation_radius";
   param.value = val;
 

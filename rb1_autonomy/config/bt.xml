@@ -20,9 +20,7 @@
             <Repeat num_cycles="3">
                 <BackUp/>
             </Repeat>
-            <!--GoToPose loc="desired_location"
-                    action_name="__default__placeholder__"/-->
-            <GoToDes goal_degree="-90" action_name="__default__placeholder__"/>   
+            <GoToDes goal_degree="90" action_name="__default__placeholder__"/>   
         </AsyncSequence>
       </RetryUntilSuccessful>
       </Delay>

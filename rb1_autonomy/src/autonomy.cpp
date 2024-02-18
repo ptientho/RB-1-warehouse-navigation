@@ -17,6 +17,7 @@
 #include "rclcpp/logger.hpp"
 #include "rclcpp/logging.hpp"
 #include "rclcpp/node.hpp"
+#include "rclcpp/parameter.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/utilities.hpp"
 #include <chrono>
@@ -32,11 +33,21 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
   this->declare_parameter("location_file", "none");
   // declare directory of groot file
   this->declare_parameter("groot_file", "none");
+  // declare goal destination parameter
+  this->declare_parameter("goal_x", 0.0);
+  this->declare_parameter("goal_y", 0.0);
+
+  // initialize des_subscriber
+  this->point_sub_ = this->create_subscription<Point>(
+      "/des_provider", 5,
+      std::bind(&AutonomyEngine::point_callback, this, std::placeholders::_1));
+
   // initialize service server
   this->autonomy_server_ = this->create_service<TickBT>(
       "/rb1_autonomy_server",
       std::bind(&AutonomyEngine::service_callback, this, std::placeholders::_1,
                 std::placeholders::_2));
+
   RCLCPP_INFO(this->get_logger(), "Starting RB-1 autonomy service...");
 }
 
@@ -58,7 +69,7 @@ void AutonomyEngine::registerNodes() {
   factory_.registerNodeType<ShelfDetectionClient>("ShelfDetector", params);
 
   params.default_port_value = "navigate_to_pose";
-  params.server_timeout = std::chrono::milliseconds(100000);
+  params.server_timeout = std::chrono::milliseconds(120000);
   factory_.registerNodeType<GoToPoseActionClient>("GoToPose", params);
   factory_.registerNodeType<GoToPose2ActionClient>("GoToPose2", params);
   factory_.registerNodeType<GoToPoseDes>("GoToDes", params);
@@ -143,6 +154,12 @@ void AutonomyEngine::service_callback(
   // get request
   std::string bt_xml = req->bt_xml_file;
 
+  // set goal parameters to clicked point
+  rclcpp::Parameter point_x("goal_x", this->clicked_point.point.x);
+  rclcpp::Parameter point_y("goal_y", this->clicked_point.point.y);
+  this->set_parameter(point_x);
+  this->set_parameter(point_y);
+  
   // create BT
   createBt(bt_xml);
 

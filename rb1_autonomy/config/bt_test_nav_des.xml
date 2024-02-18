@@ -2,7 +2,7 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="1">
             <Sequence>
-                <AttachShelf name="attach_shelf" attach_shelf="true" front_distance="0.05" is_success="{is_attached}"/>
+                <GoToDes goal_degree="-90.0"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>

@@ -68,12 +68,13 @@ void DetachShelfServer::detach_shelf() {
   float back_vel;
   rclcpp::Rate loop_rate(5);
   this->get_parameter("detach_velocity", back_vel);
-  // move to center shelf
+  
   for (int i = 0; i < 20; i++) {
     vel_msg.linear.x = (-1) * back_vel;
     vel_pub_->publish(vel_msg);
     loop_rate.sleep();
   }
+  
 
   vel_msg.linear.x = 0.0;
   vel_pub_->publish(vel_msg);
@@ -117,7 +118,7 @@ void DetachShelfServer::set_params() {
   /////////////////////////////////////////////////////
   // set inflation_radius
   val.type = 3;
-  val.double_value = 0.5;
+  val.double_value = 0.4;
   param.name = "inflation_layer.inflation_radius";
   param.value = val;
 
@@ -149,3 +150,4 @@ void DetachShelfServer::set_params() {
   auto critic_rsp = critic_pub_->async_send_request(request3);
   RCLCPP_INFO(this->get_logger(), "Robot radius  and critic parameters set.");
 }
+

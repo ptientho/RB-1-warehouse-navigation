@@ -3,7 +3,9 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/condition_node.h"
+#include "behaviortree_cpp/loggers/groot2_publisher.h"
 #include "behaviortree_cpp/tree_node.h"
+#include "geometry_msgs/msg/detail/point_stamped__struct.hpp"
 #include "navigation_behavior.h"
 #include "rb1_autonomy_msg/srv/tick_bt.hpp"
 #include "rcl/publisher.h"
@@ -15,13 +17,13 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "behaviortree_cpp/loggers/groot2_publisher.h"
 /* This wrapper status is not required. */
 // enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 using namespace BT;
 class AutonomyEngine : public rclcpp::Node {
 public:
   using TickBT = rb1_autonomy_msg::srv::TickBT;
+  using Point = geometry_msgs::msg::PointStamped;
   explicit AutonomyEngine(const std::string &node_name);
   virtual ~AutonomyEngine() {}
   // static BT::Blackboard::Ptr blackboard_;
@@ -36,8 +38,8 @@ public:
   void createBt(const std::string &xml_file);
 
   /* create tree nodes for Groot2 */
-  void createTreeNodeXML(const std::string& xml_dir);
-
+  void createTreeNodeXML(const std::string &xml_dir);
+  
   /* Not neccessary */
   /*
 template <typename ClassT>
@@ -56,6 +58,20 @@ private:
   rclcpp::Service<TickBT>::SharedPtr autonomy_server_;
   BT::Tree tree;
   const unsigned port = 1667;
+
+  // clicked_point subscriber
+  rclcpp::Subscription<Point>::SharedPtr point_sub_;
+  // rclcpp::CallbackGroup::SharedPtr group_;
+  bool point_received_;
+  Point clicked_point;
+
+  void point_callback(const std::shared_ptr<Point> msg) {
+
+    clicked_point.header = msg->header;
+    clicked_point.point = msg->point;
+
+    point_received_ = true;
+  }
 
   /* service callback for processing external app */
   void service_callback(const std::shared_ptr<TickBT::Request> req,

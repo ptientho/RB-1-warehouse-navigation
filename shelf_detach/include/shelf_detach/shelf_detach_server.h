@@ -35,4 +35,5 @@ private:
   rclcpp::Client<ClientMsg>::SharedPtr foot_pub_glob_;
   rclcpp::Client<ClientMsg>::SharedPtr foot_pub_local_;
   rclcpp::Client<ClientMsg>::SharedPtr critic_pub_;
+
 };
