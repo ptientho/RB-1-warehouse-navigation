@@ -1,0 +1,9 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <RetryUntilSuccessful num_attempts="1">
+            <Sequence>
+                <AttachShelf name="attach_shelf" attach_shelf="false" front_distance="0.05" is_success="{is_attached}"/>
+            </Sequence>
+        </RetryUntilSuccessful>
+    </BehaviorTree>
+</root>

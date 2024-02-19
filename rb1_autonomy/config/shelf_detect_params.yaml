@@ -1,6 +1,6 @@
 shelf_detection_server:
   ros__parameters:
-    front_offset_x: 0.2
+    front_offset_x: 0.3
     qos_overrides:
       /parameter_events:
         publisher:

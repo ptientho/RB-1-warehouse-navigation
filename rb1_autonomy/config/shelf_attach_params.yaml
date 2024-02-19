@@ -1,8 +1,8 @@
 shelf_attach_server:
   ros__parameters:
     activate_elevator: false
-    attach_velocity: 0.24
-    from_frame: robot_base_link
+    attach_velocity: 0.2
+    from_frame: robot_base_link #robot_base_docking_contact_link
     qos_overrides:
       /parameter_events:
         publisher:
@@ -11,5 +11,6 @@ shelf_attach_server:
           history: keep_last
           reliability: reliable
     real_robot: false
-    to_frame: robot_base_link
+    to_frame: cart
+    center_shelf: 0.7
     use_sim_time: true

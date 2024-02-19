@@ -27,14 +27,16 @@
 #include <functional>
 #include <iterator>
 #include <memory>
+#include <string>
 #include <vector>
 
+using namespace std::chrono_literals;
 ShelfDetectionServer::ShelfDetectionServer()
     : rclcpp::Node("shelf_detection_node") {
   RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
-                                   RCUTILS_LOG_SEVERITY_DEBUG);
+                                   RCUTILS_LOG_SEVERITY_INFO);
 
   this->declare_parameter("front_offset_x", 0.0);
   shelf_found = false;
@@ -47,8 +49,10 @@ ShelfDetectionServer::ShelfDetectionServer()
 
   // start shelf_detection server
   this->srv_ = this->create_service<GoToShelf>(
-      "/go_to_shelf", std::bind(&ShelfDetectionServer::service_callback, this,
-                                std::placeholders::_1, std::placeholders::_2));
+      "/go_to_shelf",
+      std::bind(&ShelfDetectionServer::service_callback, this,
+                std::placeholders::_1, std::placeholders::_2),
+      rmw_qos_profile_services_default, subGrp_);
 
   // start sensor callback
   this->odomSub_ = this->create_subscription<Odom>(
@@ -65,6 +69,7 @@ ShelfDetectionServer::ShelfDetectionServer()
   this->vel_pub_ = this->create_publisher<Twist>("/cmd_vel", 10);
 
   this->tf_pub_dyn_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+  this->tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
 
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
@@ -84,9 +89,52 @@ void ShelfDetectionServer::service_callback(
 
   if (shelf_found && (front_range != Inf) && (leg1_range <= 1.5)) {
 
+    auto pose = geometry_msgs::msg::TransformStamped();
+    // create front_shelf frame for moving to front shelf (static)
     orient_robot(front_offset);
-    publish_shelf_frame();
+    this->timer1_ = this->create_wall_timer(
+        10ms, std::bind(&ShelfDetectionServer::timer1_callback, this));
+    std::this_thread::sleep_for(1.0s);
+    // publish "front_shelf" as static tf wrt. map
+    auto tf_front_cart = get_tf("map", "front_shelf");
+    pose.header.frame_id = "map";
+    pose.header.stamp = this->get_clock()->now();
+    pose.child_frame_id = "front_shelf";
+    pose.transform.translation.x = tf_front_cart.pose.position.x;
+    pose.transform.translation.y = tf_front_cart.pose.position.y;
+    pose.transform.translation.z = tf_front_cart.pose.position.z;
+    pose.transform.rotation.x = tf_front_cart.pose.orientation.x;
+    pose.transform.rotation.y = tf_front_cart.pose.orientation.y;
+    pose.transform.rotation.z = tf_front_cart.pose.orientation.z;
+    pose.transform.rotation.w = tf_front_cart.pose.orientation.w;
+    RCLCPP_INFO(this->get_logger(), "%s frame published",
+                pose.child_frame_id.c_str());
+    tf_pub_->sendTransform(pose);
+    //////////////////////////////////////////////////////////////////
+    // create temp_cart frame for reference to cart
+    orient_robot(0.0);
+    this->timer2_ = this->create_wall_timer(
+        10ms, std::bind(&ShelfDetectionServer::timer2_callback, this));
+
+    // publish "cart_frame" as a static tf wrt. map
     std::this_thread::sleep_for(0.5s);
+    auto tf_cart = get_tf("map", "temp_cart");
+    pose.header.frame_id = "map";
+    pose.header.stamp = this->get_clock()->now();
+    pose.child_frame_id = "cart";
+    pose.transform.translation.x = tf_cart.pose.position.x;
+    pose.transform.translation.y = tf_cart.pose.position.y;
+    pose.transform.translation.z = tf_cart.pose.position.z;
+    pose.transform.rotation.x = 0.0;
+    pose.transform.rotation.y = 0.0;
+    pose.transform.rotation.z = 0.0;
+    pose.transform.rotation.w = 1.0;
+    RCLCPP_INFO(this->get_logger(), "%s frame published",
+                pose.child_frame_id.c_str());
+    tf_pub_->sendTransform(pose);
+    this->timer1_->cancel();
+    this->timer2_->cancel();
+
     rsp->shelf_pose = get_tf("map", "front_shelf");
     rsp->shelf_found = true;
 
@@ -147,7 +195,8 @@ void ShelfDetectionServer::detect_shelf() {
   int num_legs = 0;
 
   for (it = intensity_list.begin(), i = 0;
-       it != intensity_list.end() && std::next(it) != intensity_list.end(); it++, i++) {
+       it != intensity_list.end() && std::next(it) != intensity_list.end();
+       it++, i++) {
 
     if ((*it < threshold) && (*(std::next(it)) >= threshold)) {
       num_legs += 1;
@@ -283,7 +332,10 @@ void ShelfDetectionServer::orient_robot(const float &offset) {
   RCLCPP_INFO(this->get_logger(), "Orienting to shelf DONE");
 }
 
-void ShelfDetectionServer::publish_shelf_frame() {
+void ShelfDetectionServer::publish_shelf_frame(const std::string &parentFrame,
+                                               const std::string &childFrame,
+                                               const double &offset_x,
+                                               bool is_static) {
 
   /*
     - publish a child frame "front_shelf" from "robot_base_link" parent frame
@@ -292,7 +344,6 @@ void ShelfDetectionServer::publish_shelf_frame() {
     the "front_shelf frame"
 
   */
-  double offset_x = this->get_parameter("front_offset_x").as_double();
   // double offset_y = this->get_parameter("front_shelf_offset_y").as_double();
 
   auto range =
@@ -300,8 +351,8 @@ void ShelfDetectionServer::publish_shelf_frame() {
                                       // where d1 + d2 = 2*midleg_offset
   /* build tf message */
   auto t = geometry_msgs::msg::TransformStamped();
-  t.header.frame_id = "robot_base_link";
-  t.child_frame_id = "front_shelf";
+  t.header.frame_id = parentFrame;
+  t.child_frame_id = childFrame;
   t.header.stamp = odom_data->header.stamp;
 
   t.transform.translation.x = range - offset_x;
@@ -319,7 +370,12 @@ void ShelfDetectionServer::publish_shelf_frame() {
   t.transform.rotation.z = 0.0;
   t.transform.rotation.w = 1.0;
 
-  tf_pub_dyn_->sendTransform(t);
+  if (is_static) {
+    tf_pub_->sendTransform(t);
+  } else {
+    tf_pub_dyn_->sendTransform(t);
+  }
+
   RCLCPP_INFO(this->get_logger(), "Shelf frame published");
 }
 
@@ -371,4 +427,15 @@ ShelfDetectionServer::get_tf(std::string fromFrame, std::string toFrame) {
   shelf_pose.pose.orientation.w = rotation_pose.w;
 
   return shelf_pose;
+}
+
+void ShelfDetectionServer::timer1_callback() {
+
+  double offset_x = this->get_parameter("front_offset_x").as_double();
+  publish_shelf_frame("robot_base_link", "front_shelf", offset_x);
+}
+
+void ShelfDetectionServer::timer2_callback() {
+
+  publish_shelf_frame("robot_base_link", "temp_cart", 0.0);
 }

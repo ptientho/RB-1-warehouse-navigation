@@ -14,8 +14,8 @@
 #include "shelf_attach_msg/srv/attach_shelf.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
 #include "tf2_ros/static_transform_broadcaster.h"
+#include "tf2_ros/transform_listener.h"
 #include <memory>
 
 class AttachShelfServer : public rclcpp::Node {
@@ -33,11 +33,15 @@ private:
   rclcpp::Service<AttachShelf>::SharedPtr srv_;
   void service_callback(const std::shared_ptr<AttachShelf::Request> req,
                         const std::shared_ptr<AttachShelf::Response> res);
-  void move_to_front_shelf(const float &front_offset);
-  void move_to_front_shelf_real(const float &front_offset);
-  void attach_shelf();
+  void move_to_front_shelf_real(const float &front_offset,
+                                const float &front_speed,
+                                const float &turn_speed);
+  void move_to_front_shelf(const float &front_offset, const float &front_speed,
+                           const float &turn_speed);
+
+  void attach_shelf(const double& center_dist);
   void set_params();
-  void publish_shelf_frame(const geometry_msgs::msg::TransformStamped& pose);
+  void publish_shelf_frame(const geometry_msgs::msg::TransformStamped &pose);
 
   // listener to tf frame
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
@@ -55,5 +59,4 @@ private:
   rclcpp::Client<ClientMsg>::SharedPtr param_pub3_;
   // tf broadcaster
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_pub_;
-  
 };
