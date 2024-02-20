@@ -110,6 +110,7 @@ void ShelfDetectionServer::service_callback(
     RCLCPP_INFO(this->get_logger(), "%s frame published",
                 pose.child_frame_id.c_str());
     tf_pub_->sendTransform(pose);
+    rsp->shelf_pose = get_tf("map", "front_shelf");
     //////////////////////////////////////////////////////////////////
     // create temp_cart frame for reference to cart
     orient_robot(0.0);
@@ -135,7 +136,6 @@ void ShelfDetectionServer::service_callback(
     this->timer1_->cancel();
     this->timer2_->cancel();
 
-    rsp->shelf_pose = get_tf("map", "front_shelf");
     rsp->shelf_found = true;
 
   } else {

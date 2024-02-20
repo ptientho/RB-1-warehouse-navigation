@@ -111,9 +111,9 @@ ShelfDetectionClient::onResponseReceived(const Response::SharedPtr &response) {
   setOutput("shelf_pose", response->shelf_pose);
 
   // check shelf_pose transform
-  float x = response->shelf_pose.pose.position.x;
-  float y = response->shelf_pose.pose.position.y;
-  if (x == 0.0 && y == 0.0) {
+  //float x = response->shelf_pose.pose.position.x;
+  //float y = response->shelf_pose.pose.position.y;
+  if (!response->shelf_found) {
     return BT::NodeStatus::FAILURE;
   } else {
     return BT::NodeStatus::SUCCESS;

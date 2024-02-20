@@ -109,7 +109,7 @@ void DetachShelfServer::set_params() {
   /////////////////////////////////////////////////////
   // set plugin layers only for global costmap
   val.type = 9;
-  val.string_array_value = {"static_layer", "inflation_layer", "obstacle_layer",
+  val.string_array_value = {"static_layer", "obstacle_layer", "inflation_layer",
                             "voxel_layer"};
 
   param.name = "plugins";

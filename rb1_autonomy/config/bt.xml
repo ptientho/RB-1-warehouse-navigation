@@ -7,7 +7,9 @@
         <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="{is_attached}"/>
         <Sequence>
+        <RetryUntilSuccessful num_attempts="5">
           <SubTree ID="ShelfDetection" front_shelf="{front_shelf}" shelf_found="{shelf_found}"/>
+        </RetryUntilSuccessful>
           <SubTree ID="ShelfApproach"
                    front_shelf="{front_shelf}"
                    shelf_found="{shelf_found}"
@@ -17,10 +19,10 @@
       <Delay delay_msec="3000">
       <RetryUntilSuccessful num_attempts="2">
         <AsyncSequence>
-            <Repeat num_cycles="3">
+            <Repeat num_cycles="4">
                 <BackUp/>
             </Repeat>
-            <GoToDes goal_degree="90" action_name="__default__placeholder__"/>   
+            <GoToDes goal_degree="-90" action_name="__default__placeholder__"/>   
         </AsyncSequence>
       </RetryUntilSuccessful>
       </Delay>
@@ -35,24 +37,16 @@
       <CheckShelfFound shelf_found="{shelf_found}"/>
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
-      <Repeat num_cycles="1">
-        <Sequence>
-            <ShelfDetector front_offset="15.0"
-                            shelf_pose="{front_shelf}"
-                            find_shelf="{shelf_found}"
-                            service_name="__default__placeholder__"/>
-            <AttachShelf attach_shelf="false"
-                        front_distance="0.2"
-                        is_success="{is_attached}"
-                        service_name="__default__placeholder__"/>
-            <ShelfDetector front_offset="0.0"
-                            shelf_pose="{front_shelf}"
-                            find_shelf="{shelf_found}"
-                            service_name="__default__placeholder__"/>
-        </Sequence>
-      </Repeat>
+      <AttachShelf attach_shelf="false"
+                   front_distance="0.1"
+                   is_success="{is_attached}"
+                   service_name="__default__placeholder__"/>
+      <ShelfDetector front_offset="0.0"
+                     shelf_pose="{front_shelf}"
+                     find_shelf="{shelf_found}"
+                     service_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="true"
-                   front_distance="0.0"
+                   front_distance="0.05"
                    is_success="{is_attached}"
                    service_name="__default__placeholder__"/>
     </AsyncSequence>
@@ -107,13 +101,13 @@
     </AsyncFallback>
   </BehaviorTree>
 
-  <!-- Description of Node Models (used by Groot) -->
+<!-- Description of Node Models (used by Groot) -->
   <TreeNodesModel>
     <Action ID="AttachShelf">
       <input_port name="attach_shelf"
                   type="bool"/>
       <input_port name="front_distance"
-                  type="bool"/>
+                  type="float"/>
       <output_port name="is_success"
                    type="bool"/>
       <input_port name="service_name"
@@ -137,6 +131,13 @@
       <input_port name="service_name"
                   default="__default__placeholder__"
                   type="std::string">Service name</input_port>
+    </Action>
+    <Action ID="GoToDes">
+      <input_port name="goal_degree"
+                  type="double"/>
+      <input_port name="action_name"
+                  default="__default__placeholder__"
+                  type="std::string">Action server name</input_port>
     </Action>
     <Action ID="GoToPose">
       <input_port name="loc"

@@ -36,7 +36,6 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
   this->declare_parameter<std::string>("from_frame", "robot_base_link");
   this->declare_parameter<std::string>("to_frame", "front_shelf");
   this->declare_parameter<float>("center_shelf", 0.0);
-  
 
   this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   this->tf_listener_ =
@@ -112,7 +111,7 @@ void AttachShelfServer::service_callback(
     usleep(1000000);
     move_to_front_shelf_real(front_distance, 0.05, 0.03);
   } else {
-    move_to_front_shelf(front_distance, 0.10, 0.10);
+    move_to_front_shelf(front_distance, 0.1, 0.12);
   }
 
   RCLCPP_INFO(this->get_logger(), "Moving to front shelf done.");
@@ -152,7 +151,7 @@ void AttachShelfServer::move_to_front_shelf_real(const float &front_offset,
   auto vt = turn_speed;  // 0.03
 
   // orient to goal
-  while (abs(diff_x) > front_offset) {
+  while (diff_x > front_offset) {
     // update
     tf_robot_shelf = get_tf(fromFrame, toFrame);
     diff_x = tf_robot_shelf.pose.position.x;
@@ -207,13 +206,14 @@ void AttachShelfServer::move_to_front_shelf(const float &front_offset,
                                             const float &front_speed,
                                             const float &turn_speed) {
 
-  rclcpp::Rate loop_rate(5);
+  rclcpp::Rate loop_rate(10);
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("to_frame").as_string();
   // update params
   auto tf_robot_shelf = get_tf(fromFrame, toFrame);
   auto diff_x = tf_robot_shelf.pose.position.x;
   auto diff_y = tf_robot_shelf.pose.position.y;
+  // auto offset = std::sqrt(std::pow(diff_x,2) + std::pow(diff_y,2));
   auto alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
   // orientation
   double roll, pitch, yaw;
@@ -231,10 +231,11 @@ void AttachShelfServer::move_to_front_shelf(const float &front_offset,
     tf_robot_shelf = get_tf(fromFrame, toFrame);
     diff_x = tf_robot_shelf.pose.position.x;
     diff_y = tf_robot_shelf.pose.position.y;
+    // offset = std::sqrt(std::pow(diff_x,2) + std::pow(diff_y,2));
     alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
-
+    RCLCPP_INFO(this->get_logger(), "DiffX: %f", diff_x);
     vel_msg.linear.x = vx;
-    if (alpha > 0.01) {
+    if (alpha > 0.15) {
       if (diff_y >= 0) {
         vel_msg.angular.z = (float)vt;
 
@@ -255,7 +256,7 @@ void AttachShelfServer::move_to_front_shelf(const float &front_offset,
   vel_pub_->publish(vel_msg);
 }
 
-void AttachShelfServer::attach_shelf(const double& center_dist) {
+void AttachShelfServer::attach_shelf(const double &center_dist) {
 
   CmdVel vel_msg;
   bool elevator_up;

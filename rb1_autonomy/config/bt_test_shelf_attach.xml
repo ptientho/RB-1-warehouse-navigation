@@ -3,7 +3,7 @@
         <RetryUntilSuccessful num_attempts="1">
             <Sequence>
                 <!-- 1. do shelf alignment if attach_shelf = false -->
-                <AttachShelf name="attach_shelf" attach_shelf="false" front_distance="0.05" is_success="{is_attached}"/>
+                <AttachShelf name="attach_shelf" attach_shelf="false" front_distance="0.1" is_success="{is_attached}"/>
                 <!-- 2. rotate to front shelf -->
                 <ShelfDetector name="detect_shelf" front_offset="0.0" shelf_pose="{front_shelf}" find_shelf="{shelf_found}"/>
                 <!-- 3. do not do shelf alignment if attach_shelf = true -->
