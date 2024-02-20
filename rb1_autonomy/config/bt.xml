@@ -5,7 +5,7 @@
     <Sequence>
       <Fallback>
         <CheckShelfAttached name="check_attach_shelf"
-                            shelf_attached="{is_attached}"/>
+                            shelf_attached="is_attached"/>
         <Sequence>
         <RetryUntilSuccessful num_attempts="5">
           <SubTree ID="ShelfDetection" front_shelf="{front_shelf}" shelf_found="{shelf_found}"/>
@@ -17,17 +17,18 @@
         </Sequence>
       </Fallback>
       <Delay delay_msec="3000">
-      <RetryUntilSuccessful num_attempts="2">
-        <AsyncSequence>
-            <Repeat num_cycles="4">
-                <BackUp/>
-            </Repeat>
-            <GoToDes goal_degree="-90" action_name="__default__placeholder__"/>   
-        </AsyncSequence>
-      </RetryUntilSuccessful>
+        <Fallback>
+            <GoToDes goal_degree="-90"/>
+            <AsyncSequence>
+                <Repeat num_cycles="3">
+                    <BackUp/>
+                </Repeat>
+                <GoToDes goal_degree="-90"/>
+            </AsyncSequence>
+        </Fallback>
       </Delay>
       <DetachShelf detach_shelf="true"
-                   is_success="{!is_attached}"
+                   shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
     </Sequence>
   </BehaviorTree>
@@ -39,7 +40,7 @@
                  action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="false"
                    front_distance="0.1"
-                   is_success="{is_attached}"
+                   shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
       <ShelfDetector front_offset="0.0"
                      shelf_pose="{front_shelf}"
@@ -47,21 +48,21 @@
                      service_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="true"
                    front_distance="0.05"
-                   is_success="{is_attached}"
+                   shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
     </AsyncSequence>
   </BehaviorTree>
 
   <BehaviorTree ID="ShelfDetection">
     <AsyncFallback>
-      <ShelfDetector front_offset="22.0"
+      <ShelfDetector front_offset="30.0"
                      shelf_pose="{front_shelf}"
                      find_shelf="{shelf_found}"
                      service_name="__default__placeholder__"/>
       <Sequence>
         <GoToPose loc="location1"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="22.0"
+        <ShelfDetector front_offset="30.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -69,7 +70,7 @@
       <Sequence>
         <GoToPose loc="location2"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="22.0"
+        <ShelfDetector front_offset="30.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -77,7 +78,7 @@
       <Sequence>
         <GoToPose loc="location3"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="22.0"
+        <ShelfDetector front_offset="30.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -85,7 +86,7 @@
       <Sequence>
         <GoToPose loc="location4"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="22.0"
+        <ShelfDetector front_offset="30.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -93,7 +94,7 @@
       <Sequence>
         <GoToPose loc="location5"
                   action_name="__default__placeholder__"/>
-        <ShelfDetector front_offset="22.0"
+        <ShelfDetector front_offset="30.0"
                        shelf_pose="{front_shelf}"
                        find_shelf="{shelf_found}"
                        service_name="__default__placeholder__"/>
@@ -108,8 +109,8 @@
                   type="bool"/>
       <input_port name="front_distance"
                   type="float"/>
-      <output_port name="is_success"
-                   type="bool"/>
+      <output_port name="shelf_attached"
+                   type="std::string"/>
       <input_port name="service_name"
                   default="__default__placeholder__"
                   type="std::string">Service name</input_port>
@@ -117,7 +118,7 @@
     <Action ID="BackUp"/>
     <Condition ID="CheckShelfAttached">
       <input_port name="shelf_attached"
-                  type="bool"/>
+                  type="std::string"/>
     </Condition>
     <Condition ID="CheckShelfFound">
       <input_port name="shelf_found"
@@ -126,8 +127,8 @@
     <Action ID="DetachShelf">
       <input_port name="detach_shelf"
                   type="bool"/>
-      <output_port name="is_success"
-                   type="bool"/>
+      <output_port name="shelf_attached"
+                   type="std::string"/>
       <input_port name="service_name"
                   default="__default__placeholder__"
                   type="std::string">Service name</input_port>

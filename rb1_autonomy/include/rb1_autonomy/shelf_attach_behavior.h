@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 #include "behaviortree_ros2/bt_service_node.hpp"
+#include "yaml-cpp/yaml.h"
 
 using namespace BT;
 
@@ -30,7 +31,7 @@ public:
 
   static BT::PortsList providedPorts() {
     return providedBasicPorts(
-        {BT::InputPort<bool>("attach_shelf"),BT::InputPort<float>("front_distance"),BT::OutputPort<bool>("is_success")});
+        {BT::InputPort<bool>("attach_shelf"),BT::InputPort<float>("front_distance"),BT::InputPort<std::string>("shelf_attached")});
   }
 
   bool setRequest(Request::SharedPtr &request) override;

@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "yaml-cpp/yaml.h"
 /* This wrapper status is not required. */
 // enum class BtStatus { SUCCEEDED, FAILED, CANCELED };
 using namespace BT;
@@ -39,7 +40,7 @@ public:
 
   /* create tree nodes for Groot2 */
   void createTreeNodeXML(const std::string &xml_dir);
-  
+
   /* Not neccessary */
   /*
 template <typename ClassT>
@@ -95,13 +96,17 @@ public:
 class CheckShelfAttached : public ConditionNode {
 
 public:
-  CheckShelfAttached(const std::string &name, const NodeConfiguration &config)
-      : ConditionNode(name, config) {}
+  CheckShelfAttached(const std::string &name, const NodeConfiguration &config,
+                     const rclcpp::Node::SharedPtr node)
+      : ConditionNode(name, config), nh_(node) {}
 
   static BT::PortsList providedPorts() {
-    return {BT::InputPort<bool>("shelf_attached")};
+    return {BT::InputPort<std::string>("shelf_attached")};
   }
 
   // Override the tick method with your custom implementation
   NodeStatus tick() override;
+
+private:
+  rclcpp::Node::SharedPtr nh_;
 };

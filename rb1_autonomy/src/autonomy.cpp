@@ -90,9 +90,10 @@ void AutonomyEngine::registerNodes() {
   };
   factory_.registerBuilder<CheckShelfFound>("CheckShelfFound", builder1);
 
-  BT::NodeBuilder builder2 = [](const std::string &name,
+  BT::NodeBuilder builder2 = [&](const std::string &name,
                                 const NodeConfiguration &config) {
-    return std::make_unique<CheckShelfAttached>(name, config);
+    return std::make_unique<CheckShelfAttached>(name, config,
+                                                shared_from_this());
   };
   factory_.registerBuilder<CheckShelfAttached>("CheckShelfAttached", builder2);
   // create BT from XML file using blackboard as data collection. Not
@@ -159,7 +160,7 @@ void AutonomyEngine::service_callback(
   rclcpp::Parameter point_y("goal_y", this->clicked_point.point.y);
   this->set_parameter(point_x);
   this->set_parameter(point_y);
-  
+
   // create BT
   createBt(bt_xml);
 
@@ -252,8 +253,14 @@ NodeStatus CheckShelfFound::tick() {
 
 NodeStatus CheckShelfAttached::tick() {
 
-  bool is_attached;
-  getInput("shelf_attached", is_attached);
+  // get var name from input port
+  auto attach_var = getInput<std::string>("shelf_attached");
+  // read is_attached value from yaml file. We get the variable from
+  // "location_file"
+  const std::string yaml_file = nh_->get_parameter("location_file").as_string();
+  YAML::Node yaml = YAML::LoadFile(yaml_file);
+  bool is_attached = yaml[attach_var.value()].as<bool>();
+
   if (is_attached) {
     return BT::NodeStatus::SUCCESS;
   } else {

@@ -5,7 +5,7 @@
     <Sequence>
       <Fallback>
         <CheckShelfAttached name="check_attach_shelf"
-                            shelf_attached="{is_attached}"/>
+                            shelf_attached="is_attached_real"/>
         <Sequence>
         <RetryUntilSuccessful num_attempts="5">
           <SubTree ID="ShelfDetection"
@@ -32,7 +32,7 @@
         </AsyncSequence>
       </Fallback>
       <DetachShelf detach_shelf="true"
-                   is_success="{is_detached}"
+                   shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
         <Repeat num_cycles="1">
             <BackUp/>
@@ -47,7 +47,7 @@
                  action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="true"
                    front_distance="0.05"
-                   is_success="{is_attached}"
+                   shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
     </Sequence>
   </BehaviorTree>
@@ -123,8 +123,8 @@
                   type="bool"/>
       <input_port name="front_distance"
                   type="bool"/>
-      <output_port name="is_success"
-                   type="bool"/>
+      <output_port name="shelf_attached"
+                   type="std::string"/>
       <input_port name="service_name"
                   default="__default__placeholder__"
                   type="std::string">Service name</input_port>
@@ -132,7 +132,7 @@
     <Action ID="BackUp"/>
     <Condition ID="CheckShelfAttached">
       <input_port name="shelf_attached"
-                  type="bool"/>
+                  type="std::string"/>
     </Condition>
     <Condition ID="CheckShelfFound">
       <input_port name="shelf_found"
@@ -141,8 +141,8 @@
     <Action ID="DetachShelf">
       <input_port name="detach_shelf"
                   type="bool"/>
-      <output_port name="is_success"
-                   type="bool"/>
+      <output_port name="shelf_attached"
+                   type="std::string"/>
       <input_port name="service_name"
                   default="__default__placeholder__"
                   type="std::string">Service name</input_port>

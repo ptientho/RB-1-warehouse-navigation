@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include "behaviortree_ros2/bt_service_node.hpp"
+#include "yaml-cpp/yaml.h"
 
 using namespace BT;
 
@@ -28,7 +29,7 @@ public:
 
   static BT::PortsList providedPorts() {
     return providedBasicPorts(
-        {BT::InputPort<bool>("detach_shelf"),BT::OutputPort<bool>("is_success")});
+        {BT::InputPort<bool>("detach_shelf"),BT::InputPort<std::string>("shelf_attached")});
   }
 
   bool setRequest(Request::SharedPtr &request) override;
@@ -41,7 +42,6 @@ public:
     RCLCPP_ERROR(node_->get_logger(), "Error: %s", toStr(error));
     return BT::NodeStatus::FAILURE;
   }
-
 
     
 };
