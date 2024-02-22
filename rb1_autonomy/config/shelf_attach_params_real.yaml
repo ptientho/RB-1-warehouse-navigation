@@ -12,5 +12,5 @@ shelf_attach_server:
           reliability: reliable
     real_robot: true
     to_frame: temp_cart
-    center_shelf: 0.3
+    center_shelf: 0.25
     use_sim_time: false

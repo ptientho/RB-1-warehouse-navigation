@@ -12,15 +12,14 @@
 #include "rclcpp/utilities.hpp"
 #include <functional>
 #include <memory>
-#include <mutex>
+//#include <mutex>
 
 using namespace std::chrono_literals;
 class DesProvider : public rclcpp::Node {
 
 public:
   DesProvider() : rclcpp::Node("goal_destination_provider_node") {
-    
-    
+
     this->des_pub_ = this->create_publisher<geometry_msgs::msg::PointStamped>(
         "/des_provider", 5);
     this->point_sub_ =
@@ -29,7 +28,8 @@ public:
             std::bind(&DesProvider::clicked_point_callback, this,
                       std::placeholders::_1));
 
-    this->timer_ = this->create_wall_timer(100ms, std::bind(&DesProvider::timer_callback, this));
+    this->timer_ = this->create_wall_timer(
+        100ms, std::bind(&DesProvider::timer_callback, this));
     RCLCPP_INFO(this->get_logger(), "Starting destination publisher");
   }
 
@@ -38,32 +38,33 @@ private:
   rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr point_sub_;
   geometry_msgs::msg::PointStamped clicked_point;
   rclcpp::TimerBase::SharedPtr timer_;
-  std::mutex point_mutex;
+  // std::mutex point_mutex;
 
   void clicked_point_callback(
       const std::shared_ptr<geometry_msgs::msg::PointStamped> msg) {
 
-    std::lock_guard<std::mutex> guard(point_mutex);
+    // std::lock_guard<std::mutex> guard(point_mutex);
     if (msg == nullptr) {
 
       return;
     }
-
+    /*
     if (msg->point.x == 0.0 && msg->point.y == 0.0) {
 
       return;
     } else {
       clicked_point.header = msg->header;
       clicked_point.point = msg->point;
-
     }
+    */
+    clicked_point.header = msg->header;
+    clicked_point.point = msg->point;
   }
 
-  void timer_callback(){
-    
-    std::lock_guard<std::mutex> guard(point_mutex);
+  void timer_callback() {
+
+    // std::lock_guard<std::mutex> guard(point_mutex);
     this->des_pub_->publish(clicked_point);
-  
   }
 };
 

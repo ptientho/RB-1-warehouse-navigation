@@ -3,19 +3,23 @@
         <Action ID="AttachShelf">
             <input_port name="attach_shelf" type="bool"/>
             <input_port name="front_distance" type="float"/>
-            <output_port name="is_success" type="bool"/>
+            <input_port name="shelf_attached" type="std::string"/>
             <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
         </Action>
-        <Action ID="BackUp"/>
+        <Action ID="BackUp">
+            <input_port name="from_frame" type="std::string"/>
+            <input_port name="to_frame" type="std::string"/>
+            <input_port name="backup_dist" type="double"/>
+        </Action>
         <Condition ID="CheckShelfAttached">
-            <input_port name="shelf_attached" type="bool"/>
+            <input_port name="shelf_attached" type="std::string"/>
         </Condition>
         <Condition ID="CheckShelfFound">
             <input_port name="shelf_found" type="bool"/>
         </Condition>
         <Action ID="DetachShelf">
             <input_port name="detach_shelf" type="bool"/>
-            <output_port name="is_success" type="bool"/>
+            <input_port name="shelf_attached" type="std::string"/>
             <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
         </Action>
         <Action ID="GoToDes">

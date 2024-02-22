@@ -132,7 +132,7 @@ void AttachShelfServer::service_callback(
 void AttachShelfServer::move_to_front_shelf_real(const float &front_offset,
                                                  const float &front_speed,
                                                  const float &turn_speed) {
-  rclcpp::Rate loop_rate(5);
+  rclcpp::Rate loop_rate(10);
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("to_frame").as_string();
   // update params

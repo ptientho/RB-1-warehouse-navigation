@@ -62,8 +62,8 @@ private:
 
   // clicked_point subscriber
   rclcpp::Subscription<Point>::SharedPtr point_sub_;
-  // rclcpp::CallbackGroup::SharedPtr group_;
-  bool point_received_;
+  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::CallbackGroup::SharedPtr callback_group_;
   Point clicked_point;
 
   void point_callback(const std::shared_ptr<Point> msg) {
@@ -71,8 +71,9 @@ private:
     clicked_point.header = msg->header;
     clicked_point.point = msg->point;
 
-    point_received_ = true;
   }
+
+  void timer_callback();
 
   /* service callback for processing external app */
   void service_callback(const std::shared_ptr<TickBT::Request> req,

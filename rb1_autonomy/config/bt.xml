@@ -17,15 +17,10 @@
         </Sequence>
       </Fallback>
       <Delay delay_msec="3000">
-        <Fallback>
+        <AsyncSequence>    
+            <BackUp backup_dist="0.6" from_frame="robot_base_link" to_frame="cart"/>
             <GoToDes goal_degree="-90"/>
-            <AsyncSequence>
-                <Repeat num_cycles="3">
-                    <BackUp/>
-                </Repeat>
-                <GoToDes goal_degree="-90"/>
-            </AsyncSequence>
-        </Fallback>
+        </AsyncSequence>
       </Delay>
       <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached"

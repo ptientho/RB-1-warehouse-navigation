@@ -4,13 +4,13 @@ location3: [3.64783, 0.0149229, -0.00355222]
 location4: [4.93459, 0.281295, -0.00995993]
 location5: [5.17215, 0.0232855, -0.199606]
 front_shelf: [5.63516, -0.317152, -1.5708]
-is_attached: false
+is_attached: true
 location1_real: [0.766, 0.558, -0.597]
 location2_real: [1.709, 0.278, -0.519]
 location3_real: [2.369, -0.007, -0.303]
 location4_real: [3.107, -0.544, -0.6]
-location5_real: [3.178, -1.582, 3.0]
-location6_real: [2.248, -1.408, 3.127]
+location5_real: [3.676, -1.444, -1.703]
+location6_real: [2.528, -1.624, 2.407]
 location7_real: [1.158, -1.649, 3.0]
 location8_real: [0.104, -2.168, 2.33]
-is_attached_real: false
+is_attached_real: true

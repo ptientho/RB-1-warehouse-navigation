@@ -18,25 +18,18 @@
                    shelf_found="{shelf_found}"/>
         </Sequence>
       </Fallback>
-      <Fallback>
-        <!--GoToPose loc="desired_location_real"
-                  action_name="__default__placeholder__"/-->
-        <GoToDes goal_degree="156.5"/>
-        <AsyncSequence>
-          <Repeat num_cycles="3">
-                <BackUp/>
-            </Repeat>
-          <!--GoToPose loc="desired_location_real"
-                    action_name="__default__placeholder__"/-->
-         <GoToDes goal_degree="156.5"/>
+      <RetryUntilSuccessful num_attempts="1">
+        <AsyncSequence>    
+            <BackUp backup_dist="0.6" from_frame="robot_base_footprint" to_frame="temp_cart"/>
+            <GoToDes goal_degree="45"/>
         </AsyncSequence>
-      </Fallback>
+      </RetryUntilSuccessful> 
       <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
-        <Repeat num_cycles="1">
+        <!--Repeat num_cycles="1">
             <BackUp/>
-        </Repeat>
+        </Repeat-->
     </Sequence>
   </BehaviorTree>
 

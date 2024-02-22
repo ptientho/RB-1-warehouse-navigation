@@ -19,6 +19,7 @@
 #include "rclcpp/node.hpp"
 #include "rclcpp/parameter.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/subscription_options.hpp"
 #include "rclcpp/utilities.hpp"
 #include <chrono>
 #include <fstream>
@@ -37,10 +38,16 @@ AutonomyEngine::AutonomyEngine(const std::string &node_name)
   this->declare_parameter("goal_x", 0.0);
   this->declare_parameter("goal_y", 0.0);
 
+  this->callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  rclcpp::SubscriptionOptions options;
+  options.callback_group = callback_group_;
+
   // initialize des_subscriber
   this->point_sub_ = this->create_subscription<Point>(
       "/des_provider", 5,
-      std::bind(&AutonomyEngine::point_callback, this, std::placeholders::_1));
+      std::bind(&AutonomyEngine::point_callback, this, std::placeholders::_1), options);
+
+  this->timer_ = this->create_wall_timer(100ms, std::bind(&AutonomyEngine::timer_callback, this), callback_group_);
 
   // initialize service server
   this->autonomy_server_ = this->create_service<TickBT>(
@@ -91,7 +98,7 @@ void AutonomyEngine::registerNodes() {
   factory_.registerBuilder<CheckShelfFound>("CheckShelfFound", builder1);
 
   BT::NodeBuilder builder2 = [&](const std::string &name,
-                                const NodeConfiguration &config) {
+                                 const NodeConfiguration &config) {
     return std::make_unique<CheckShelfAttached>(name, config,
                                                 shared_from_this());
   };
@@ -155,12 +162,6 @@ void AutonomyEngine::service_callback(
   // get request
   std::string bt_xml = req->bt_xml_file;
 
-  // set goal parameters to clicked point
-  rclcpp::Parameter point_x("goal_x", this->clicked_point.point.x);
-  rclcpp::Parameter point_y("goal_y", this->clicked_point.point.y);
-  this->set_parameter(point_x);
-  this->set_parameter(point_y);
-
   // create BT
   createBt(bt_xml);
 
@@ -185,6 +186,15 @@ void AutonomyEngine::service_callback(
     RCLCPP_INFO(this->get_logger(), "BT tasks failed");
     rsp->bt_status = false;
   }
+}
+
+void AutonomyEngine::timer_callback() {
+  // set goal parameters to clicked point
+  rclcpp::Parameter point_x("goal_x", this->clicked_point.point.x);
+  rclcpp::Parameter point_y("goal_y", this->clicked_point.point.y);
+  this->set_parameter(point_x);
+  this->set_parameter(point_y);
+
 }
 
 /*

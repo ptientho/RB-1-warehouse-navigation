@@ -6,7 +6,11 @@
             <input_port name="shelf_attached" type="std::string"/>
             <input_port name="service_name" type="std::string" default="__default__placeholder__">Service name</input_port>
         </Action>
-        <Action ID="BackUp"/>
+        <Action ID="BackUp">
+            <input_port name="from_frame" type="std::string"/>
+            <input_port name="to_frame" type="std::string"/>
+            <input_port name="backup_dist" type="double"/>
+        </Action>
         <Condition ID="CheckShelfAttached">
             <input_port name="shelf_attached" type="std::string"/>
         </Condition>

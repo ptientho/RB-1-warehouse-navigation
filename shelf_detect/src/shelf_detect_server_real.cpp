@@ -155,7 +155,7 @@ void ShelfDetectionServerReal::detect_shelf() {
 
     // since in real robot the signal oscillates so only max intensity cannot be
     // properly used
-    float threshold = 4300.0; // the lowest intensity difference from max value
+    float threshold = 4400.0; // the lowest intensity difference from max value
                               // that would be considered as a detection
     // float deviation_max = abs(*max_pointer_ - diff);
     // float deviation_min = abs(*min_pointer_ - diff);
