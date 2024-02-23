@@ -20,7 +20,7 @@
       </Fallback>
       <RetryUntilSuccessful num_attempts="1">
         <AsyncSequence>    
-            <BackUp backup_dist="0.6" from_frame="robot_base_footprint" to_frame="temp_cart"/>
+            <BackUp is_backup="true"/>
             <GoToDes goal_degree="45"/>
         </AsyncSequence>
       </RetryUntilSuccessful> 

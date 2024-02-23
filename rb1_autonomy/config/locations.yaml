@@ -13,4 +13,4 @@ location5_real: [3.676, -1.444, -1.703]
 location6_real: [2.528, -1.624, 2.407]
 location7_real: [1.158, -1.649, 3.0]
 location8_real: [0.104, -2.168, 2.33]
-is_attached_real: false
+is_attached_real: true

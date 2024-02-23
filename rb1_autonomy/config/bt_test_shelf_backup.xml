@@ -2,7 +2,7 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="1">
             <Sequence>
-                <BackUp backup_dist="0.6" from_frame="robot_base_link" to_frame="cart"/>
+                <BackUp is_backup="true"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>

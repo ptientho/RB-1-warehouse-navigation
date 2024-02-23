@@ -1,21 +1,39 @@
-<root main_tree_to_execute="MainTree">
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="3"
+      main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <RecoveryNode number_of_retries="6" name="NavigateRecovery">
+    <RecoveryNode name="NavigateRecovery"
+                  number_of_retries="6">
       <PipelineSequence name="NavigateWithReplanning">
         <RateController hz="1.0">
-          <RecoveryNode number_of_retries="1" name="ComputePathToPose">
-            <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+          <RecoveryNode name="ComputePathToPose"
+                        number_of_retries="1">
+            <ComputePathToPose goal="{goal}"
+                               start=""
+                               planner_id="GridBased"
+                               server_name=""
+                               server_timeout=""
+                               path="{path}"/>
             <ReactiveFallback name="ComputePathToPoseRecoveryFallback">
               <GoalUpdated/>
-              <ClearEntireCostmap name="ClearGlobalCostmap-Context" service_name="global_costmap/clear_entirely_global_costmap"/>
+              <ClearEntireCostmap name="ClearGlobalCostmap-Context"
+                                  service_name="global_costmap/clear_entirely_global_costmap"
+                                  server_timeout=""/>
             </ReactiveFallback>
           </RecoveryNode>
         </RateController>
-        <RecoveryNode number_of_retries="1" name="FollowPath">
-          <FollowPath path="{path}" controller_id="FollowPath"/>
+        <RecoveryNode name="FollowPath"
+                      number_of_retries="1">
+          <FollowPath controller_id="FollowPath"
+                      path="{path}"
+                      goal_checker_id="GoalChecker"
+                      server_name=""
+                      server_timeout=""/>
           <ReactiveFallback name="FollowPathRecoveryFallback">
             <GoalUpdated/>
-            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+            <ClearEntireCostmap name="ClearLocalCostmap-Context"
+                                service_name="local_costmap/clear_entirely_local_costmap"
+                                server_timeout=""/>
           </ReactiveFallback>
         </RecoveryNode>
       </PipelineSequence>
@@ -23,14 +41,84 @@
         <GoalUpdated/>
         <RoundRobin name="RecoveryActions">
           <Sequence name="ClearingActions">
-            <ClearEntireCostmap name="ClearLocalCostmap-Subtree" service_name="local_costmap/clear_entirely_local_costmap"/>
-            <ClearEntireCostmap name="ClearGlobalCostmap-Subtree" service_name="global_costmap/clear_entirely_global_costmap"/>
+            <ClearEntireCostmap name="ClearLocalCostmap-Subtree"
+                                service_name="local_costmap/clear_entirely_local_costmap"
+                                server_timeout=""/>
+            <ClearEntireCostmap name="ClearGlobalCostmap-Subtree"
+                                service_name="global_costmap/clear_entirely_global_costmap"
+                                server_timeout=""/>
           </Sequence>
-          <Spin spin_dist="0.2"/>
-          <Wait wait_duration="5"/>
-          <BackUp backup_dist="-0.2" backup_speed="0.1"/>
+          <Spin spin_dist="0.2"
+                time_allowance=""
+                server_name=""
+                server_timeout=""/>
+          <Wait wait_duration="5"
+                server_name=""
+                server_timeout=""/>
+          <BackUp backup_dist="-0.2"
+                  backup_speed="0.1"
+                  time_allowance=""
+                  server_name=""
+                  server_timeout=""/>
         </RoundRobin>
       </ReactiveFallback>
     </RecoveryNode>
   </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="BackUp">
+      <input_port name="backup_dist">Distance to backup</input_port>
+      <input_port name="backup_speed">Speed at which to backup</input_port>
+      <input_port name="time_allowance">Allowed time for reversing</input_port>
+      <input_port name="server_name">Server name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+    </Action>
+    <Action ID="ClearEntireCostmap">
+      <input_port name="service_name">Service name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+    </Action>
+    <Action ID="ComputePathToPose">
+      <input_port name="goal">Destination to plan to</input_port>
+      <input_port name="start">Start pose of the path if overriding current robot pose</input_port>
+      <input_port name="planner_id">Mapped name to the planner plugin type to use</input_port>
+      <input_port name="server_name">Server name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+      <output_port name="path">Path created by ComputePathToPose node</output_port>
+    </Action>
+    <Action ID="FollowPath">
+      <input_port name="controller_id"
+                  default="FollowPath"/>
+      <input_port name="path">Path to follow</input_port>
+      <input_port name="goal_checker_id"
+                  default="GoalChecker">Goal checker</input_port>
+      <input_port name="server_name">Server name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+    </Action>
+    <Condition ID="GoalUpdated"/>
+    <Control ID="PipelineSequence"
+             editable="true"/>
+    <Decorator ID="RateController"
+               editable="true">
+      <input_port name="hz"/>
+    </Decorator>
+    <Control ID="RecoveryNode"
+             editable="true">
+      <input_port name="number_of_retries"/>
+    </Control>
+    <Control ID="RoundRobin"
+             editable="true"/>
+    <Action ID="Spin">
+      <input_port name="spin_dist">Spin distance</input_port>
+      <input_port name="time_allowance">Allowed time for spinning</input_port>
+      <input_port name="server_name">Server name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+    </Action>
+    <Action ID="Wait">
+      <input_port name="wait_duration">Wait time</input_port>
+      <input_port name="server_name">Server name</input_port>
+      <input_port name="server_timeout">Server timeout</input_port>
+    </Action>
+  </TreeNodesModel>
+
 </root>

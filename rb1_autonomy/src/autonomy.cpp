@@ -89,7 +89,9 @@ void AutonomyEngine::registerNodes() {
   params.server_timeout = std::chrono::milliseconds(100000);
   factory_.registerNodeType<DetachShelfClient>("DetachShelf", params);
 
-  factory_.registerNodeType<BackUpActionNode>("BackUp", shared_from_this());
+  params.default_port_value = "backup";
+  params.server_timeout = std::chrono::milliseconds(100000);
+  factory_.registerNodeType<BackUpClient>("BackUp", params);
 
   BT::NodeBuilder builder1 = [](const std::string &name,
                                 const NodeConfiguration &config) {

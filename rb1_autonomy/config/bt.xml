@@ -18,7 +18,7 @@
       </Fallback>
       <Delay delay_msec="3000">
         <AsyncSequence>    
-            <BackUp backup_dist="0.6" from_frame="robot_base_link" to_frame="cart"/>
+            <BackUp is_backup="true"/>
             <GoToDes goal_degree="-90"/>
         </AsyncSequence>
       </Delay>

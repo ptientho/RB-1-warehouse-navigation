@@ -8,10 +8,12 @@ def generate_launch_description():
     shelf_detect_file = 'shelf_detect_params.yaml'
     shelf_attach_file = 'shelf_attach_params.yaml'
     shelf_detach_file = 'shelf_detach_params.yaml'
+    backup_file = 'backup_params.yaml'
     
     detect_dir = os.path.join(get_package_share_directory('rb1_autonomy'),'config',shelf_detect_file)
     attach_dir = os.path.join(get_package_share_directory('rb1_autonomy'),'config',shelf_attach_file)
     detach_dir = os.path.join(get_package_share_directory('rb1_autonomy'),'config',shelf_detach_file)
+    backup_dir = os.path.join(get_package_share_directory('rb1_autonomy'),'config',backup_file)
     
     remapping = [('/cmd_vel', '/diffbot_base_controller/cmd_vel_unstamped')]
     
@@ -43,12 +45,23 @@ def generate_launch_description():
         remappings=remapping
     )
 
+    backup_server = Node(
+        package='backup',
+        executable='backup_server',
+        name='backup_server',
+        output='screen',
+        parameters=[backup_dir],
+        remappings=remapping
+    
+    )
+
 
     return LaunchDescription([
     
         shelf_detection_server,
         shelf_attach_server,
-        shelf_detach_server
+        shelf_detach_server,
+        backup_server
     
     ])
 

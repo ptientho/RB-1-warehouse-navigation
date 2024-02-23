@@ -1,9 +1,0 @@
-<root BTCPP_format="4">
-    <BehaviorTree ID="MainTree">
-        <RetryUntilSuccessful num_attempts="1">
-            <Sequence>
-                <BackUp backup_dist="0.6" from_frame="robot_base_footprint" to_frame="temp_cart"/>
-            </Sequence>
-        </RetryUntilSuccessful>
-    </BehaviorTree>
-</root>

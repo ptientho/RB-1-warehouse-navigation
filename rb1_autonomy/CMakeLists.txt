@@ -25,6 +25,7 @@ find_package(behaviortree_cpp REQUIRED)
 find_package(shelf_attach_msg REQUIRED)
 find_package(shelf_detach_msg REQUIRED)
 find_package(rb1_autonomy_msg REQUIRED)
+find_package(backup_msg REQUIRED)
 
 # install directories
 install(DIRECTORY
@@ -53,6 +54,7 @@ set(TARGET_DEPENDS
 	btcpp_ros2_interfaces
 	shelf_attach_msg
 	shelf_detach_msg
+	backup_msg
 	rb1_autonomy_msg
 	behaviortree_cpp
 )
