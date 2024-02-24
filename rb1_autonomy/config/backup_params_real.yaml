@@ -10,5 +10,5 @@ backup_server:
           history: keep_last
           reliability: reliable
     to_frame: temp_cart
-    tolerance: 0.06
+    tolerance: 0.1
     use_sim_time: false

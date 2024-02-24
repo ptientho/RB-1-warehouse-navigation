@@ -4,8 +4,14 @@
   <BehaviorTree ID="MainTree">
     <Sequence>
       <Fallback>
-        <CheckShelfAttached name="check_attach_shelf"
+        <Sequence>
+            <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="is_attached"/>
+            <GoToDes goal_degree="-90"/>
+            <DetachShelf detach_shelf="true"
+                   shelf_attached="is_attached_real"
+                   service_name="__default__placeholder__"/>
+        </Sequence>
         <Sequence>
         <RetryUntilSuccessful num_attempts="5">
           <SubTree ID="ShelfDetection" front_shelf="{front_shelf}" shelf_found="{shelf_found}"/>
@@ -14,17 +20,18 @@
                    front_shelf="{front_shelf}"
                    shelf_found="{shelf_found}"
                    is_attached="{is_attached}"/>
-        </Sequence>
-      </Fallback>
-      <Delay delay_msec="3000">
-        <AsyncSequence>    
+          <Delay delay_msec="3000">
+          <AsyncSequence>    
             <BackUp is_backup="true"/>
             <GoToDes goal_degree="-90"/>
-        </AsyncSequence>
-      </Delay>
-      <DetachShelf detach_shelf="true"
+          </AsyncSequence>
+          </Delay>
+          <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
+        </Sequence>
+      </Fallback>
+      
     </Sequence>
   </BehaviorTree>
 
@@ -34,7 +41,7 @@
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="false"
-                   front_distance="0.1"
+                   front_distance="0.01"
                    shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
       <ShelfDetector front_offset="0.0"

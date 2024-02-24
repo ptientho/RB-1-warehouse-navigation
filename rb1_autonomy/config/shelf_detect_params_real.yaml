@@ -1,7 +1,7 @@
 shelf_detection_real_server:
   ros__parameters:
     frame: robot_cart_laser
-    front_shelf_offset: 0.6
+    front_shelf_offset: 1.0
     qos_overrides:
       /parameter_events:
         publisher:

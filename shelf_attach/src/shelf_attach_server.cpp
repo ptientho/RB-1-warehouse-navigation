@@ -111,7 +111,7 @@ void AttachShelfServer::service_callback(
     usleep(1000000);
     move_to_front_shelf_real(front_distance, 0.05, 0.03);
   } else {
-    move_to_front_shelf(front_distance, 0.1, 0.12);
+    move_to_front_shelf(front_distance, 0.05, 0.08);
   }
 
   RCLCPP_INFO(this->get_logger(), "Moving to front shelf done.");
@@ -235,7 +235,7 @@ void AttachShelfServer::move_to_front_shelf(const float &front_offset,
     alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
     RCLCPP_INFO(this->get_logger(), "DiffX: %f", diff_x);
     vel_msg.linear.x = vx;
-    if (alpha > 0.15) {
+    if (alpha > 0.05) {
       if (diff_y >= 0) {
         vel_msg.angular.z = (float)vt;
 

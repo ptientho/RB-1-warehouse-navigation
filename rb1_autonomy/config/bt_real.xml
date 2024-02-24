@@ -4,29 +4,36 @@
   <BehaviorTree ID="MainTree">
     <Sequence>
       <Fallback>
-        <CheckShelfAttached name="check_attach_shelf"
-                            shelf_attached="is_attached_real"/>
         <Sequence>
-        <RetryUntilSuccessful num_attempts="5">
-          <SubTree ID="ShelfDetection"
-                   shelf_found="{shelf_found}"
-                   front_shelf="{front_shelf}"/>
-               </RetryUntilSuccessful>    
+            <CheckShelfAttached name="check_attach_shelf"
+                            shelf_attached="is_attached_real"/>
+            <GoToDes goal_degree="45"/>
+            <DetachShelf detach_shelf="true"
+                   shelf_attached="is_attached_real"
+                   service_name="__default__placeholder__"/>
+        </Sequence>
+        <Sequence>
+          <RetryUntilSuccessful num_attempts="5">
+            <SubTree ID="ShelfDetection"
+                    shelf_found="{shelf_found}"
+                    front_shelf="{front_shelf}"/>
+          </RetryUntilSuccessful>    
           <SubTree ID="ShelfApproach"
                    is_attached="{is_attached}"
                    front_shelf="{front_shelf}"
                    shelf_found="{shelf_found}"/>
-        </Sequence>
-      </Fallback>
-      <RetryUntilSuccessful num_attempts="1">
-        <AsyncSequence>    
-            <BackUp is_backup="true"/>
-            <GoToDes goal_degree="45"/>
-        </AsyncSequence>
-      </RetryUntilSuccessful> 
-      <DetachShelf detach_shelf="true"
+          <RetryUntilSuccessful num_attempts="1">
+            <AsyncSequence>    
+                <BackUp is_backup="true"/>
+                <GoToDes goal_degree="45"/>
+            </AsyncSequence>
+          </RetryUntilSuccessful> 
+          <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
+        </Sequence>
+      </Fallback>
+    
         <!--Repeat num_cycles="1">
             <BackUp/>
         </Repeat-->
