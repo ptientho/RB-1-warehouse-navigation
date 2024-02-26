@@ -19,7 +19,6 @@ def generate_launch_description():
     destination_provider_node = Node(
         package='des_provider',
         executable='des_provider_node',
-        name='destination_provider_node',
         output='screen'
     
     )

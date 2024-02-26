@@ -109,7 +109,7 @@ void AttachShelfServer::service_callback(
 
     publish_shelf_frame(pose);
     usleep(1000000);
-    move_to_front_shelf_real(front_distance, 0.05, 0.03);
+    move_to_front_shelf_real(front_distance, 0.03, 0.03); // 0.03, 0.03
   } else {
     move_to_front_shelf(front_distance, 0.05, 0.08);
   }
@@ -173,9 +173,13 @@ void AttachShelfServer::move_to_front_shelf_real(const float &front_offset,
     vel_pub_->publish(vel_msg);
     loop_rate.sleep();
   }
+  // stop robot
+  vel_msg.linear.x = 0.0;
+  vel_msg.angular.z = 0.0;
+  vel_pub_->publish(vel_msg);
 
   // align front shelf
-  while (abs(yaw) > 0.02) {
+  while (abs(yaw) > 0.01) {
     tf_robot_shelf = get_tf(fromFrame, toFrame);
     tf2::fromMsg(tf_robot_shelf.pose.orientation, q);
     tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);

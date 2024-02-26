@@ -16,13 +16,20 @@ public:
   BackUpServer();
 
 private:
+  // private data
   rclcpp::Publisher<CmdVel>::SharedPtr vel_pub_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  Pose get_tf(std::string fromFrame, std::string toFrame);
+  rclcpp::Service<BackUp>::SharedPtr srv_;
   bool tf_success_;
 
-  rclcpp::Service<BackUp>::SharedPtr srv_;
+  // private member functions
   void service_callback(const std::shared_ptr<BackUp::Request> req,
                         const std::shared_ptr<BackUp::Response> res);
+
+  Pose getTransform(const std::string& fromFrame, const std::string& toFrame);
+  Pose getDefaultPose();
+  void initializeParameters();
+  void initializeROSComponents();
+  void handleTransformException(const std::string& fromFrame, const std::string& toFrame, const std::string& errorMsg);
 };

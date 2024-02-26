@@ -2,9 +2,7 @@
 #include "behaviortree_cpp/basic_types.h"
 #include "rb1_autonomy/action_node.h"
 #include "rb1_autonomy/autonomy.h"
-#include "rclcpp/callback_group.hpp"
 #include "rclcpp/logging.hpp"
-#include "rclcpp/node.hpp"
 #include <functional>
 #include <string>
 #include <vector>
@@ -14,8 +12,6 @@ bool GoToPose2ActionClient::setGoal(Goal &goal) {
 
   // get the key corresponding to "loc"
   Expected<Pose> shelf_pose = getInput<Pose>("pose");
-
-  // shelf_pose is type geometry_msgs::msg::PoseStamped
 
   // build new goal based on goal_ variable
   auto goal_ = nav2_msgs::action::NavigateToPose::Goal();

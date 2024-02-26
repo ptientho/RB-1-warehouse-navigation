@@ -7,10 +7,12 @@
         <Sequence>
             <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="is_attached_real"/>
-            <GoToDes goal_degree="45"/>
+            <GoToDes goal_degree="-90"/>
             <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
+            <GoToPose loc="location1_real"
+                  action_name="__default__placeholder__"/>           
         </Sequence>
         <Sequence>
           <RetryUntilSuccessful num_attempts="5">
@@ -25,12 +27,14 @@
           <RetryUntilSuccessful num_attempts="1">
             <AsyncSequence>    
                 <BackUp is_backup="true"/>
-                <GoToDes goal_degree="45"/>
+                <GoToDes goal_degree="-90"/>
             </AsyncSequence>
           </RetryUntilSuccessful> 
           <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
+          <GoToPose loc="location1_real"
+                  action_name="__default__placeholder__"/>      
         </Sequence>
       </Fallback>
     
@@ -45,8 +49,8 @@
       <CheckShelfFound shelf_found="{shelf_found}"/>
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
-      <AttachShelf attach_shelf="true"
-                   front_distance="0.05"
+      <AttachShelf attach_shelf="false"
+                   front_distance="-0.01"
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
     </Sequence>

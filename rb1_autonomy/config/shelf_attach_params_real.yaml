@@ -1,8 +1,8 @@
 shelf_attach_server:
   ros__parameters:
     activate_elevator: true
-    attach_velocity: 0.1
-    from_frame: robot_front_cover_link
+    attach_velocity: 0.03
+    from_frame: robot_front_cover_link #robot_front_cover_link
     qos_overrides:
       /parameter_events:
         publisher:
@@ -12,5 +12,5 @@ shelf_attach_server:
           reliability: reliable
     real_robot: true
     to_frame: temp_cart
-    center_shelf: 0.47 # shelf center: 0.25 + front_cover: 0.22 = 0.47
+    center_shelf: 0.45 # shelf center: 0.25 + front_cover: 0.20 = 0.45
     use_sim_time: false

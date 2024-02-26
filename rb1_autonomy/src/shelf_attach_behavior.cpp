@@ -1,22 +1,12 @@
 #include "rb1_autonomy/shelf_attach_behavior.h"
-#include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "rb1_autonomy/autonomy.h"
-#include "rb1_autonomy/service_node.h"
-#include "rclcpp/create_client.hpp"
 #include "rclcpp/logging.hpp"
-#include "rclcpp/node.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include <cmath>
-#include <string>
-#include "fstream"
+#include "yaml-cpp/yaml.h"
 
 using namespace std::chrono_literals;
 
-/* New servide node */
-
 bool AttachShelfClient::setRequest(Request::SharedPtr &request) {
-
+  // Set request parameters
   getInput("attach_shelf", request->attach_shelf);
   getInput("front_distance", request->front_distance);
   RCLCPP_INFO(node_->get_logger(), "%s: Request sent. attach_shelf = %s",
@@ -24,42 +14,32 @@ bool AttachShelfClient::setRequest(Request::SharedPtr &request) {
   return true;
 }
 
-BT::NodeStatus
-AttachShelfClient::onResponseReceived(const Response::SharedPtr &response) {
-
+BT::NodeStatus AttachShelfClient::onResponseReceived(const Response::SharedPtr &response) {
+  // Log response information
   RCLCPP_INFO(node_->get_logger(), "%s: Response received. | attach shelf: %s",
               name().c_str(), response->is_success ? "yes" : "no");
   
+  // Get shelf attached variable name
   auto attach_var = getInput<std::string>("shelf_attached");
-  // get file location
-  const std::string yaml_file =
-      node_->get_parameter("location_file").as_string();
+  
+  // Get file location
+  const std::string yaml_file = node_->get_parameter("location_file").as_string();
   YAML::Node yaml = YAML::LoadFile(yaml_file);
 
-  // update is_attached var
-  if (response->is_success) {
-    yaml[attach_var.value()] = true;
+  // Update is_attached variable
+  yaml[attach_var.value()] = response->is_success;
 
-  } else {
-    yaml[attach_var.value()] = false;
-  }
-
-  // write output to file
+  // Write output to file
   std::ofstream fout(yaml_file);
   if (fout.is_open()) {
-    // Write the XML string to the file
-    fout << yaml;
-
-    // Close the file
-    fout.close();
-
-    RCLCPP_INFO(node_->get_logger(), "%s: Update shelf attached status in %s",
+    fout << yaml; // Write YAML data to the file
+    fout.close(); // Close the file
+    RCLCPP_INFO(node_->get_logger(), "%s: Updated shelf attached status in %s",
                 name().c_str(), yaml_file.c_str());
     return BT::NodeStatus::SUCCESS;
   } else {
-    RCLCPP_INFO(node_->get_logger(), "%s: Error opening %s", name().c_str(),
-                yaml_file.c_str());
+    RCLCPP_ERROR(node_->get_logger(), "%s: Error opening %s", name().c_str(),
+                 yaml_file.c_str());
     return BT::NodeStatus::FAILURE;
   }
-
 }
