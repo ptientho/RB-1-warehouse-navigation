@@ -1,20 +1,10 @@
 #include "shelf_detach/shelf_detach_server.h"
-#include "geometry_msgs/msg/detail/twist__struct.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "rcl_interfaces/msg/detail/parameter__struct.hpp"
-#include "rcl_interfaces/msg/detail/parameter_value__struct.hpp"
-#include "rcl_interfaces/msg/detail/set_parameters_result__struct.hpp"
 #include "rclcpp/clock.hpp"
-#include "rclcpp/executors.hpp"
 #include "rclcpp/logging.hpp"
 #include "rclcpp/parameter.hpp"
-#include "rclcpp/parameter_value.hpp"
-#include "rclcpp/rate.hpp"
-#include "rclcpp/utilities.hpp"
 #include "std_msgs/msg/detail/string__struct.hpp"
 #include <chrono>
-#include <functional>
-#include <math.h>
 #include <memory>
 
 using namespace std::chrono_literals;
@@ -46,10 +36,8 @@ void DetachShelfServer::service_callback(
 
   RCLCPP_INFO(this->get_logger(), "Start /detach_shelf service.");
   if (!req->detach_shelf) {
-    // if attach_shelf = false -> is_success = false
     res->is_success = false;
   } else {
-    // do detach_shelf()
     detach_shelf();
     set_params();
     res->is_success = true;
@@ -59,22 +47,21 @@ void DetachShelfServer::service_callback(
 
 void DetachShelfServer::detach_shelf() {
 
-  // unloading shelf
+  // Unloading shelf
   Elevator lift_msg = std_msgs::msg::String();
   lift_pub_->publish(lift_msg);
   std::this_thread::sleep_for(10s);
 
+  // Move backward to detach
   CmdVel vel_msg;
   float back_vel;
-  rclcpp::Rate loop_rate(5);
   this->get_parameter("detach_velocity", back_vel);
-  
+
   for (int i = 0; i < 20; i++) {
     vel_msg.linear.x = (-1) * back_vel;
     vel_pub_->publish(vel_msg);
-    loop_rate.sleep();
+    std::this_thread::sleep_for(100ms);
   }
-  
 
   vel_msg.linear.x = 0.0;
   vel_pub_->publish(vel_msg);
@@ -86,7 +73,7 @@ void DetachShelfServer::set_params() {
   auto request2 = std::make_shared<ClientMsg::Request>(); // for local costmap
   auto request3 = std::make_shared<ClientMsg::Request>(); // for setting critics
   ////////////////////////////////////////////////////
-  // set robot radius
+  // Set robot radius
   rcl_interfaces::msg::ParameterValue val;
   val.type = 3;
   val.double_value = 0.3;
@@ -97,7 +84,7 @@ void DetachShelfServer::set_params() {
   request1->parameters.push_back(param);
   request2->parameters.push_back(param);
   ///////////////////////////////////////////////////
-  // set critics
+  // Set critics
   val.type = 9;
   val.string_array_value = {"RotateToGoal", "Oscillation", "BaseObstacle",
                             "GoalAlign",    "PathAlign",   "PathDist",
@@ -107,7 +94,7 @@ void DetachShelfServer::set_params() {
   param.value = val;
   request3->parameters.push_back(param);
   /////////////////////////////////////////////////////
-  // set plugin layers only for global costmap
+  // Set plugin layers only for global costmap
   val.type = 9;
   val.string_array_value = {"static_layer", "obstacle_layer", "inflation_layer",
                             "voxel_layer"};
@@ -116,7 +103,7 @@ void DetachShelfServer::set_params() {
   param.value = val;
   request1->parameters.push_back(param);
   /////////////////////////////////////////////////////
-  // set inflation_radius
+  // Set inflation_radius
   val.type = 3;
   val.double_value = 0.4;
   param.name = "inflation_layer.inflation_radius";
@@ -125,7 +112,7 @@ void DetachShelfServer::set_params() {
   request1->parameters.push_back(param);
   request2->parameters.push_back(param);
   ///////////////////////////////////////////////////
-  // set cost_scaling_factor
+  // Set cost_scaling_factor
   val.type = 3;
   val.double_value = 2.7;
   param.name = "inflation_layer.cost_scaling_factor";

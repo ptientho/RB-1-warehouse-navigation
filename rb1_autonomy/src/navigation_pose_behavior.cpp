@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-
 bool GoToPose2ActionClient::setGoal(Goal &goal) {
 
   // get the key corresponding to "loc"
@@ -23,7 +22,7 @@ bool GoToPose2ActionClient::setGoal(Goal &goal) {
   goal.pose.pose.orientation.y = shelf_pose->pose.orientation.y;
   goal.pose.pose.orientation.z = shelf_pose->pose.orientation.z;
   goal.pose.pose.orientation.w = shelf_pose->pose.orientation.w;
-  
+
   return true;
 }
 

@@ -1,9 +1,6 @@
 #pragma once
-#include "geometry_msgs/msg/detail/polygon__struct.hpp"
-#include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
-#include "geometry_msgs/msg/detail/twist__struct.hpp"
 #include "geometry_msgs/msg/twist.hpp"
-#include "rcl_interfaces/srv/detail/set_parameters__struct.hpp"
+#include "rcl_interfaces/srv/set_parameters.hpp"
 #include "rclcpp/client.hpp"
 #include "rclcpp/node.hpp"
 #include "rclcpp/publisher.hpp"
@@ -23,17 +20,17 @@ public:
   DetachShelfServer();
 
 private:
-  rclcpp::Service<DetachShelf>::SharedPtr srv_;
-  void service_callback(const std::shared_ptr<DetachShelf::Request> req,
-                        const std::shared_ptr<DetachShelf::Response> res);
-  void detach_shelf();
-  void set_params();
-
-  // publisher
+  // Data memners
   rclcpp::Publisher<CmdVel>::SharedPtr vel_pub_;
   rclcpp::Publisher<Elevator>::SharedPtr lift_pub_;
   rclcpp::Client<ClientMsg>::SharedPtr foot_pub_glob_;
   rclcpp::Client<ClientMsg>::SharedPtr foot_pub_local_;
   rclcpp::Client<ClientMsg>::SharedPtr critic_pub_;
+  rclcpp::Service<DetachShelf>::SharedPtr srv_;
 
+  // Member functions
+  void service_callback(const std::shared_ptr<DetachShelf::Request> req,
+                        const std::shared_ptr<DetachShelf::Response> res);
+  void detach_shelf();
+  void set_params();
 };

@@ -34,5 +34,5 @@ public:
         return BT::NodeStatus::FAILURE;
     }
 
-    BT::NodeStatus onFeedback(const std::shared_ptr<const Feedback>& feedback) override;
+    BT::NodeStatus onFeedback(const std::shared_ptr<const Feedback> feedback) override;
 };

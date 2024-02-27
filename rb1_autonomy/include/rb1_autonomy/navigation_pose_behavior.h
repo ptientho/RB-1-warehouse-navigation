@@ -35,5 +35,5 @@ public:
         return NodeStatus::FAILURE;
     }
 
-    NodeStatus onFeedback(const std::shared_ptr<const Feedback>& feedback) override;
+    NodeStatus onFeedback(const std::shared_ptr<const Feedback> feedback) override;
 };

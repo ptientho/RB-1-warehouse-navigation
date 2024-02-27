@@ -9,7 +9,7 @@
                             shelf_attached="is_attached"/>
             <GoToDes goal_degree="-90"/>
             <DetachShelf detach_shelf="true"
-                   shelf_attached="is_attached_real"
+                   shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
         </Sequence>
         <Sequence>
@@ -41,7 +41,7 @@
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="false"
-                   front_distance="0.01"
+                   front_distance="0.05"
                    shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
       <ShelfDetector front_offset="0.0"

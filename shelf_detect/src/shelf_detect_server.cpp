@@ -1,4 +1,3 @@
-// detect shelf server
 #include "shelf_detect/shelf_detect_server.hpp"
 #include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -81,7 +80,6 @@ void ShelfDetectionServer::service_callback(
     const std::shared_ptr<GoToShelf::Response> rsp) {
 
   RCLCPP_INFO(this->get_logger(), "Start go_to_shelf service");
-
   detect_shelf();
   float front_offset = req->front_offset;
   auto front_range = compute_front_shelf_distance();
@@ -133,9 +131,8 @@ void ShelfDetectionServer::service_callback(
     RCLCPP_INFO(this->get_logger(), "%s frame published",
                 pose.child_frame_id.c_str());
     tf_pub_->sendTransform(pose);
-    this->timer1_->cancel();
-    this->timer2_->cancel();
-
+    timer1_->cancel();
+    timer2_->cancel();
     rsp->shelf_found = true;
 
   } else {
@@ -190,8 +187,7 @@ void ShelfDetectionServer::detect_shelf() {
 
   // since in real robot the signal oscillates so only max intensity cannot be
   // properly used
-  float threshold = 3700.0; // the lowest intensity difference from max value
-                            // that would be considered as a detection
+  float threshold = 3700.0; 
   int num_legs = 0;
 
   for (it = intensity_list.begin(), i = 0;
@@ -238,7 +234,6 @@ void ShelfDetectionServer::detect_shelf() {
 }
 
 float ShelfDetectionServer::compute_front_shelf_distance() {
-  /* use this method to compute mid shelf length */
 
   float front_range = 0.0;
   if (laser_data == nullptr) {
@@ -263,25 +258,6 @@ float ShelfDetectionServer::compute_front_shelf_distance() {
     front_range = (d / 2) * sin_beta / sin(gamma / 2);
   }
 
-  // leg angles and mid angle (rad)
-
-  // float leg1_angle = leg1_idx_mid * angle_increment;
-  // float leg2_angle = leg2_idx_mid * angle_increment;
-  // float mid_angle = (laser_data->ranges.size() / 2 - 1) * angle_increment;
-
-  // angle difference between leg range and mid range (rad)
-
-  // float angle1_diff = abs(leg1_angle - mid_angle);
-  // float angle2_diff = abs(leg2_angle - mid_angle);
-
-  // leg offset and front shelf range
-  // float d1 = leg1_range * sin(angle1_diff);
-  // float d2 = leg2_range * sin(angle2_diff);
-  // float midleg_offset = (d1 + d2) / 2;
-  // float front_range = abs(leg1_range * cos(angle1_diff));
-
-  // ranges = {front_range, midleg_offset, d1, d2};
-
   RCLCPP_DEBUG(this->get_logger(), "FRONT SHELF RANGE: %f", front_range);
 
   return front_range;
@@ -300,14 +276,6 @@ void ShelfDetectionServer::orient_robot(const float &offset) {
     return;
   }
 
-  /*slowly rotate cw/ccw based on "front shelf index" and "front laser index"
-   - if front shelf index > front laser index -> rotate robot cw
-   - if front shelf index <= front laser index -> rotate robot ccw
-   - rotate with slow speed (< 0.2 rad/s) until | front_shelf_index -
-   front_laser_index | <= 5
-   - then stop rotating
-  */
-  // convert degree to rad
   float offset_rad = offset / 57;
   auto diff_idx = (int)std::ceil(offset_rad / laser_data->angle_increment);
 
@@ -337,32 +305,15 @@ void ShelfDetectionServer::publish_shelf_frame(const std::string &parentFrame,
                                                const double &offset_x,
                                                bool is_static) {
 
-  /*
-    - publish a child frame "front_shelf" from "robot_base_link" parent frame
-    with offset in x+ of "front_shelf_range"
-    - use parameter called "front_shelf_offset" to shift either back or forth
-    the "front_shelf frame"
-
-  */
-  // double offset_y = this->get_parameter("front_shelf_offset_y").as_double();
-
   auto range =
-      compute_front_shelf_distance(); // [front_range, midleg_offset, d1, d2]
-                                      // where d1 + d2 = 2*midleg_offset
-  /* build tf message */
+      compute_front_shelf_distance();
+
   auto t = geometry_msgs::msg::TransformStamped();
   t.header.frame_id = parentFrame;
   t.child_frame_id = childFrame;
   t.header.stamp = odom_data->header.stamp;
 
   t.transform.translation.x = range - offset_x;
-  // front shelf offset in y axis of laser_base_link
-  // if (ranges[2] <= ranges[3]) {
-  //  t.transform.translation.y = -(ranges[1] - ranges[2]) + (float)offset_y;
-  //} else {
-  //  t.transform.translation.y = ranges[1] - ranges[3] + (float)offset_y;
-  //}
-
   t.transform.translation.y = 0.0;
   t.transform.translation.z = 0.0;
   t.transform.rotation.x = 0.0;
@@ -389,8 +340,8 @@ void ShelfDetectionServer::odom_callback(const std::shared_ptr<Odom> msg) {
   odom_data = msg;
 }
 
-geometry_msgs::msg::PoseStamped
-ShelfDetectionServer::get_tf(std::string fromFrame, std::string toFrame) {
+PoseStamped ShelfDetectionServer::get_tf(const std::string &fromFrame,
+                                         const std::string &toFrame) {
 
   geometry_msgs::msg::TransformStamped t;
   auto shelf_pose = geometry_msgs::msg::PoseStamped();
@@ -411,7 +362,6 @@ ShelfDetectionServer::get_tf(std::string fromFrame, std::string toFrame) {
     shelf_pose.pose.orientation.y = 0.0;
     shelf_pose.pose.orientation.z = 0.0;
     shelf_pose.pose.orientation.w = 1.0;
-    // rclcpp::shutdown();
     return shelf_pose;
   }
 

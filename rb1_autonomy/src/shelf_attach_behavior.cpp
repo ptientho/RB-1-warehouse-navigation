@@ -2,6 +2,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "rclcpp/logging.hpp"
 #include "yaml-cpp/yaml.h"
+#include <fstream>
 
 using namespace std::chrono_literals;
 

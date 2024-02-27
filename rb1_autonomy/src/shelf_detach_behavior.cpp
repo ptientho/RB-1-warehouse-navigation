@@ -3,6 +3,7 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/node.hpp"
 #include "yaml-cpp/yaml.h"
+#include <fstream>
 
 using namespace std::chrono_literals;
 

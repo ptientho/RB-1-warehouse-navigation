@@ -37,10 +37,6 @@
                   action_name="__default__placeholder__"/>      
         </Sequence>
       </Fallback>
-    
-        <!--Repeat num_cycles="1">
-            <BackUp/>
-        </Repeat-->
     </Sequence>
   </BehaviorTree>
 
