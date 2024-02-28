@@ -27,7 +27,7 @@
           <RetryUntilSuccessful num_attempts="1">
             <AsyncSequence>    
                 <BackUp is_backup="true"/>
-                <GoToDes goal_degree="-90"/>
+                <GoToDes goal_degree="90"/>
             </AsyncSequence>
           </RetryUntilSuccessful> 
           <DetachShelf detach_shelf="true"
@@ -45,8 +45,8 @@
       <CheckShelfFound shelf_found="{shelf_found}"/>
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
-      <AttachShelf attach_shelf="false"
-                   front_distance="-0.01"
+      <AttachShelf attach_shelf="true"
+                   front_distance="0.0" 
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
     </Sequence>

@@ -15,24 +15,39 @@
 
 ShelfDetectionServerReal::ShelfDetectionServerReal()
     : rclcpp::Node("shelf_detection_real_node"), shelf_found(false),
-      tf_buffer_(std::make_shared<tf2_ros::Buffer>(this->get_clock())),
-      tf_listener_(std::make_shared<tf2_ros::TransformListener>(*tf_buffer_)),
       subGrp_(create_callback_group(rclcpp::CallbackGroupType::Reentrant)),
-      timer_group_(create_callback_group(rclcpp::CallbackGroupType::Reentrant)),
-      srv_(create_service<GoToShelf>(
-          "/go_to_shelf_real",
-          std::bind(&ShelfDetectionServerReal::service_callback, this,
-                    std::placeholders::_1, std::placeholders::_2))),
-      tf_pub_(std::make_shared<tf2_ros::TransformBroadcaster>(this)) {
+      timer_group_(
+          create_callback_group(rclcpp::CallbackGroupType::Reentrant)) {
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
                                    RCUTILS_LOG_SEVERITY_INFO);
-  RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
 
+  // Initialize parameters
+  initializeParameters();
+  // Setup TF
+  setupTF();
+  // Create subscribers
+  createSubscribers();
+  // Create service
+  createDetectionService();
+  // Create timer callback
+  createTimers();
+  RCLCPP_INFO(this->get_logger(), "Initializing detect_shelf service");
+}
+
+void ShelfDetectionServerReal::initializeParameters() {
   // Declare parameters
   this->declare_parameter("frame", "robot_cart_laser");
   this->declare_parameter("front_shelf_offset", 0.3);
+}
 
+void ShelfDetectionServerReal::setupTF() {
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  tf_pub_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+}
+
+void ShelfDetectionServerReal::createSubscribers() {
   rclcpp::SubscriptionOptions opt;
   opt.callback_group = subGrp_;
   this->odomSub_ = create_subscription<Odom>(
@@ -46,8 +61,17 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
       std::bind(&ShelfDetectionServerReal::laser_callback, this,
                 std::placeholders::_1),
       opt);
+}
 
-  this->timer1_ = this->create_wall_timer(
+void ShelfDetectionServerReal::createDetectionService() {
+  srv_ = create_service<GoToShelf>(
+      "/go_to_shelf_real",
+      std::bind(&ShelfDetectionServerReal::service_callback, this,
+                std::placeholders::_1, std::placeholders::_2));
+}
+
+void ShelfDetectionServerReal::createTimers() {
+  timer1_ = this->create_wall_timer(
       20ms, std::bind(&ShelfDetectionServerReal::detect_shelf, this),
       timer_group_);
 }
@@ -56,23 +80,31 @@ void ShelfDetectionServerReal::service_callback(
     const std::shared_ptr<GoToShelf::Request> req,
     const std::shared_ptr<GoToShelf::Response> rsp) {
 
-  RCLCPP_INFO(this->get_logger(), "Start go_to_shelf service");
+  RCLCPP_INFO(this->get_logger(), "Starting go_to_shelf service");
 
-  std::this_thread::sleep_for(0.5s);
-  RCLCPP_INFO(this->get_logger(), "Found Shelf: %s",
-              shelf_found ? "YES" : "NO");
+  try {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  } catch (const std::exception &e) {
+    RCLCPP_ERROR(this->get_logger(), "Sleep interrupted: %s", e.what());
+  }
+
+  bool found;
+  {
+    std::lock_guard<std::mutex> guard(find_shelf_mutex);
+    found = shelf_found;
+  }
+  RCLCPP_INFO(this->get_logger(), "Found Shelf: %s", found ? "YES" : "NO");
 
   std::lock_guard<std::mutex> guard(find_shelf_mutex);
-  if (shelf_found) {
+  if (found) {
     publish_shelf_frame();
-    std::this_thread::sleep_for(0.5s);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     auto pose = get_tf("map", "front_shelf");
     rsp->shelf_pose = pose;
-    rsp->shelf_found = shelf_found;
   } else {
     rsp->shelf_pose = get_tf("map", "front_shelf");
-    rsp->shelf_found = shelf_found;
   }
+  rsp->shelf_found = found;
 }
 
 void ShelfDetectionServerReal::laser_callback(
@@ -89,59 +121,58 @@ void ShelfDetectionServerReal::detect_shelf() {
   if (laser_data == nullptr) {
     RCLCPP_INFO(this->get_logger(), "Laser data not received.");
     return;
-  } else {
-    std::vector<float> intensity_list = laser_data->intensities;
-    std::vector<float>::iterator it;
-    std::vector<float> range_list = laser_data->ranges;
-    int i;
-    auto max_pointer_ =
-        std::max_element(intensity_list.begin(), intensity_list.end());
-    auto min_pointer_ =
-        std::min_element(intensity_list.begin(), intensity_list.end());
+  }
+  std::vector<float> intensity_list = laser_data->intensities;
+  std::vector<float> range_list = laser_data->ranges;
+  std::vector<float>::iterator it;
+  int i;
+  auto max_pointer_ =
+      std::max_element(intensity_list.begin(), intensity_list.end());
+  auto min_pointer_ =
+      std::min_element(intensity_list.begin(), intensity_list.end());
 
-    // since in real robot the signal oscillates so only max intensity cannot be
-    // properly used
-    float threshold = 4400.0;
-    int num_legs = 0;
+  // since in real robot the signal oscillates so only max intensity cannot be
+  // properly used
+  float threshold = 4400.0;
+  int num_legs = 0;
 
-    for (it = intensity_list.begin(), i = 0;
-         it != intensity_list.end() && std::next(it) != intensity_list.end();
-         it++, i++) {
+  for (it = intensity_list.begin(), i = 0;
+       it != intensity_list.end() && std::next(it) != intensity_list.end();
+       it++, i++) {
 
-      if ((*it < threshold) && (*(std::next(it)) >= threshold)) {
-        num_legs += 1;
-        if (num_legs == 1) {
-          leg1_idx_start = i;
-        }
-        if (num_legs == 2) {
-          leg2_idx_start = i;
-        }
-      } else if ((num_legs == 1) && (*it >= threshold) &&
-                 (*(std::next(it)) < threshold)) {
-        leg1_idx_end = i;
-        leg1_idx_mid = leg1_idx_start + (leg1_idx_end - leg1_idx_start) / 2;
-      } else if ((num_legs == 2) && (*it >= threshold) &&
-                 (*(std::next(it)) < threshold)) {
-        leg2_idx_end = i;
-        leg2_idx_mid = leg2_idx_start + (leg2_idx_end - leg2_idx_start) / 2;
+    if ((*it < threshold) && (*(std::next(it)) >= threshold)) {
+      num_legs += 1;
+      if (num_legs == 1) {
+        leg1_idx_start = i;
       }
+      if (num_legs == 2) {
+        leg2_idx_start = i;
+      }
+    } else if ((num_legs == 1) && (*it >= threshold) &&
+               (*(std::next(it)) < threshold)) {
+      leg1_idx_end = i;
+      leg1_idx_mid = leg1_idx_start + (leg1_idx_end - leg1_idx_start) / 2;
+    } else if ((num_legs == 2) && (*it >= threshold) &&
+               (*(std::next(it)) < threshold)) {
+      leg2_idx_end = i;
+      leg2_idx_mid = leg2_idx_start + (leg2_idx_end - leg2_idx_start) / 2;
     }
-    leg1_range = range_list[leg1_idx_mid];
-    leg2_range = range_list[leg2_idx_mid];
+  }
+  leg1_range = range_list[leg1_idx_mid];
+  leg2_range = range_list[leg2_idx_mid];
 
-    RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
-                 num_legs);
-    RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
-                 leg1_idx_mid);
-    RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
-                 leg2_idx_mid);
+  RCLCPP_DEBUG(this->get_logger(), "NUMBER OF SHELF LEG BEING DETECTED: %d",
+               num_legs);
+  RCLCPP_DEBUG(this->get_logger(), "LEG 1 RANGE: %f | INDEX: %d", leg1_range,
+               leg1_idx_mid);
+  RCLCPP_DEBUG(this->get_logger(), "LEG 2 RANGE: %f | INDEX: %d", leg2_range,
+               leg2_idx_mid);
 
-    std::lock_guard<std::mutex> guard(find_shelf_mutex);
-    if (num_legs >= 2) {
-      shelf_found = true;
-    } else {
-      shelf_found = false;
-    }
+  std::lock_guard<std::mutex> guard(find_shelf_mutex);
+  if (num_legs >= 2) {
+    shelf_found = true;
+  } else {
+    shelf_found = false;
   }
 }
 
@@ -159,9 +190,8 @@ void ShelfDetectionServerReal::odom_callback(const std::shared_ptr<Odom> msg) {
   odom_data = msg;
 }
 
-geometry_msgs::msg::PoseStamped
-ShelfDetectionServerReal::get_tf(const std::string &fromFrame,
-                                 const std::string &toFrame) {
+PoseStamped ShelfDetectionServerReal::get_tf(const std::string &fromFrame,
+                                             const std::string &toFrame) {
 
   geometry_msgs::msg::TransformStamped t;
   auto shelf_pose = geometry_msgs::msg::PoseStamped();
@@ -182,7 +212,6 @@ ShelfDetectionServerReal::get_tf(const std::string &fromFrame,
     shelf_pose.pose.orientation.y = 0.0;
     shelf_pose.pose.orientation.z = 0.0;
     shelf_pose.pose.orientation.w = 1.0;
-    // rclcpp::shutdown();
     return shelf_pose;
   }
 

@@ -38,7 +38,7 @@ AttachShelfServer::AttachShelfServer() : rclcpp::Node("shelf_attach_node") {
   createPublishers();
   // Create service
   createAttachShelfService();
-  RCLCPP_INFO(this->get_logger(), "Initializing attach_shelf service");
+  RCLCPP_INFO(this->get_logger(), "Initialized attach_shelf service.");
 }
 
 void AttachShelfServer::initializeParameters() {
@@ -48,7 +48,9 @@ void AttachShelfServer::initializeParameters() {
   declare_parameter<float>("attach_velocity", 0.2);
   declare_parameter<std::string>("from_frame", "robot_base_link");
   declare_parameter<std::string>("to_frame", "front_shelf");
+  declare_parameter<std::string>("cart_frame", "cart");
   declare_parameter<float>("center_shelf", 0.0);
+  declare_parameter<float>("cart_offset", 0.0);
 }
 
 void AttachShelfServer::setupTF() {
@@ -84,18 +86,21 @@ void AttachShelfServer::service_callback(
   bool is_attach_shelf = req->attach_shelf;
   RCLCPP_INFO(
       this->get_logger(),
-      "Start /attach_shelf service. Robot is moving to the front shelf");
+      "Starting /attach_shelf service. Robot is moving to the front shelf.");
 
   // Check if the robot is a real robot
   bool real_robot = this->get_parameter("real_robot").as_bool();
   if (real_robot) {
-
+    auto cart_offset = this->get_parameter("cart_offset").as_double();
+    auto cart_frame = this->get_parameter("cart").as_string();
+    auto to_frame = this->get_parameter("to_frame").as_string();
     // Publish "temp_cart" from "robot_cart_laser"
     auto pose = geometry_msgs::msg::TransformStamped();
     pose.header.frame_id = "robot_cart_laser";
     pose.header.stamp = get_clock()->now();
-    pose.child_frame_id = "temp_cart";
-    pose.transform.translation.x = 0.0;
+    pose.child_frame_id = to_frame;
+    pose.transform.translation.x =
+        (-1) * cart_offset; // shift frame origin upfront 20 cm
     pose.transform.translation.y = 0.0;
     pose.transform.translation.z = 0.0;
     pose.transform.rotation.x = 0.0;
@@ -103,16 +108,16 @@ void AttachShelfServer::service_callback(
     pose.transform.rotation.z = 0.0;
     pose.transform.rotation.w = 1.0;
 
-    publish_shelf_frame(pose);
+    publishShelfFrame(pose);
     // Delay to wait for published temp_cart
     usleep(1000000);
-    geometry_msgs::msg::PoseStamped map_tf = get_tf("map", "temp_cart");
-
+    geometry_msgs::msg::PoseStamped map_tf =
+        getTransform("map", "robot_cart_laser");
     // Publish static tf base on map frame
     pose = geometry_msgs::msg::TransformStamped();
     pose.header.frame_id = "map";
     pose.header.stamp = get_clock()->now();
-    pose.child_frame_id = "temp_cart";
+    pose.child_frame_id = cart_frame;
     pose.transform.translation.x = map_tf.pose.position.x;
     pose.transform.translation.y = map_tf.pose.position.y;
     pose.transform.translation.z = map_tf.pose.position.z;
@@ -121,31 +126,27 @@ void AttachShelfServer::service_callback(
     pose.transform.rotation.z = map_tf.pose.orientation.z;
     pose.transform.rotation.w = map_tf.pose.orientation.w;
 
-    publish_shelf_frame(pose);
+    publishShelfFrame(pose);
     usleep(1000000);
-
     // Control shelf attach
     move_to_front_shelf_real(front_distance, 0.03, 0.03); // 0.03, 0.03
   } else {
     move_to_front_shelf(front_distance, 0.1, 0.5);
   }
 
-  RCLCPP_INFO(this->get_logger(), "Moving to front shelf done.");
-
   if (!is_attach_shelf) {
     res->is_success = false;
   } else {
     // Move undershelf
     auto center_shelf = this->get_parameter("center_shelf").as_double();
-    RCLCPP_INFO(this->get_logger(), "Robot is attaching to shelf");
-    attach_shelf(center_shelf);
-    set_params();
+    attachShelf(center_shelf);
+    setParameters();
     res->is_success = true;
-    RCLCPP_INFO(this->get_logger(), "Attaching to shelf done.");
   }
 }
 
-void AttachShelfServer::stopRobot(geometry_msgs::msg::Twist &msg) {
+void AttachShelfServer::stopRobot() {
+  CmdVel msg = geometry_msgs::msg::Twist();
   msg.linear.x = 0.0;
   msg.angular.z = 0.0;
   vel_pub_->publish(msg);
@@ -154,104 +155,90 @@ void AttachShelfServer::stopRobot(geometry_msgs::msg::Twist &msg) {
 void AttachShelfServer::move_to_front_shelf_real(const float &front_offset,
                                                  const float &front_speed,
                                                  const float &turn_speed) {
-  rclcpp::Rate loop_rate(10);
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("to_frame").as_string();
-
-  // Update control variables
-  auto tf_robot_shelf = get_tf(fromFrame, toFrame);
-  auto diff_x = tf_robot_shelf.pose.position.x;
-  auto diff_y = tf_robot_shelf.pose.position.y;
-  auto alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
-  // Orientation
-  double roll, pitch, yaw;
-  tf2::Quaternion q;
-  tf2::fromMsg(tf_robot_shelf.pose.orientation, q);
-  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
-  // Create empty message
-  CmdVel vel_msg = geometry_msgs::msg::Twist();
-
-  // Control loop for orientation
-  while (diff_x > front_offset) {
-    // Update variables
-    tf_robot_shelf = get_tf(fromFrame, toFrame);
-    diff_x = tf_robot_shelf.pose.position.x;
-    diff_y = tf_robot_shelf.pose.position.y;
-    alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
-
-    vel_msg.linear.x = front_speed;
-    if (alpha > 0.01) {
-      if (diff_y >= 0) {
-        vel_msg.angular.z = (float)turn_speed;
-
-      } else {
-        vel_msg.angular.z = -(float)turn_speed;
-      }
-    } else {
-      vel_msg.angular.z = 0.0;
-    }
-
-    vel_pub_->publish(vel_msg);
-    loop_rate.sleep();
-  }
-  stopRobot(vel_msg);
-  RCLCPP_INFO(this->get_logger(), "Robot oriented to shelf");
-
-  // Control loop for shelf alignment
-  while (abs(yaw) > 0.01) {
-    // Update variables
-    tf_robot_shelf = get_tf(fromFrame, toFrame);
-    tf2::fromMsg(tf_robot_shelf.pose.orientation, q);
-    tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
-
-    if (yaw >= 0) {
-      vel_msg.angular.z = (float)turn_speed;
-    } else {
-      vel_msg.angular.z = -(float)turn_speed;
-    }
-    vel_pub_->publish(vel_msg);
-    loop_rate.sleep();
-  }
-
-  stopRobot(vel_msg);
-  RCLCPP_INFO(this->get_logger(), "Robot aligned shelf");
+  updateTFParameters(fromFrame, toFrame);
+  orientRobotHeadReal(front_offset, front_speed, turn_speed);
+  stopRobot();
+  RCLCPP_INFO(this->get_logger(), "Oriented to shelf done.");
+  alignToShelf(turn_speed);
+  stopRobot();
+  RCLCPP_INFO(this->get_logger(), "Aligned to shelf done.");
 }
 
 void AttachShelfServer::move_to_front_shelf(const float &front_offset,
                                             const float &front_speed,
                                             const float &turn_speed) {
-
-  rclcpp::Rate loop_rate(10);
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("to_frame").as_string();
-  // Update params
-  auto tf_robot_shelf = get_tf(fromFrame, toFrame);
-  auto diff_x = tf_robot_shelf.pose.position.x;
-  auto diff_y = tf_robot_shelf.pose.position.y;
-  auto alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
+  updateTFParameters(fromFrame, toFrame);
+  orientRobotHeadSim(front_offset, front_speed, turn_speed);
+  stopRobot();
+  RCLCPP_INFO(this->get_logger(), "Oriented to shelf done.");
+}
+
+void AttachShelfServer::updateTFParameters(const std::string &fromFrame,
+                                           const std::string &toFrame) {
+
+  // Update control variables
+  tf_robot_shelf = getTransform(fromFrame, toFrame);
+  diff_x = tf_robot_shelf.pose.position.x;
+  diff_y = tf_robot_shelf.pose.position.y;
+  alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
   // Orientation
-  double roll, pitch, yaw;
+  double roll, pitch;
   tf2::Quaternion q;
   tf2::fromMsg(tf_robot_shelf.pose.orientation, q);
   tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
+}
 
+void AttachShelfServer::orientRobotHeadReal(const float &front_offset,
+                                            const float &front_speed,
+                                            const float &turn_speed) {
+  std::string fromFrame = this->get_parameter("from_frame").as_string();
+  std::string toFrame = this->get_parameter("to_frame").as_string();
+  rclcpp::Rate loop_rate(10);
   CmdVel vel_msg = geometry_msgs::msg::Twist();
-
   // Control loop for orientation
-  while (abs(diff_x) > front_offset) {
+  while (diff_x >= front_offset) {
     // Update variables
-    tf_robot_shelf = get_tf(fromFrame, toFrame);
-    diff_x = tf_robot_shelf.pose.position.x;
-    diff_y = tf_robot_shelf.pose.position.y;
-    alpha = abs(M_PI / 2 - atan2(diff_x, diff_y));
-    RCLCPP_INFO(this->get_logger(), "DiffX: %f", diff_x);
+    updateTFParameters(fromFrame, toFrame);
+    vel_msg.linear.x = front_speed;
+
+    if (alpha >= 0.0) {
+      if (diff_y >= 0) {
+        vel_msg.angular.z = turn_speed;
+
+      } else {
+        vel_msg.angular.z = (-1) * turn_speed;
+      }
+    } else {
+      vel_msg.angular.z = 0.0;
+    }
+
+    vel_pub_->publish(vel_msg);
+    loop_rate.sleep();
+  }
+}
+
+void AttachShelfServer::orientRobotHeadSim(const float &front_offset,
+                                           const float &front_speed,
+                                           const float &turn_speed) {
+  std::string fromFrame = this->get_parameter("from_frame").as_string();
+  std::string toFrame = this->get_parameter("to_frame").as_string();
+  rclcpp::Rate loop_rate(10);
+  CmdVel vel_msg = geometry_msgs::msg::Twist();
+  // Control loop for orientation
+  while (abs(diff_x) >= front_offset) {
+    // Update variables
+    updateTFParameters(fromFrame, toFrame);
 
     vel_msg.linear.x = front_speed;
     if (alpha > 0.01) {
       if (diff_y >= 0) {
-        vel_msg.angular.z = (float)turn_speed;
+        vel_msg.angular.z = turn_speed;
       } else {
-        vel_msg.angular.z = -(float)turn_speed;
+        vel_msg.angular.z = (-1) * turn_speed;
       }
     } else {
       vel_msg.angular.z = 0.0;
@@ -259,37 +246,50 @@ void AttachShelfServer::move_to_front_shelf(const float &front_offset,
     vel_pub_->publish(vel_msg);
     loop_rate.sleep();
   }
-  stopRobot(vel_msg);
-  RCLCPP_INFO(this->get_logger(), "Robot oriented to shelf");
 }
 
-void AttachShelfServer::attach_shelf(const double &center_dist) {
+void AttachShelfServer::alignToShelf(const float &turn_speed) {
+  std::string fromFrame = this->get_parameter("from_frame").as_string();
+  std::string toFrame = this->get_parameter("to_frame").as_string();
+  rclcpp::Rate loop_rate(10);
+  CmdVel vel_msg = geometry_msgs::msg::Twist();
+  // Control loop for shelf alignment
+  while (abs(yaw) > 0.01) {
+    // Update variables
+    updateTFParameters(fromFrame, toFrame);
+    if (yaw >= 0) {
+      vel_msg.angular.z = turn_speed;
+    } else {
+      vel_msg.angular.z = (-1) * turn_speed;
+    }
+    vel_pub_->publish(vel_msg);
+    loop_rate.sleep();
+  }
+}
+
+void AttachShelfServer::attachShelf(const double &center_dist) {
 
   CmdVel vel_msg;
   bool elevator_up;
   float front_vel;
   this->get_parameter("activate_elevator", elevator_up);
   this->get_parameter("attach_velocity", front_vel);
+  std::string fromFrame = this->get_parameter("from_frame").as_string();
+  std::string toFrame = this->get_parameter("cart_frame").as_string();
 
   rclcpp::Rate loop_rate(5);
-  std::string fromFrame = this->get_parameter("from_frame").as_string();
-  std::string toFrame = this->get_parameter("to_frame").as_string();
-  auto tf_shelf = get_tf(fromFrame, toFrame);
-  auto diff_x = tf_shelf.pose.position.x;
-
+  updateTFParameters(fromFrame, toFrame);
+  
   // Control loop for move to center shelf
   while (diff_x > (-1) * center_dist) {
-    tf_shelf = get_tf(fromFrame, toFrame);
-    diff_x = tf_shelf.pose.position.x;
-
+    updateTFParameters(fromFrame, toFrame);
     vel_msg.linear.x = front_vel;
     vel_pub_->publish(vel_msg);
 
     loop_rate.sleep();
   }
-
-  stopRobot(vel_msg);
-  RCLCPP_INFO(this->get_logger(), "Robot attached to shelf");
+  stopRobot();
+  RCLCPP_INFO(this->get_logger(), "Attached to shelf done.");
 
   // Activate lift
   if (elevator_up) {
@@ -299,8 +299,8 @@ void AttachShelfServer::attach_shelf(const double &center_dist) {
   }
 }
 
-PoseStamped AttachShelfServer::get_tf(const std::string &fromFrame,
-                                      const std::string &toFrame) {
+PoseStamped AttachShelfServer::getTransform(const std::string &fromFrame,
+                                            const std::string &toFrame) {
 
   geometry_msgs::msg::TransformStamped t;
   auto shelf_pose = geometry_msgs::msg::PoseStamped();
@@ -338,7 +338,7 @@ PoseStamped AttachShelfServer::get_tf(const std::string &fromFrame,
   return shelf_pose;
 }
 
-void AttachShelfServer::set_params() {
+void AttachShelfServer::setParameters() {
 
   // Set global and local footprint
   Footprint footprint;
@@ -429,7 +429,7 @@ void AttachShelfServer::set_params() {
   RCLCPP_INFO(this->get_logger(), "Footprint and inflation parameters set.");
 }
 
-void AttachShelfServer::publish_shelf_frame(
+void AttachShelfServer::publishShelfFrame(
     const geometry_msgs::msg::TransformStamped &pose) {
 
   auto t = geometry_msgs::msg::TransformStamped();

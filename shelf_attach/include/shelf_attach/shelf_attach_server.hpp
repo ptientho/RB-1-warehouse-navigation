@@ -43,8 +43,21 @@ private:
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   rclcpp::Service<AttachShelf>::SharedPtr srv_;
+  PoseStamped tf_robot_shelf;
+  float diff_x;
+  float diff_y;
+  double alpha;
+  double yaw;
 
   // Member functions
+  void initializeParameters();
+
+  void setupTF();
+
+  void createPublishers();
+
+  void createAttachShelfService();
+
   void service_callback(const std::shared_ptr<AttachShelf::Request> req,
                         const std::shared_ptr<AttachShelf::Response> res);
   void move_to_front_shelf_real(const float &front_offset,
@@ -53,14 +66,20 @@ private:
   void move_to_front_shelf(const float &front_offset, const float &front_speed,
                            const float &turn_speed);
 
-  void attach_shelf(const double &center_dist);
-  void set_params();
-  void publish_shelf_frame(const geometry_msgs::msg::TransformStamped &pose);
-  PoseStamped get_tf(const std::string &fromFrame, const std::string &toFrame);
+  void attachShelf(const double &center_dist);
+  void setParameters();
+  void publishShelfFrame(const geometry_msgs::msg::TransformStamped &pose);
+  void updateTFParameters(const std::string &fromFrame,
+                          const std::string &toFrame);
+  PoseStamped getTransform(const std::string &fromFrame,
+                           const std::string &toFrame);
+  // orient robot to shelf for real robot
+  void orientRobotHeadReal(const float &front_offset, const float &front_speed,
+                           const float &turn_speed);
+  // orient robot to shelf for sim robot
+  void orientRobotHeadSim(const float &front_offset, const float &front_speed,
+                          const float &turn_speed);
 
-  void initializeParameters();
-  void setupTF();
-  void createPublishers();
-  void createAttachShelfService();
-  void stopRobot(geometry_msgs::msg::Twist &msg);
+  void alignToShelf(const float &turn_speed);
+  void stopRobot();
 };

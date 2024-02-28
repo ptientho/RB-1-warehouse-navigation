@@ -3,6 +3,7 @@
 #include "rclcpp/clock.hpp"
 #include "rclcpp/logging.hpp"
 #include "rclcpp/parameter.hpp"
+#include "rclcpp/rate.hpp"
 #include "std_msgs/msg/detail/string__struct.hpp"
 #include <chrono>
 #include <memory>
@@ -50,7 +51,7 @@ void DetachShelfServer::detach_shelf() {
   // Unloading shelf
   Elevator lift_msg = std_msgs::msg::String();
   lift_pub_->publish(lift_msg);
-  std::this_thread::sleep_for(10s);
+  rclcpp::Rate loop_rate(10);
 
   // Move backward to detach
   CmdVel vel_msg;
@@ -60,7 +61,7 @@ void DetachShelfServer::detach_shelf() {
   for (int i = 0; i < 20; i++) {
     vel_msg.linear.x = (-1) * back_vel;
     vel_pub_->publish(vel_msg);
-    std::this_thread::sleep_for(100ms);
+    loop_rate.sleep();
   }
 
   vel_msg.linear.x = 0.0;
