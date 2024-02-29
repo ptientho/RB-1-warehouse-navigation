@@ -29,8 +29,13 @@ private:
   rclcpp::Service<DetachShelf>::SharedPtr srv_;
 
   // Member functions
+  void initializeParameters();
+  void createPublishers();
+  void createDetachShelfService();
+  void detachShelf();
+  void setParameters();
+
   void service_callback(const std::shared_ptr<DetachShelf::Request> req,
                         const std::shared_ptr<DetachShelf::Response> res);
-  void detach_shelf();
-  void set_params();
+  
 };

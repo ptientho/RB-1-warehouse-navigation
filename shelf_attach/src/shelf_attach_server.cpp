@@ -57,6 +57,7 @@ void AttachShelfServer::setupTF() {
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
+  tf_success_ = false;
 }
 
 void AttachShelfServer::createPublishers() {
@@ -92,7 +93,7 @@ void AttachShelfServer::service_callback(
   bool real_robot = this->get_parameter("real_robot").as_bool();
   if (real_robot) {
     auto cart_offset = this->get_parameter("cart_offset").as_double();
-    auto cart_frame = this->get_parameter("cart").as_string();
+    auto cart_frame = this->get_parameter("cart_frame").as_string();
     auto to_frame = this->get_parameter("to_frame").as_string();
     // Publish "temp_cart" from "robot_cart_laser"
     auto pose = geometry_msgs::msg::TransformStamped();
@@ -100,7 +101,7 @@ void AttachShelfServer::service_callback(
     pose.header.stamp = get_clock()->now();
     pose.child_frame_id = to_frame;
     pose.transform.translation.x =
-        (-1) * cart_offset; // shift frame origin upfront 20 cm
+        (-1) * cart_offset; // shift frame origin upfront
     pose.transform.translation.y = 0.0;
     pose.transform.translation.z = 0.0;
     pose.transform.rotation.x = 0.0;
@@ -131,7 +132,7 @@ void AttachShelfServer::service_callback(
     // Control shelf attach
     move_to_front_shelf_real(front_distance, 0.03, 0.03); // 0.03, 0.03
   } else {
-    move_to_front_shelf(front_distance, 0.1, 0.5);
+    move_to_front_shelf(front_distance, 0.08, 0.2);
   }
 
   if (!is_attach_shelf) {
@@ -203,6 +204,9 @@ void AttachShelfServer::orientRobotHeadReal(const float &front_offset,
   while (diff_x >= front_offset) {
     // Update variables
     updateTFParameters(fromFrame, toFrame);
+    if (!tf_success_){
+        break;
+    }
     vel_msg.linear.x = front_speed;
 
     if (alpha >= 0.0) {
@@ -232,7 +236,9 @@ void AttachShelfServer::orientRobotHeadSim(const float &front_offset,
   while (abs(diff_x) >= front_offset) {
     // Update variables
     updateTFParameters(fromFrame, toFrame);
-
+    if (!tf_success_){
+        break;
+    }
     vel_msg.linear.x = front_speed;
     if (alpha > 0.01) {
       if (diff_y >= 0) {
@@ -257,6 +263,9 @@ void AttachShelfServer::alignToShelf(const float &turn_speed) {
   while (abs(yaw) > 0.01) {
     // Update variables
     updateTFParameters(fromFrame, toFrame);
+    if (!tf_success_){
+        break;
+    }
     if (yaw >= 0) {
       vel_msg.angular.z = turn_speed;
     } else {
@@ -277,22 +286,24 @@ void AttachShelfServer::attachShelf(const double &center_dist) {
   std::string fromFrame = this->get_parameter("from_frame").as_string();
   std::string toFrame = this->get_parameter("cart_frame").as_string();
 
-  rclcpp::Rate loop_rate(5);
+  rclcpp::Rate loop_rate(10);
   updateTFParameters(fromFrame, toFrame);
-  
+
   // Control loop for move to center shelf
   while (diff_x > (-1) * center_dist) {
     updateTFParameters(fromFrame, toFrame);
+    if (!tf_success_){
+        break;
+    }
     vel_msg.linear.x = front_vel;
     vel_pub_->publish(vel_msg);
-
     loop_rate.sleep();
   }
   stopRobot();
   RCLCPP_INFO(this->get_logger(), "Attached to shelf done.");
 
   // Activate lift
-  if (elevator_up) {
+  if (elevator_up && tf_success_) {
     Elevator lift_msg = std_msgs::msg::String();
     lift_pub_->publish(lift_msg);
     std::this_thread::sleep_for(7s);
@@ -321,6 +332,7 @@ PoseStamped AttachShelfServer::getTransform(const std::string &fromFrame,
     shelf_pose.pose.orientation.y = 0.0;
     shelf_pose.pose.orientation.z = 0.0;
     shelf_pose.pose.orientation.w = 1.0;
+    tf_success_ = false;
     return shelf_pose;
   }
 
@@ -334,7 +346,7 @@ PoseStamped AttachShelfServer::getTransform(const std::string &fromFrame,
   shelf_pose.pose.orientation.y = rotation_pose.y;
   shelf_pose.pose.orientation.z = rotation_pose.z;
   shelf_pose.pose.orientation.w = rotation_pose.w;
-
+  tf_success_ = true;
   return shelf_pose;
 }
 

@@ -14,5 +14,5 @@ shelf_attach_server:
     to_frame: temp_cart # temporary frame to orient and align to cart. This frame is wrt. "robot_cart_laser" frame
     cart_frame: cart # static cart frame used for backing up
     cart_offset: 0.50 # cart offset in front of shelf. Used with "temp_cart"
-    center_shelf: 0.40
+    center_shelf: 0.25
     use_sim_time: false

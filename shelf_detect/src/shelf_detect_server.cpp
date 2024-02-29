@@ -1,5 +1,6 @@
 #include "shelf_detect/shelf_detect_server.hpp"
 #include "geometry_msgs/msg/detail/pose_stamped__struct.hpp"
+#include "geometry_msgs/msg/detail/transform_stamped__struct.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav_msgs/msg/detail/odometry__struct.hpp"
@@ -12,6 +13,7 @@
 #include "rclcpp/service.hpp"
 #include "rclcpp/subscription.hpp"
 #include "rclcpp/subscription_options.hpp"
+#include "rclcpp/utilities.hpp"
 #include "rcutils/logging.h"
 #include "sensor_msgs/msg/detail/laser_scan__struct.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
@@ -31,29 +33,36 @@
 
 using namespace std::chrono_literals;
 ShelfDetectionServer::ShelfDetectionServer()
-    : rclcpp::Node("shelf_detection_node") {
-  RCLCPP_INFO(this->get_logger(), "Initializing go_to_shelf Service");
+    : rclcpp::Node("shelf_detection_node"), shelf_found(false),
+      subGrp_(create_callback_group(rclcpp::CallbackGroupType::Reentrant)) {
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
                                    RCUTILS_LOG_SEVERITY_INFO);
+  // Initialize parameters
+  initializeParameters();
 
+  // Create subscribers
+  createSubscribers();
+
+  // Create publishers
+  createPublishers();
+
+  // Initialize transform objects
+  setupTF();
+
+  // Initialize shelf_detection server
+  createDetectionService();
+  RCLCPP_INFO(this->get_logger(), "Initialized shelf detection Service");
+}
+
+void ShelfDetectionServer::initializeParameters() {
   this->declare_parameter("front_offset_x", 0.0);
-  shelf_found = false;
+}
 
-  // define callback group
-  this->subGrp_ =
-      this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+void ShelfDetectionServer::createSubscribers() {
   rclcpp::SubscriptionOptions group;
   group.callback_group = subGrp_;
 
-  // start shelf_detection server
-  this->srv_ = this->create_service<GoToShelf>(
-      "/go_to_shelf",
-      std::bind(&ShelfDetectionServer::service_callback, this,
-                std::placeholders::_1, std::placeholders::_2),
-      rmw_qos_profile_services_default, subGrp_);
-
-  // start sensor callback
   this->odomSub_ = this->create_subscription<Odom>(
       "/odom", 10,
       std::bind(&ShelfDetectionServer::odom_callback, this,
@@ -64,9 +73,14 @@ ShelfDetectionServer::ShelfDetectionServer()
       std::bind(&ShelfDetectionServer::laser_callback, this,
                 std::placeholders::_1),
       group);
+}
+
+void ShelfDetectionServer::createPublishers() {
 
   this->vel_pub_ = this->create_publisher<Twist>("/cmd_vel", 10);
+}
 
+void ShelfDetectionServer::setupTF() {
   this->tf_pub_dyn_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
   this->tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
 
@@ -75,49 +89,42 @@ ShelfDetectionServer::ShelfDetectionServer()
       std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 }
 
+void ShelfDetectionServer::createDetectionService() {
+  this->srv_ = this->create_service<GoToShelf>(
+      "/go_to_shelf",
+      std::bind(&ShelfDetectionServer::service_callback, this,
+                std::placeholders::_1, std::placeholders::_2),
+      rmw_qos_profile_services_default, subGrp_);
+}
+
 void ShelfDetectionServer::service_callback(
     const std::shared_ptr<GoToShelf::Request> req,
     const std::shared_ptr<GoToShelf::Response> rsp) {
 
   RCLCPP_INFO(this->get_logger(), "Start go_to_shelf service");
-  detect_shelf();
+  detectShelf();
   float front_offset = req->front_offset;
-  auto front_range = compute_front_shelf_distance();
+  auto front_range = computeFrontShelfDistance();
   float Inf = std::numeric_limits<float>::infinity();
 
   if (shelf_found && (front_range != Inf) && (leg1_range <= 1.5)) {
 
-    auto pose = geometry_msgs::msg::TransformStamped();
-    // create front_shelf frame for moving to front shelf (static)
-    orient_robot(front_offset);
+    // create front_shelf frame for moving to front shelf (dynamic)
+    orientRobot(front_offset);
     this->timer1_ = this->create_wall_timer(
         10ms, std::bind(&ShelfDetectionServer::timer1_callback, this));
     std::this_thread::sleep_for(1.0s);
-    // publish "front_shelf" as static tf wrt. map
-    auto tf_front_cart = get_tf("map", "front_shelf");
-    pose.header.frame_id = "map";
-    pose.header.stamp = this->get_clock()->now();
-    pose.child_frame_id = "front_shelf";
-    pose.transform.translation.x = tf_front_cart.pose.position.x;
-    pose.transform.translation.y = tf_front_cart.pose.position.y;
-    pose.transform.translation.z = tf_front_cart.pose.position.z;
-    pose.transform.rotation.x = tf_front_cart.pose.orientation.x;
-    pose.transform.rotation.y = tf_front_cart.pose.orientation.y;
-    pose.transform.rotation.z = tf_front_cart.pose.orientation.z;
-    pose.transform.rotation.w = tf_front_cart.pose.orientation.w;
-    RCLCPP_INFO(this->get_logger(), "%s frame published",
-                pose.child_frame_id.c_str());
-    tf_pub_->sendTransform(pose);
-    rsp->shelf_pose = get_tf("map", "front_shelf");
+    this->timer1_->cancel();
+    this->timer1_ = this->create_wall_timer(
+        50ms, std::bind(&ShelfDetectionServer::timer3_callback, this));
     //////////////////////////////////////////////////////////////////
     // create temp_cart frame for reference to cart
-    orient_robot(0.0);
+    orientRobot(0.0);
     this->timer2_ = this->create_wall_timer(
         10ms, std::bind(&ShelfDetectionServer::timer2_callback, this));
-
-    // publish "cart_frame" as a static tf wrt. map
-    std::this_thread::sleep_for(0.5s);
-    auto tf_cart = get_tf("map", "temp_cart");
+    std::this_thread::sleep_for(1.0s);
+    auto pose = geometry_msgs::msg::TransformStamped();
+    auto tf_cart = getTransform("map", "temp_cart");
     pose.header.frame_id = "map";
     pose.header.stamp = this->get_clock()->now();
     pose.child_frame_id = "cart";
@@ -131,12 +138,13 @@ void ShelfDetectionServer::service_callback(
     RCLCPP_INFO(this->get_logger(), "%s frame published",
                 pose.child_frame_id.c_str());
     tf_pub_->sendTransform(pose);
-    timer1_->cancel();
-    timer2_->cancel();
+    this->timer2_->cancel();
+    
+    rsp->shelf_pose = getTransform("map", "front_shelf");
     rsp->shelf_found = true;
 
   } else {
-    rsp->shelf_pose = get_tf("map", "front_shelf");
+    rsp->shelf_pose = getTransform("map", "front_shelf");
     rsp->shelf_found = false;
   }
   RCLCPP_INFO(this->get_logger(), "Found Shelf: %s",
@@ -167,7 +175,7 @@ void ShelfDetectionServer::laser_callback(
   RCLCPP_DEBUG(this->get_logger(), "FRONT LASER INDEX: %d", front_laser_idx);
 }
 
-void ShelfDetectionServer::detect_shelf() {
+void ShelfDetectionServer::detectShelf() {
 
   if (laser_data == nullptr) {
     RCLCPP_INFO(this->get_logger(), "Laser data not received.");
@@ -187,7 +195,7 @@ void ShelfDetectionServer::detect_shelf() {
 
   // since in real robot the signal oscillates so only max intensity cannot be
   // properly used
-  float threshold = 3700.0; 
+  float threshold = 3700.0;
   int num_legs = 0;
 
   for (it = intensity_list.begin(), i = 0;
@@ -233,7 +241,7 @@ void ShelfDetectionServer::detect_shelf() {
   }
 }
 
-float ShelfDetectionServer::compute_front_shelf_distance() {
+float ShelfDetectionServer::computeFrontShelfDistance() {
 
   float front_range = 0.0;
   if (laser_data == nullptr) {
@@ -263,7 +271,7 @@ float ShelfDetectionServer::compute_front_shelf_distance() {
   return front_range;
 }
 
-void ShelfDetectionServer::orient_robot(const float &offset) {
+void ShelfDetectionServer::orientRobot(const float &offset) {
 
   RCLCPP_INFO(this->get_logger(), "Orienting to shelf....");
   rclcpp::Rate loop(50);
@@ -279,7 +287,7 @@ void ShelfDetectionServer::orient_robot(const float &offset) {
   float offset_rad = offset / 57;
   auto diff_idx = (int)std::ceil(offset_rad / laser_data->angle_increment);
 
-  detect_shelf();
+  detectShelf();
   while (abs(front_shelf_idx - front_laser_idx) >
          abs(diff_idx - 5)) { // 125 index diff = 30 degree
     if (front_shelf_idx <= front_laser_idx) {
@@ -291,7 +299,7 @@ void ShelfDetectionServer::orient_robot(const float &offset) {
       vel_msg.angular.z = -0.18;
       this->vel_pub_->publish(vel_msg);
     }
-    detect_shelf();
+    detectShelf();
     loop.sleep();
   }
   // stop rotating
@@ -300,13 +308,12 @@ void ShelfDetectionServer::orient_robot(const float &offset) {
   RCLCPP_INFO(this->get_logger(), "Orienting to shelf DONE");
 }
 
-void ShelfDetectionServer::publish_shelf_frame(const std::string &parentFrame,
-                                               const std::string &childFrame,
-                                               const double &offset_x,
-                                               bool is_static) {
+void ShelfDetectionServer::publishShelfFrame(const std::string &parentFrame,
+                                             const std::string &childFrame,
+                                             const double &offset_x,
+                                             bool is_static) {
 
-  auto range =
-      compute_front_shelf_distance();
+  auto range = computeFrontShelfDistance();
 
   auto t = geometry_msgs::msg::TransformStamped();
   t.header.frame_id = parentFrame;
@@ -340,8 +347,8 @@ void ShelfDetectionServer::odom_callback(const std::shared_ptr<Odom> msg) {
   odom_data = msg;
 }
 
-PoseStamped ShelfDetectionServer::get_tf(const std::string &fromFrame,
-                                         const std::string &toFrame) {
+PoseStamped ShelfDetectionServer::getTransform(const std::string &fromFrame,
+                                               const std::string &toFrame) {
 
   geometry_msgs::msg::TransformStamped t;
   auto shelf_pose = geometry_msgs::msg::PoseStamped();
@@ -382,10 +389,29 @@ PoseStamped ShelfDetectionServer::get_tf(const std::string &fromFrame,
 void ShelfDetectionServer::timer1_callback() {
 
   double offset_x = this->get_parameter("front_offset_x").as_double();
-  publish_shelf_frame("robot_base_link", "front_shelf", offset_x);
+  publishShelfFrame("robot_base_link", "front_shelf", offset_x);
 }
 
 void ShelfDetectionServer::timer2_callback() {
 
-  publish_shelf_frame("robot_base_link", "temp_cart", 0.0);
+  publishShelfFrame("robot_base_link", "temp_cart", 0.0);
+}
+
+void ShelfDetectionServer::timer3_callback() {
+
+  auto pose = geometry_msgs::msg::TransformStamped();
+  auto tf_front_cart = getTransform("map", "front_shelf");
+  pose.header.frame_id = "map";
+  pose.header.stamp = this->get_clock()->now();
+  pose.child_frame_id = "front_shelf";
+  pose.transform.translation.x = tf_front_cart.pose.position.x;
+  pose.transform.translation.y = tf_front_cart.pose.position.y;
+  pose.transform.translation.z = tf_front_cart.pose.position.z;
+  pose.transform.rotation.x = tf_front_cart.pose.orientation.x;
+  pose.transform.rotation.y = tf_front_cart.pose.orientation.y;
+  pose.transform.rotation.z = tf_front_cart.pose.orientation.z;
+  pose.transform.rotation.w = tf_front_cart.pose.orientation.w;
+  // RCLCPP_INFO(this->get_logger(), "%s frame published",
+  //             pose.child_frame_id.c_str());
+  tf_pub_dyn_->sendTransform(pose);
 }

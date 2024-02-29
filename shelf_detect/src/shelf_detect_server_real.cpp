@@ -6,6 +6,7 @@
 #include "rclcpp/service.hpp"
 #include "rclcpp/subscription.hpp"
 #include "rclcpp/subscription_options.hpp"
+#include "rclcpp/utilities.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "shelf_detect_msg/srv/go_to_shelf_real.hpp"
 #include "tf2_ros/buffer.h"
@@ -32,7 +33,7 @@ ShelfDetectionServerReal::ShelfDetectionServerReal()
   createDetectionService();
   // Create timer callback
   createTimers();
-  RCLCPP_INFO(this->get_logger(), "Initializing detect_shelf service");
+  RCLCPP_INFO(this->get_logger(), "Initialized detect_shelf service.");
 }
 
 void ShelfDetectionServerReal::initializeParameters() {
@@ -72,7 +73,7 @@ void ShelfDetectionServerReal::createDetectionService() {
 
 void ShelfDetectionServerReal::createTimers() {
   timer1_ = this->create_wall_timer(
-      20ms, std::bind(&ShelfDetectionServerReal::detect_shelf, this),
+      20ms, std::bind(&ShelfDetectionServerReal::detectShelf, this),
       timer_group_);
 }
 
@@ -97,12 +98,12 @@ void ShelfDetectionServerReal::service_callback(
 
   std::lock_guard<std::mutex> guard(find_shelf_mutex);
   if (found) {
-    publish_shelf_frame();
+    publishShelfFrame();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    auto pose = get_tf("map", "front_shelf");
+    auto pose = getTransform("map", "front_shelf");
     rsp->shelf_pose = pose;
   } else {
-    rsp->shelf_pose = get_tf("map", "front_shelf");
+    rsp->shelf_pose = getTransform("map", "front_shelf");
   }
   rsp->shelf_found = found;
 }
@@ -116,7 +117,7 @@ void ShelfDetectionServerReal::laser_callback(
   laser_data = msg;
 }
 
-void ShelfDetectionServerReal::detect_shelf() {
+void ShelfDetectionServerReal::detectShelf() {
 
   if (laser_data == nullptr) {
     RCLCPP_INFO(this->get_logger(), "Laser data not received.");
@@ -190,7 +191,7 @@ void ShelfDetectionServerReal::odom_callback(const std::shared_ptr<Odom> msg) {
   odom_data = msg;
 }
 
-PoseStamped ShelfDetectionServerReal::get_tf(const std::string &fromFrame,
+PoseStamped ShelfDetectionServerReal::getTransform(const std::string &fromFrame,
                                              const std::string &toFrame) {
 
   geometry_msgs::msg::TransformStamped t;
@@ -229,7 +230,7 @@ PoseStamped ShelfDetectionServerReal::get_tf(const std::string &fromFrame,
   return shelf_pose;
 }
 
-void ShelfDetectionServerReal::publish_shelf_frame() {
+void ShelfDetectionServerReal::publishShelfFrame() {
 
   if (odom_data == nullptr) {
     RCLCPP_INFO(this->get_logger(), "odom data not received");

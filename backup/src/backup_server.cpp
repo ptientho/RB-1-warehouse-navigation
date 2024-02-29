@@ -99,11 +99,13 @@ void BackUpServer::service_callback(const std::shared_ptr<BackUp::Request> req, 
         current_x = pose.pose.position.x;
         current_y = pose.pose.position.y;
         vel_msg.linear.x = (-1) * VEL;
+        vel_msg.angular.z = 0.0;
         vel_pub_->publish(vel_msg);
         loop_rate.sleep();
     }
 
     vel_msg.linear.x = 0.0;
+    vel_msg.angular.z = 0.0;
     vel_pub_->publish(vel_msg);
     res->is_success = true;
 }

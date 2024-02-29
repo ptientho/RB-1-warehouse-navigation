@@ -13,22 +13,40 @@ DetachShelfServer::DetachShelfServer() : rclcpp::Node("shelf_detach_node") {
 
   rcutils_logging_set_logger_level(this->get_logger().get_name(),
                                    RCUTILS_LOG_SEVERITY_INFO);
+  // Initialize parameters
+  initializeParameters();
+
+  // Create publishers
+  createPublishers();
+
+  // Create detach shelf service
+  createDetachShelfService();
+  RCLCPP_INFO(this->get_logger(), "Initialized detach_shelf service");
+}
+
+void DetachShelfServer::initializeParameters() {
 
   this->declare_parameter<float>("detach_velocity", 0.3);
+}
+
+void DetachShelfServer::createPublishers() {
 
   this->vel_pub_ = this->create_publisher<CmdVel>("/cmd_vel", 10);
   this->lift_pub_ = this->create_publisher<Elevator>("/elevator_down", 10);
+
   this->foot_pub_glob_ = this->create_client<ClientMsg>(
       "/global_costmap/global_costmap/set_parameters");
   this->foot_pub_local_ = this->create_client<ClientMsg>(
       "/local_costmap/local_costmap/set_parameters");
   this->critic_pub_ =
       this->create_client<ClientMsg>("/controller_server/set_parameters");
+}
+
+void DetachShelfServer::createDetachShelfService() {
 
   this->srv_ = this->create_service<DetachShelf>(
       "/detach_shelf", std::bind(&DetachShelfServer::service_callback, this,
                                  std::placeholders::_1, std::placeholders::_2));
-  RCLCPP_INFO(this->get_logger(), "Initializing detach_shelf service");
 }
 
 void DetachShelfServer::service_callback(
@@ -39,20 +57,19 @@ void DetachShelfServer::service_callback(
   if (!req->detach_shelf) {
     res->is_success = false;
   } else {
-    detach_shelf();
-    set_params();
+    detachShelf();
+    setParameters();
     res->is_success = true;
     RCLCPP_INFO(this->get_logger(), "Detaching to shelf done.");
   }
 }
 
-void DetachShelfServer::detach_shelf() {
+void DetachShelfServer::detachShelf() {
 
   // Unloading shelf
   Elevator lift_msg = std_msgs::msg::String();
   lift_pub_->publish(lift_msg);
-  rclcpp::Rate loop_rate(10);
-
+  
   // Move backward to detach
   CmdVel vel_msg;
   float back_vel;
@@ -61,14 +78,14 @@ void DetachShelfServer::detach_shelf() {
   for (int i = 0; i < 20; i++) {
     vel_msg.linear.x = (-1) * back_vel;
     vel_pub_->publish(vel_msg);
-    loop_rate.sleep();
+    std::this_thread::sleep_for(0.5s);
   }
 
   vel_msg.linear.x = 0.0;
   vel_pub_->publish(vel_msg);
 }
 
-void DetachShelfServer::set_params() {
+void DetachShelfServer::setParameters() {
 
   auto request1 = std::make_shared<ClientMsg::Request>(); // for global costmap
   auto request2 = std::make_shared<ClientMsg::Request>(); // for local costmap
@@ -138,4 +155,3 @@ void DetachShelfServer::set_params() {
   auto critic_rsp = critic_pub_->async_send_request(request3);
   RCLCPP_INFO(this->get_logger(), "Robot radius  and critic parameters set.");
 }
-

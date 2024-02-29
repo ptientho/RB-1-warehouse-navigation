@@ -2,7 +2,7 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="1">
             <Sequence>
-                <AttachShelf name="attach_shelf" attach_shelf="false" front_distance="0.0" shelf_attached="is_attached_real"/>
+                <AttachShelf name="attach_shelf" attach_shelf="true" front_distance="0.0" shelf_attached="is_attached_real"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>

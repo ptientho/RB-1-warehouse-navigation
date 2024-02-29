@@ -68,15 +68,16 @@ private:
   void createDetectionService();
 
   void createTimers();
+
+  void detectShelf();
+  PoseStamped getTransform(const std::string &fromFrame, const std::string &toFrame);
+  void publishShelfFrame();
   
   void service_callback(const std::shared_ptr<GoToShelf::Request> req,
                         const std::shared_ptr<GoToShelf::Response> rsp);
   void odom_callback(const std::shared_ptr<Odom> msg);
   void laser_callback(const std::shared_ptr<LaserScan> msg);
-  void detect_shelf();
-  PoseStamped get_tf(const std::string &fromFrame, const std::string &toFrame);
-  void publish_shelf_frame();
-
+  
 };
 
 #endif // SHELF_DETECT__SHELF_DETECT_SERVER_REAL_HPP_

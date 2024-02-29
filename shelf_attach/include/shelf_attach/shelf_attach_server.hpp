@@ -44,6 +44,7 @@ private:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   rclcpp::Service<AttachShelf>::SharedPtr srv_;
   PoseStamped tf_robot_shelf;
+  bool tf_success_;
   float diff_x;
   float diff_y;
   double alpha;

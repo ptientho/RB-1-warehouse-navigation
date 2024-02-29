@@ -76,22 +76,29 @@ private:
   int front_shelf_idx;
 
   // Member functions
+  void initializeParameters();
+  void setupTF();
+  void createSubscribers();
+  void createPublishers();
+  void createDetectionService();
+  
+  void detectShelf();
+  float computeFrontShelfDistance();
+  void orientRobot(const float &offset);
+  void publishShelfFrame(const std::string &parentFrame,
+                         const std::string &childFrame, const double &offset_x,
+                         bool is_static = false);
+  PoseStamped getTransform(const std::string &fromFrame,
+                           const std::string &toFrame);
+
   void service_callback(const std::shared_ptr<GoToShelf::Request> req,
                         const std::shared_ptr<GoToShelf::Response> rsp);
   void odom_callback(const std::shared_ptr<Odom> msg);
   void laser_callback(const std::shared_ptr<LaserScan> msg);
-
-  void detect_shelf();
-  float compute_front_shelf_distance();
-  void orient_robot(const float &offset);
-  void publish_shelf_frame(const std::string &parentFrame,
-                           const std::string &childFrame,
-                           const double &offset_x, bool is_static = false);
-
-  PoseStamped get_tf(const std::string &fromFrame, const std::string &toFrame);
-
   void timer1_callback();
   void timer2_callback();
+  void timer3_callback();
+  
 };
 
 #endif // SHELF_DETECT__SHELF_DETECT_SERVER_HPP_
