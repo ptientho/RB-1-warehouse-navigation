@@ -5,12 +5,17 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <!-- Bootstrap switch button -->
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/css/bootstrap-switch-button.min.css"
+        rel="stylesheet">
+    <script
+        src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap-switch-button@1.1.0/dist/bootstrap-switch-button.min.js"></script>
     <!-- Vuejs 3-->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- Roslibjs -->
     <script src="https://s3.eu-west-1.amazonaws.com/rosject.io/js/roslib.min.js"></script>
-
+    <!-- this roslib version works for the Construct -->
+    <!--script>"https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"</script-->
     <script type="text/javascript">
         console.log("Hello from JavaScript")
     </script>
@@ -27,6 +32,39 @@
         script.src = 'main.js?v=2.' + Date.now();
         document.head.appendChild(script);
     </script>
+
+    </script>
+
+    <style type="text/css">
+        #dragstartzone {
+            position: relative;
+            display: inline-block;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #333;
+            border-radius: 50%;
+            z-index: 10;
+            -moz-user-select: -moz-none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #dragCircle {
+            position: absolute;
+            z-index: 9;
+            border: 1px solid transparent;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 30%);
+            -moz-user-select: -moz-none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #dragCircle:hover {
+            background-color: lightcoral;
+        }
+    </style>
+
 </head>
 
 <body id="vueApp" class="d-flex flex-column h-100">
@@ -55,10 +93,12 @@
                 <!-- flag to select real/sim robot -->
                 <div class="form-group">
                     <label for="EnvironmentID">Environment</label>
-                    <select class="form-control text-center" id="EnvironmentID" :value="selectedEnvi" @input="onSelectEnvi">
+                    <select class="form-control text-center" id="EnvironmentID" :value="selectedEnvi"
+                        @input="onSelectEnvi">
                         <option>Simulated Robot</option>
                         <option>Real Robot</option>
                     </select>
+
                 </div>
             </div>
         </div>
@@ -70,7 +110,43 @@
         <div class="container-fluid">
             <div class="row">
                 <!-- Left -->
-                <div class="col-lg-6">
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title text-center">{{main_title3}}</h3>
+                            <!-- Fetch topics -->
+                            <div class="col-12 text-center">
+
+                                <button class="btn btn-primary " @click="get_topics"
+                                            :disabled="!connected">Fetch topics</button>
+                                <ul class="list-group">
+                                    <li class="list-group-item" :class="{ 'text-success': topicAvailable(velTopic), 'text-warning': !topicAvailable(velTopic) }">cmd_vel</li>
+                                    <li class="list-group-item" :class="{ 'text-success': topicAvailable(liftUpTopic), 'text-warning': !topicAvailable(liftUpTopic) }">elevator_up</li>
+                                    <li class="list-group-item" :class="{ 'text-success': topicAvailable(liftDownTopic), 'text-warning': !topicAvailable(liftDownTopic) }">elevator_down</li>
+                                    <li class="list-group-item" :class="{ 'text-success': topicAvailable(clickedPoint), 'text-warning': !topicAvailable(clickedPoint) }">clicked_point</li>
+                                </ul>
+                                <br><br>
+                                <button class="btn btn-primary " @click="get_services"
+                                            :disabled="!connected">Fetch services</button>
+                                <ul class="list-group">
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfDetectSrv), 'text-warning': !serviceAvailable(shelfDetectSrv) }">detection server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfAttachSrv), 'text-warning': !serviceAvailable(shelfAttachSrv) }">attach server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfDetachSrv), 'text-warning': !serviceAvailable(shelfDetachSrv) }">detach server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(backUpSrv), 'text-warning': !serviceAvailable(backUpSrv) }">backup server</li>
+                                </ul>
+
+                            </div>
+                        
+                        
+                        </div>
+                    
+                    
+                    </div>
+                
+                
+                </div>
+                <!-- Middle -->
+                <div class="col-lg-4">
                     <div class="card">
                         <div class="card-body">
                             <h3 class="card-title text-center">{{main_title1}}</h3>
@@ -78,81 +154,150 @@
 
                             <div class="row">
                                 <!-- Speed setting -->
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="speedVal">Speed (m/s)</label>
-                                        <select class="form-control" id="speedVal" :value="selectedSpeed"
-                                            @input="onSelectSpeed">
-                                            <option>0.1</option>
-                                            <option>0.2</option>
-                                            <option>0.3</option>
-                                            <option>0.4</option>
-                                            <option>0.5</option>
-                                        </select>
+                                <div class="col-12 text-center">
+                                    <h5 class="text-center">Elevator</h5>
+                                    <input id="chkSwitch1" type="checkbox" data-toggle="switchbutton" />
+                                    <br><br>
+
+                                </div>
+
+                                <!-- Joystick -->
+                                <div class="col-12 text-center">
+                                    <hr>
+                                    <h5 class="text-center">Joystick</h5>
+                                    <div id="dragstartzone" @mousedown="startDrag" @mousemove="doDrag">
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="turnVal">Turn (rad/s)</label>
-                                        <select class="form-control" id="turnVal" :value="selectedTurn"
-                                            @input="onSelectTurn">
-                                            <option>0.1</option>
-                                            <option>0.2</option>
-                                            <option>0.3</option>
-                                            <option>0.4</option>
-                                            <option>0.5</option>
-                                        </select>
-                                    </div>
-                                    <br><br>
+                                    <div id="dragCircle" :style="dragCircleStyle"></div>
                                 </div>
 
-                                <!-- 1st row -->
-                                <div class="col-md-12 text-center">
-                                    <button class="btn btn-primary" @click="goForward" :disabled="!connected">Go
-                                        forward</button>
-                                    <br><br>
-                                </div>
-                                <!-- 2nd row -->
-                                <div class="col-md-6 text-center">
-                                    <button class="btn btn-primary" @click="turnLeft" :disabled="!connected">Turn
-                                        left</button>
-                                </div>
-                                <div class="col-md-6 text-center">
-                                    <button class="btn btn-primary" @click="turnRight" :disabled="!connected">Turn
-                                        right</button>
-                                    <br><br>
-                                </div>
-                                <!-- 3rd row -->
-                                <div class="col-md-12 text-center">
-                                    <button class="btn btn-primary" @click="goBackward" :disabled="!connected">Go
-                                        backward</button>
-                                    <br><br><br><br>
-                                </div>
+                                <!-- Home -->
+                                <div class="col-12 text-center">
+                                    <hr>
+                                    <h5 class="text-center">Home</h5>
+                                    <button class="btn btn-primary" @click="request_home"
+                                                :disabled="!connected || !serviceIdleState">Go to home</button>
 
+                                </div>
                             </div>
-                            <div class="row justify-content-md-center">
-                                <!-- Elevator up/down -->
-                                <div class="col-md-3 text-center">
-                                    <button class="btn btn-secondary" :disabled="!connected"
-                                        @click="activateLift">Elevator up</button>
-                                </div>
-                                <div class="col-md-3 text-center">
-                                    <button class="btn btn-secondary" :disabled="!connected"
-                                        @click="deactivateLift">Elevator down</button>
-                                </div>
-
-                            </div>
-
 
                         </div>
                     </div>
                 </div>
                 <!-- Right -->
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="card">
                         <div class="card-body">
                             <h2 class="text-center">{{main_title2}}</h2>
-                            <p>{{paragraph2}}</p>
+                            <br><br>
+                            <div class="row">
+                                <!-- detect shelf BT: send service to check whether shelf is found -->
+                                <!-- request: bt xml | response: bt status -->
+                                <div class="col-md-3 text-center">
+                                    <!-- use input with button -->
+                                    <div class="card" style="width: 130px;">
+                                        <div class="card-header">
+                                            Detect Cart
+                                        </div>
+                                        <div class="card-body">
+                                            <button class="btn btn-primary" @click="request_bt1"
+                                                :disabled="!connected || !serviceIdleState">Send
+                                                Request</button>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            <p v-if="serviceIdleState">{{ serviceResponse1 }}</p>
+                                            <p v-else>BT is running...</p>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <!-- go to shelf BT: send service to call the robot to shelf -->
+                                <!-- request: bt xml | response: bt status -->
+                                <div class="col-md-3 text-center">
+
+                                    <div class="card" style="width: 130px;">
+                                        <div class="card-header">
+                                            Go To Cart
+                                        </div>
+                                        <div class="card-body">
+                                            <button class="btn btn-primary" @click="request_bt2"
+                                                :disabled="!connected || !serviceIdleState">Send
+                                                Request</button>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            <p v-if="serviceIdleState">{{ serviceResponse2 }}</p>
+                                            <p v-else>BT is running...</p>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <!-- attach shelf BT: send service to attach shelf -->
+                                <!-- request: bt xml | response: bt status -->
+                                <div class="col-md-3 text-center">
+
+                                    <div class="card" style="width: 130px;">
+                                        <div class="card-header">
+                                            Attach Cart
+                                        </div>
+                                        <div class="card-body">
+                                            <button class="btn btn-primary" @click="request_bt3"
+                                                :disabled="!connected || !serviceIdleState">Send
+                                                Request</button>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            <p v-if="serviceIdleState">{{ serviceResponse3 }}</p>
+                                            <p v-else>BT is running...</p>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <!-- detach shelf BT: send service to detach shelf -->
+                                <!-- request: bt xml | response: bt status -->
+                                <div class="col-md-3 text-center">
+
+                                    <div class="card" style="width: 130px;">
+                                        <div class="card-header">
+                                            Detach Cart
+                                        </div>
+                                        <div class="card-body">
+                                            <button class="btn btn-primary" @click="request_bt4"
+                                                :disabled="!connected || !serviceIdleState">Send
+                                                Request</button>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            <p v-if="serviceIdleState">{{ serviceResponse4 }}</p>
+                                            <p v-else>BT is running...</p>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                            <br><br>
+                            <!-- Full bt -->
+                            <div class="row justify-content-md-center">
+                                <div class="col-md-6">
+                                    <div class="card text-center" style="width: 270px;">
+                                        <div class="card-header">
+                                            Full BT
+                                        </div>
+                                        <div class="card-body">
+                                            <button class="btn btn-primary" @click="request_bt_full"
+                                                :disabled="!connected || !serviceIdleState">Send
+                                                Request</button>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            <p v-if="serviceIdleState">{{ serviceResponseFull }}</p>
+                                            <p v-else>BT is running...</p>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
