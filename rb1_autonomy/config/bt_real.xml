@@ -7,7 +7,7 @@
         <Sequence>
             <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="is_attached_real"/>
-            <GoToDes goal_degree="90"/>
+            <GoToDes goal_degree="154.5"/>
             <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
@@ -27,7 +27,7 @@
           <RetryUntilSuccessful num_attempts="1">
             <AsyncSequence>    
                 <BackUp is_backup="true"/>
-                <GoToDes goal_degree="90"/>
+                <GoToDes goal_degree="154.5"/>
             </AsyncSequence>
           </RetryUntilSuccessful> 
           <DetachShelf detach_shelf="true"
@@ -108,6 +108,69 @@
       </Sequence>
       <Sequence>
         <GoToPose loc="location8_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location9_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location10_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location11_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location12_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location13_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location14_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location15_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location16_real"
+                  action_name="__default__placeholder__"/>
+        <ShelfDetectorReal shelf_pose="{front_shelf}"
+                           find_shelf="{shelf_found}"
+                           service_name="__default__placeholder__"/>
+      </Sequence>
+      <Sequence>
+        <GoToPose loc="location17_real"
                   action_name="__default__placeholder__"/>
         <ShelfDetectorReal shelf_pose="{front_shelf}"
                            find_shelf="{shelf_found}"

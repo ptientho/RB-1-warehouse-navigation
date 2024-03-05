@@ -54,6 +54,7 @@ private:
   int leg2_idx_end;
   int leg1_idx_mid;
   int leg2_idx_mid;
+  bool tf_success_;
 
   // mutex declaration
   std::mutex find_shelf_mutex;

@@ -46,6 +46,7 @@ void ShelfDetectionServerReal::setupTF() {
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   tf_pub_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+  tf_success_ = false;
 }
 
 void ShelfDetectionServerReal::createSubscribers() {
@@ -97,11 +98,11 @@ void ShelfDetectionServerReal::service_callback(
   RCLCPP_INFO(this->get_logger(), "Found Shelf: %s", found ? "YES" : "NO");
 
   std::lock_guard<std::mutex> guard(find_shelf_mutex);
-  if (found) {
+  auto pose = getTransform("map", "robot_cart_laser");  
+  if (found && tf_success_) {
     publishShelfFrame();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    auto pose = getTransform("map", "front_shelf");
-    rsp->shelf_pose = pose;
+    rsp->shelf_pose = getTransform("map", "front_shelf");
   } else {
     rsp->shelf_pose = getTransform("map", "front_shelf");
   }
@@ -192,7 +193,7 @@ void ShelfDetectionServerReal::odom_callback(const std::shared_ptr<Odom> msg) {
 }
 
 PoseStamped ShelfDetectionServerReal::getTransform(const std::string &fromFrame,
-                                             const std::string &toFrame) {
+                                                   const std::string &toFrame) {
 
   geometry_msgs::msg::TransformStamped t;
   auto shelf_pose = geometry_msgs::msg::PoseStamped();
@@ -213,6 +214,7 @@ PoseStamped ShelfDetectionServerReal::getTransform(const std::string &fromFrame,
     shelf_pose.pose.orientation.y = 0.0;
     shelf_pose.pose.orientation.z = 0.0;
     shelf_pose.pose.orientation.w = 1.0;
+    tf_success_ = false;
     return shelf_pose;
   }
 
@@ -226,7 +228,7 @@ PoseStamped ShelfDetectionServerReal::getTransform(const std::string &fromFrame,
   shelf_pose.pose.orientation.y = rotation_pose.y;
   shelf_pose.pose.orientation.z = rotation_pose.z;
   shelf_pose.pose.orientation.w = rotation_pose.w;
-
+  tf_success_ = true;
   return shelf_pose;
 }
 

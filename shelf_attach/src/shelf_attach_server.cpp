@@ -130,9 +130,9 @@ void AttachShelfServer::service_callback(
     publishShelfFrame(pose);
     usleep(1000000);
     // Control shelf attach
-    move_to_front_shelf_real(front_distance, 0.03, 0.03); // 0.03, 0.03
+    move_to_front_shelf_real(front_distance, 0.03, 0.09); // 0.03, 0.03
   } else {
-    move_to_front_shelf(front_distance, 0.08, 0.2);
+    move_to_front_shelf(front_distance, 0.08, 0.25);
   }
 
   if (!is_attach_shelf) {
@@ -233,14 +233,14 @@ void AttachShelfServer::orientRobotHeadSim(const float &front_offset,
   rclcpp::Rate loop_rate(10);
   CmdVel vel_msg = geometry_msgs::msg::Twist();
   // Control loop for orientation
-  while (abs(diff_x) >= front_offset) {
+  while (diff_x >= front_offset) {
     // Update variables
     updateTFParameters(fromFrame, toFrame);
     if (!tf_success_){
         break;
     }
     vel_msg.linear.x = front_speed;
-    if (alpha > 0.01) {
+    if (alpha > 0.0) {
       if (diff_y >= 0) {
         vel_msg.angular.z = turn_speed;
       } else {
