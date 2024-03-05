@@ -5,36 +5,39 @@
     <Sequence>
       <Fallback>
         <Sequence>
-            <CheckShelfAttached name="check_attach_shelf"
-                            shelf_attached="is_attached_real"/>
-            <GoToDes goal_degree="154.5"/>
-            <DetachShelf detach_shelf="true"
-                   shelf_attached="is_attached_real"
-                   service_name="__default__placeholder__"/>
-            <GoToPose loc="location1_real"
-                  action_name="__default__placeholder__"/>           
+          <CheckShelfAttached name="check_attach_shelf"
+                              shelf_attached="is_attached_real"/>
+          <GoToDes goal_degree="90"
+                   action_name="__default__placeholder__"/>
+          <DetachShelf detach_shelf="true"
+                       shelf_attached="is_attached_real"
+                       service_name="__default__placeholder__"/>
+          <GoToPose loc="location1_real"
+                    action_name="__default__placeholder__"/>
         </Sequence>
         <Sequence>
           <RetryUntilSuccessful num_attempts="5">
             <SubTree ID="ShelfDetection"
-                    shelf_found="{shelf_found}"
-                    front_shelf="{front_shelf}"/>
-          </RetryUntilSuccessful>    
+                     front_shelf="{front_shelf}"
+                     shelf_found="{shelf_found}"/>
+          </RetryUntilSuccessful>
           <SubTree ID="ShelfApproach"
-                   is_attached="{is_attached}"
+                   shelf_found="{shelf_found}"
                    front_shelf="{front_shelf}"
-                   shelf_found="{shelf_found}"/>
+                   is_attached="{is_attached}"/>
           <RetryUntilSuccessful num_attempts="1">
-            <AsyncSequence>    
-                <BackUp is_backup="true"/>
-                <GoToDes goal_degree="154.5"/>
+            <AsyncSequence>
+              <BackUp is_backup="true"
+                      service_name="__default__placeholder__"/>
+              <GoToDes goal_degree="90"
+                       action_name="__default__placeholder__"/>
             </AsyncSequence>
-          </RetryUntilSuccessful> 
+          </RetryUntilSuccessful>
           <DetachShelf detach_shelf="true"
-                   shelf_attached="is_attached_real"
-                   service_name="__default__placeholder__"/>
+                       shelf_attached="is_attached_real"
+                       service_name="__default__placeholder__"/>
           <GoToPose loc="location1_real"
-                  action_name="__default__placeholder__"/>      
+                    action_name="__default__placeholder__"/>
         </Sequence>
       </Fallback>
     </Sequence>
@@ -46,7 +49,7 @@
       <GoToPose2 pose="{front_shelf}"
                  action_name="__default__placeholder__"/>
       <AttachShelf attach_shelf="true"
-                   front_distance="0.0" 
+                   front_distance="0.0"
                    shelf_attached="is_attached_real"
                    service_name="__default__placeholder__"/>
     </Sequence>
@@ -185,14 +188,20 @@
       <input_port name="attach_shelf"
                   type="bool"/>
       <input_port name="front_distance"
-                  type="bool"/>
-      <output_port name="shelf_attached"
-                   type="std::string"/>
+                  type="float"/>
+      <input_port name="shelf_attached"
+                  type="std::string"/>
       <input_port name="service_name"
                   default="__default__placeholder__"
                   type="std::string">Service name</input_port>
     </Action>
-    <Action ID="BackUp"/>
+    <Action ID="BackUp">
+      <input_port name="is_backup"
+                  type="bool"/>
+      <input_port name="service_name"
+                  default="__default__placeholder__"
+                  type="std::string">Service name</input_port>
+    </Action>
     <Condition ID="CheckShelfAttached">
       <input_port name="shelf_attached"
                   type="std::string"/>
@@ -204,11 +213,18 @@
     <Action ID="DetachShelf">
       <input_port name="detach_shelf"
                   type="bool"/>
-      <output_port name="shelf_attached"
-                   type="std::string"/>
+      <input_port name="shelf_attached"
+                  type="std::string"/>
       <input_port name="service_name"
                   default="__default__placeholder__"
                   type="std::string">Service name</input_port>
+    </Action>
+    <Action ID="GoToDes">
+      <input_port name="goal_degree"
+                  type="double"/>
+      <input_port name="action_name"
+                  default="__default__placeholder__"
+                  type="std::string">Action server name</input_port>
     </Action>
     <Action ID="GoToPose">
       <input_port name="loc"

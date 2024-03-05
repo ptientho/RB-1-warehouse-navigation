@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root BTCPP_format="4" project_name="Project">
+    <include path="bt_real.xml"/>
+    <include path="bt_test_groot2_real.xml"/>
+    <!-- Description of Node Models (used by Groot) -->
+    <TreeNodesModel>
+        <Action ID="AttachShelf">
+            <input_port name="attach_shelf" type="bool"/>
+            <input_port name="front_distance" type="float"/>
+            <input_port name="shelf_attached" type="std::string"/>
+            <input_port name="service_name" default="__default__placeholder__" type="std::string">Service name</input_port>
+        </Action>
+        <Action ID="BackUp">
+            <input_port name="is_backup" type="bool"/>
+            <input_port name="service_name" default="__default__placeholder__" type="std::string">Service name</input_port>
+        </Action>
+        <Condition ID="CheckShelfAttached">
+            <input_port name="shelf_attached" type="std::string"/>
+        </Condition>
+        <Condition ID="CheckShelfFound">
+            <input_port name="shelf_found" type="bool"/>
+        </Condition>
+        <Action ID="DetachShelf">
+            <input_port name="detach_shelf" type="bool"/>
+            <input_port name="shelf_attached" type="std::string"/>
+            <input_port name="service_name" default="__default__placeholder__" type="std::string">Service name</input_port>
+        </Action>
+        <Action ID="GoToDes">
+            <input_port name="goal_degree" type="double"/>
+            <input_port name="action_name" default="__default__placeholder__" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="GoToPose">
+            <input_port name="loc" type="std::string"/>
+            <input_port name="action_name" default="__default__placeholder__" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="GoToPose2">
+            <input_port name="pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <input_port name="action_name" default="__default__placeholder__" type="std::string">Action server name</input_port>
+        </Action>
+        <Action ID="ShelfDetector">
+            <input_port name="front_offset" type="float"/>
+            <output_port name="shelf_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="find_shelf" type="bool"/>
+            <input_port name="service_name" default="__default__placeholder__" type="std::string">Service name</input_port>
+        </Action>
+        <Action ID="ShelfDetectorReal">
+            <output_port name="shelf_pose" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
+            <output_port name="find_shelf" type="bool"/>
+            <input_port name="service_name" default="__default__placeholder__" type="std::string">Service name</input_port>
+        </Action>
+    </TreeNodesModel>
+</root>

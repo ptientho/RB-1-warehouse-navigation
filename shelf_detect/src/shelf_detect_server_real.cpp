@@ -91,14 +91,12 @@ void ShelfDetectionServerReal::service_callback(
   }
 
   bool found;
-  {
-    std::lock_guard<std::mutex> guard(find_shelf_mutex);
-    found = shelf_found;
-  }
-  RCLCPP_INFO(this->get_logger(), "Found Shelf: %s", found ? "YES" : "NO");
-
   std::lock_guard<std::mutex> guard(find_shelf_mutex);
-  auto pose = getTransform("map", "robot_cart_laser");  
+  found = shelf_found;
+
+  RCLCPP_INFO(this->get_logger(), "Found Shelf: %s", found ? "YES" : "NO");
+  auto pose = getTransform("map", "robot_cart_laser");
+
   if (found && tf_success_) {
     publishShelfFrame();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
