@@ -90,21 +90,22 @@ void ShelfDetectionServerReal::service_callback(
     RCLCPP_ERROR(this->get_logger(), "Sleep interrupted: %s", e.what());
   }
 
-  bool found;
   std::lock_guard<std::mutex> guard(find_shelf_mutex);
+  bool found;
+  bool tf_success;
   found = shelf_found;
 
   RCLCPP_INFO(this->get_logger(), "Found Shelf: %s", found ? "YES" : "NO");
   auto pose = getTransform("map", "robot_cart_laser");
-
-  if (found && tf_success_) {
+  tf_success = tf_success_;
+  if (found && tf_success) {
     publishShelfFrame();
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     rsp->shelf_pose = getTransform("map", "front_shelf");
   } else {
     rsp->shelf_pose = getTransform("map", "front_shelf");
   }
-  rsp->shelf_found = found;
+  rsp->shelf_found = found && tf_success;
 }
 
 void ShelfDetectionServerReal::laser_callback(
