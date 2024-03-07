@@ -164,7 +164,7 @@ createApp({
                 this.btXML_3 = 'bt_test_shelf_attach_real.xml';
                 this.btXML_4 = 'bt_test_shelf_detach.xml';
                 this.btXML_full = 'bt_real.xml';
-                this.btXML_home = 'bt_test_home.xml';
+                this.btXML_home = 'bt_test_home_real.xml';
                 this.btService = '/rb1_autonomy_server';
                 this.shelfDetectSrv = '/go_to_shelf_real';
                 this.shelfAttachSrv = '/attach_shelf';
