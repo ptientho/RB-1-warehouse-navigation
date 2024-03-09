@@ -16,6 +16,7 @@ find_package(nav2_msgs REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(behaviortree_ros2 REQUIRED)
 find_package(btcpp_ros2_interfaces REQUIRED)
@@ -47,6 +48,7 @@ set(TARGET_DEPENDS
 	nav2_msgs
 	yaml-cpp
 	tf2
+	tf2_ros
 	tf2_geometry_msgs
 	shelf_detect_msg
 	geometry_msgs

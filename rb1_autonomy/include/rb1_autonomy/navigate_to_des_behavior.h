@@ -10,6 +10,7 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "yaml-cpp/yaml.h"
+#include "tf2_ros/static_transform_broadcaster.h"
 
 #include <memory>
 #include <string>
@@ -21,7 +22,9 @@ public:
     using Pose = geometry_msgs::msg::PoseStamped;
 
     GoToPoseDes(const std::string& name, const NodeConfig& conf, const RosNodeParams& params)
-        : RosActionNode<nav2_msgs::action::NavigateToPose>(name, conf, params) {}
+        : RosActionNode<nav2_msgs::action::NavigateToPose>(name, conf, params) {
+        tf_pub_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node_);
+        }
 
     static PortsList providedPorts() {
         return providedBasicPorts({ InputPort<double>("goal_degree") });
@@ -37,4 +40,7 @@ public:
     }
 
     NodeStatus onFeedback(const std::shared_ptr<const Feedback> feedback) override;
+private:
+    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_pub_;
+    void publishGoalFrame(const Goal &nav_pose);
 };
