@@ -1,0 +1,13 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <RetryUntilSuccessful num_attempts="1">
+            <Sequence>
+                <GoToPose loc="home_real"
+                  action_name="__default__placeholder__"/>
+                <DetachShelf detach_shelf="true"
+                    shelf_attached="is_attached_real"
+                    service_name="__default__placeholder__"/>
+            </Sequence>
+        </RetryUntilSuccessful>
+    </BehaviorTree>
+</root>

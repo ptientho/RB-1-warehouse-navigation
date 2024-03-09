@@ -1,0 +1,6 @@
+[submodule "BehaviorTree.CPP"]
+	path = BehaviorTree.CPP
+	url = https://github.com/BehaviorTree/BehaviorTree.CPP.git
+[submodule "BehaviorTree.ROS2"]
+	path = BehaviorTree.ROS2
+	url = https://github.com/BehaviorTree/BehaviorTree.ROS2.git

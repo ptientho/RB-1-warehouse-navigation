@@ -6,6 +6,7 @@ location4: [4.93459, 0.281295, -0.00995993]
 location5: [5.17215, 0.0232855, -0.199606]
 front_shelf: [5.63516, -0.317152, -1.5708]
 is_attached: false
+home_real: [0.124, -0.017, 2.722]
 location1_real: [0.766, 0.558, -0.597]
 location2_real: [0.766, 0.558, -1.7]
 location3_real: [1.709, 0.278, -0.519]
