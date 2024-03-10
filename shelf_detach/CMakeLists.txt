@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(shelf_detach_msg REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 include_directories(
 	include
@@ -24,7 +25,7 @@ set(dependencies
   std_msgs
   shelf_detach_msg
   geometry_msgs
-
+  tf2_ros
 )
 
 add_library(${library_name} SHARED

@@ -8,10 +8,13 @@
 #include "rclcpp/service.hpp"
 #include "shelf_detach_msg/srv/detach_shelf.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
 #include <memory>
+#include "geometry_msgs/msg/pose_stamped.hpp"
 
+using Pose = geometry_msgs::msg::PoseStamped;
 class DetachShelfServer : public rclcpp::Node {
-
 public:
   using DetachShelf = shelf_detach_msg::srv::DetachShelf;
   using CmdVel = geometry_msgs::msg::Twist;
@@ -28,14 +31,22 @@ private:
   rclcpp::Client<ClientMsg>::SharedPtr critic_pub_;
   rclcpp::Service<DetachShelf>::SharedPtr srv_;
 
+  // TF parameters
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  bool tf_success_;
+
   // Member functions
   void initializeParameters();
   void createPublishers();
+  void initializeTFparameters();
   void createDetachShelfService();
-  void detachShelf();
+  void detachShelf(const std::shared_ptr<DetachShelf::Response>);
   void setParameters();
 
   void service_callback(const std::shared_ptr<DetachShelf::Request> req,
                         const std::shared_ptr<DetachShelf::Response> res);
-  
+  Pose getTransform(const std::string &fromFrame, const std::string &toFrame);
+  Pose getDefaultPose();
+  void handleTransformException(const std::string& fromFrame, const std::string& toFrame, const std::string& errorMsg);
 };

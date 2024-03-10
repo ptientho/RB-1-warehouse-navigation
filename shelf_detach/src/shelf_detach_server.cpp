@@ -26,7 +26,9 @@ DetachShelfServer::DetachShelfServer() : rclcpp::Node("shelf_detach_node") {
 
 void DetachShelfServer::initializeParameters() {
 
-  this->declare_parameter<float>("detach_velocity", 0.3);
+  declare_parameter<std::string>("from_frame", "robot_base_link");
+  declare_parameter<std::string>("to_frame", "cart_goal");
+  declare_parameter<double>("backup_distance", 0.0);
 }
 
 void DetachShelfServer::createPublishers() {
@@ -40,6 +42,13 @@ void DetachShelfServer::createPublishers() {
       "/local_costmap/local_costmap/set_parameters");
   this->critic_pub_ =
       this->create_client<ClientMsg>("/controller_server/set_parameters");
+}
+
+void DetachShelfServer::initializeTFparameters() {
+
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  tf_success_ = false;
 }
 
 void DetachShelfServer::createDetachShelfService() {
@@ -57,32 +66,50 @@ void DetachShelfServer::service_callback(
   if (!req->detach_shelf) {
     res->is_success = false;
   } else {
-    detachShelf();
+    detachShelf(res);
     setParameters();
-    res->is_success = true;
     RCLCPP_INFO(this->get_logger(), "Detaching to shelf done.");
   }
 }
 
-void DetachShelfServer::detachShelf() {
+void DetachShelfServer::detachShelf(const std::shared_ptr<DetachShelf::Response> res) {
+
+  auto fromFrame = get_parameter("from_frame").as_string();
+  auto toFrame = get_parameter("to_frame").as_string();
+  auto backupDist = get_parameter("backup_distance").as_double();
 
   // Unloading shelf
   Elevator lift_msg = std_msgs::msg::String();
   lift_pub_->publish(lift_msg);
-  
-  // Move backward to detach
-  CmdVel vel_msg;
-  float back_vel;
-  this->get_parameter("detach_velocity", back_vel);
 
-  for (int i = 0; i < 10; i++) {
-    vel_msg.linear.x = (-1) * back_vel;
+  // Move backward to detach
+  const float VEL = 0.05;
+  CmdVel vel_msg;
+  rclcpp::Rate loop_rate(10);
+
+  Pose pose = getTransform(fromFrame, toFrame);
+  float current_x = pose.pose.position.x;
+
+  if (!tf_success_) {
+    res->is_success = false;
+    RCLCPP_INFO(get_logger(), "Cannot find transform from %s to %s",
+                fromFrame.c_str(), toFrame.c_str());
+    return;
+  }
+
+  while (current_x < static_cast<float>(backupDist)) {
+    pose = getTransform(fromFrame, toFrame);
+    current_x = pose.pose.position.x;
+    vel_msg.linear.x = (-1) * VEL;
+    vel_msg.angular.z = 0.0;
     vel_pub_->publish(vel_msg);
-    std::this_thread::sleep_for(0.5s);
+    loop_rate.sleep();
   }
 
   vel_msg.linear.x = 0.0;
+  vel_msg.angular.z = 0.0;
   vel_pub_->publish(vel_msg);
+  res->is_success = true;
 }
 
 void DetachShelfServer::setParameters() {
@@ -154,4 +181,48 @@ void DetachShelfServer::setParameters() {
   auto local_rsp = foot_pub_local_->async_send_request(request2);
   auto critic_rsp = critic_pub_->async_send_request(request3);
   RCLCPP_INFO(this->get_logger(), "Robot radius  and critic parameters set.");
+}
+
+Pose DetachShelfServer::getDefaultPose() {
+  Pose pose;
+  pose.header.stamp = get_clock()->now();
+  pose.header.frame_id = "robot_base_link";
+  pose.pose.orientation.w = 1.0;
+  return pose;
+}
+
+void DetachShelfServer::handleTransformException(const std::string &fromFrame,
+                                                 const std::string &toFrame,
+                                                 const std::string &errorMsg) {
+  RCLCPP_INFO(get_logger(), "Could not transform %s to %s: %s",
+              fromFrame.c_str(), toFrame.c_str(), errorMsg.c_str());
+  tf_success_ = false;
+}
+
+Pose DetachShelfServer::getTransform(const std::string &fromFrame,
+                                     const std::string &toFrame) {
+  geometry_msgs::msg::TransformStamped transform;
+  auto pose = geometry_msgs::msg::PoseStamped();
+
+  try {
+    transform =
+        tf_buffer_->lookupTransform(fromFrame, toFrame, tf2::TimePointZero);
+  } catch (const tf2::TransformException &ex) {
+    handleTransformException(fromFrame, toFrame, ex.what());
+    return getDefaultPose();
+  }
+
+  auto translation = transform.transform.translation;
+  auto rotation = transform.transform.rotation;
+
+  pose.pose.position.x = translation.x;
+  pose.pose.position.y = translation.y;
+  pose.pose.position.z = translation.z;
+  pose.pose.orientation.x = rotation.x;
+  pose.pose.orientation.y = rotation.y;
+  pose.pose.orientation.z = rotation.z;
+  pose.pose.orientation.w = rotation.w;
+
+  tf_success_ = true;
+  return pose;
 }
