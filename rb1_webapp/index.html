@@ -129,11 +129,11 @@
                                 <button class="btn btn-primary " @click="get_services"
                                             :disabled="!connected">Fetch services</button>
                                 <ul class="list-group">
-                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfDetectSrv), 'text-warning': !serviceAvailable(shelfDetectSrv) }">detection server</li>
-                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfAttachSrv), 'text-warning': !serviceAvailable(shelfAttachSrv) }">attach server</li>
-                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfDetachSrv), 'text-warning': !serviceAvailable(shelfDetachSrv) }">detach server</li>
-                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(backUpSrv), 'text-warning': !serviceAvailable(backUpSrv) }">backup server</li>
-                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(btService), 'text-warning': !serviceAvailable(btService) }">autonomy server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfDetectSrv) && connected, 'text-warning': !serviceAvailable(shelfDetectSrv) || !connected}">detection server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfAttachSrv) && connected, 'text-warning': !serviceAvailable(shelfAttachSrv) || !connected}">attach server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(shelfDetachSrv) && connected, 'text-warning': !serviceAvailable(shelfDetachSrv) || !connected}">detach server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(backUpSrv) && connected, 'text-warning': !serviceAvailable(backUpSrv) || !connected}">backup server</li>
+                                    <li class="list-group-item" :class="{ 'text-success': serviceAvailable(btService) && connected, 'text-warning': !serviceAvailable(btService) || !connected}">autonomy server</li>
                                 </ul>
 
                             </div>
