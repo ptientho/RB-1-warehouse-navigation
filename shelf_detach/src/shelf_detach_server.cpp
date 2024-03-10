@@ -19,6 +19,9 @@ DetachShelfServer::DetachShelfServer() : rclcpp::Node("shelf_detach_node") {
   // Create publishers
   createPublishers();
 
+  // TF parameters
+  initializeTFparameters();
+
   // Create detach shelf service
   createDetachShelfService();
   RCLCPP_INFO(this->get_logger(), "Initialized detach_shelf service");
@@ -29,6 +32,7 @@ void DetachShelfServer::initializeParameters() {
   declare_parameter<std::string>("from_frame", "robot_base_link");
   declare_parameter<std::string>("to_frame", "cart_goal");
   declare_parameter<double>("backup_distance", 0.0);
+  detach_success_ = false;
 }
 
 void DetachShelfServer::createPublishers() {
@@ -66,18 +70,20 @@ void DetachShelfServer::service_callback(
   if (!req->detach_shelf) {
     res->is_success = false;
   } else {
-    detachShelf(res);
-    setParameters();
+    detachShelf();
+    res->is_success = detach_success_;
+    if (res->is_success) {
+      setParameters();
+    }
     RCLCPP_INFO(this->get_logger(), "Detaching to shelf done.");
   }
 }
 
-void DetachShelfServer::detachShelf(const std::shared_ptr<DetachShelf::Response> res) {
+void DetachShelfServer::detachShelf() {
 
   auto fromFrame = get_parameter("from_frame").as_string();
   auto toFrame = get_parameter("to_frame").as_string();
   auto backupDist = get_parameter("backup_distance").as_double();
-
   // Unloading shelf
   Elevator lift_msg = std_msgs::msg::String();
   lift_pub_->publish(lift_msg);
@@ -91,7 +97,7 @@ void DetachShelfServer::detachShelf(const std::shared_ptr<DetachShelf::Response>
   float current_x = pose.pose.position.x;
 
   if (!tf_success_) {
-    res->is_success = false;
+    detach_success_ = false;
     RCLCPP_INFO(get_logger(), "Cannot find transform from %s to %s",
                 fromFrame.c_str(), toFrame.c_str());
     return;
@@ -109,7 +115,7 @@ void DetachShelfServer::detachShelf(const std::shared_ptr<DetachShelf::Response>
   vel_msg.linear.x = 0.0;
   vel_msg.angular.z = 0.0;
   vel_pub_->publish(vel_msg);
-  res->is_success = true;
+  detach_success_ = true;
 }
 
 void DetachShelfServer::setParameters() {

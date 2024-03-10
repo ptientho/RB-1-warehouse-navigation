@@ -35,13 +35,14 @@ private:
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   bool tf_success_;
+  bool detach_success_;
 
   // Member functions
   void initializeParameters();
   void createPublishers();
   void initializeTFparameters();
   void createDetachShelfService();
-  void detachShelf(const std::shared_ptr<DetachShelf::Response>);
+  void detachShelf();
   void setParameters();
 
   void service_callback(const std::shared_ptr<DetachShelf::Request> req,

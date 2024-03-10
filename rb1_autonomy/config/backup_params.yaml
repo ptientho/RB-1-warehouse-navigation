@@ -11,4 +11,4 @@ backup_server:
           reliability: reliable
     to_frame: cart # a reference frame for backing up
     tolerance: 0.1 # tolerance in y direction between "from_frame" and "to_frame" for safety purpose
-    use_sim_time: false
+    use_sim_time: true
