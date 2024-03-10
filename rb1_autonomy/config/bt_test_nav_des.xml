@@ -2,7 +2,7 @@
     <BehaviorTree ID="MainTree">
         <RetryUntilSuccessful num_attempts="1">
             <Sequence>
-                <GoToDes goal_degree="-90.0"/>
+                <GoToDes goal_degree="-107.4"/>
             </Sequence>
         </RetryUntilSuccessful>
     </BehaviorTree>
