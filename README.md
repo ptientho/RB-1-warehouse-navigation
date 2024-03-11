@@ -14,7 +14,7 @@ This project is based on ROS2 Humble middleware.
 
 **Robot Simulation**
 
-![rb1 sim](rb1_sim.png)
+![rb1 sim](rb1-sim.png)
 
 Inside simulation workspace runs,
 
