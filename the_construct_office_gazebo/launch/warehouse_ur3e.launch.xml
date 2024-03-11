@@ -1,0 +1,19 @@
+<?xml version='1.0' ?>
+<launch>
+
+  <!-- Launches World now independently form spawning robot -->
+  <include file="$(find-pkg-share the_construct_office_gazebo)/launch/start_world_standalone.launch.py"/>
+  <!-- UR3e Arm -->
+  <include file="$(find-pkg-share ur_simulation_gazebo)/launch/ur_sim_starbots.launch.py"/>
+  <!-- Add topic_tools relay for image_raw -->
+  <node pkg="topic_tools" exec="relay" name="image_raw_relay">
+    <param name="input_topic" value="/camera/image_raw" />
+    <param name="output_topic" value="/camera/color/image_raw" />
+  </node>
+
+  <!-- Add topic_tools relay for points -->
+  <node pkg="topic_tools" exec="relay" name="points_relay">
+    <param name="input_topic" value="/camera/points" />
+    <param name="output_topic" value="/camera/depth/color/points" />
+  </node>
+</launch>

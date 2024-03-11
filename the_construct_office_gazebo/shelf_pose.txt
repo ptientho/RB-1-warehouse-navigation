@@ -1,0 +1,5 @@
+<pose>3.9 0 0.025002 0.000003 0.00 -1.57</pose> // location1 left
+<pose>3.5 -1.5 0.025002 0.000003 0.00 -3.13</pose> // location2 front
+<pose>5.3 -2.8 0.025002 0.000003 0.00 1.57</pose> // location3 right
+<pose>5.1 -1.7 0.025002 0.000003 0.00 2.35</pose> // location4 slanting
+<pose>4.2 0 0.025002 0.000003 0.00 3.92</pose> // location4 slanting 2

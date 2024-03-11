@@ -1,0 +1,934 @@
+<sdf version="1.7">
+  <world name="world">
+    <scene>
+      <ambient>0.8 0.8 0.8 1.0</ambient>
+      <background>0 0 0</background>
+      <grid>false</grid>
+    </scene>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <gui>
+      <camera name="gui_camera">
+        <pose>4.11873 -12.7554 9.02279 0 0.812 -0.450002</pose>
+      </camera>
+    </gui>
+    <model name="door_kitchen">
+      <pose>16.080245142462395 -16.25646027308161 0.0 0 0 -1.562457432607192</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.109589746622178 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.109589746622178 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>21.79662252420446</iyy>
+            <izz>5.133705857537789</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.559794873311089 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_bathroom1">
+      <pose>17.428003476694457 -19.630355640118523 0.0 0 0 1.5695099001705253</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.145627315076036 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.145627315076036 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>22.13525810436803</iyy>
+            <izz>5.472341437701363</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.577813657538018 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_warehouse1">
+      <pose>7.325118281252149 -17.05888332344462 0.0 0 0 1.5707963267948966</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.0544860697012142 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.0544860697012142 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>21.299753629974642</iyy>
+            <izz>4.6368369633079745</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.5322430348506071 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_warehouse2">
+      <pose>7.365881657643422 -9.8875816241503 0.0 0 0 -1.5939307383721164</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.145935674024048 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.145935674024048 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>22.13820237083729</iyy>
+            <izz>5.475285704170623</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.577967837012024 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_mini_rrl">
+      <pose>11.262049732117953 -7.104056498998965 0.0 0 0 1.5709644434662853</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.4048548915879961 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.4048548915879961 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>24.89007194341134</iyy>
+            <izz>8.227155276744668</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.7074274457939981 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_office">
+      <pose>7.937768141452234 -6.737632100278285 0.0 0 0 1.5431487698929705</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.23763989223551 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.23763989223551 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>23.048968761886353</iyy>
+            <izz>6.3860520952196875</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.623819946117755 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_recordings">
+      <pose>17.571492940198677 -7.8671334262709545 0.0 0 0 -3.123409491376528</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.2818565879323982 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.2818565879323982 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>23.513151300107044</iyy>
+            <izz>6.850234633440376</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.6459282939661991 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_closet">
+      <pose>2.567656634711677 -19.15182947860628 0.0 0 0 3.141165260570925</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.3813464334366092 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.3813464334366092 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>24.61715820486684</iyy>
+            <izz>7.95424153820017</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.6956732167183046 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_rrl">
+      <pose>12.727222051301975 -10.716377478932754 0.0 0 0 1.5616494156602039</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.1623851166268635 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.1623851166268635 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>22.296413163981864</iyy>
+            <izz>5.633496497315196</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.5861925583134318 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_cafeteria">
+      <pose>13.459129316830579 -13.296819125933453 0.0 0 0 0.00034506554875947566</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.5409707459290378 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.5409707459290378 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>26.56079516587123</iyy>
+            <izz>9.897878499204564</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.7754853729645189 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_bathroom2">
+      <pose>4.527856701036794 -19.8008224706388 0.0 0 0 -1.5707963267948966</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.2545269131443122 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.2545269131443122 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>23.224324065847487</iyy>
+            <izz>6.561407399180819</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.6322634565721561 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_servers">
+      <pose>14.277994487649003 -10.834891569593305 0.0 0 0 -1.589951878239416</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.2142160836735563 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.2142160836735563 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>22.809669574381456</iyy>
+            <izz>6.146752907714786</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.6121080418367781 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <model name="door_entrance">
+      <pose>13.026440893176261 -19.214922027623263 0.0 0 0 0.0</pose>
+      <link name="right">
+        <pose>0 0 1.01 0 0 0</pose>
+        <visual name="right_visual">
+          <geometry>
+            <box>
+              <size>1.2890365354624291 0.03 2.0</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.5 0.25 0 0.6</ambient>
+            <diffuse>0.5 0.25 0 0.6</diffuse>
+          </material>
+        </visual>
+        <collision name="right_collision">
+          <geometry>
+            <box>
+              <size>1.2890365354624291 0.03 2.0</size>
+            </box>
+          </geometry>
+          <surface>
+            <contact>
+              <collide_bitmask>0x02</collide_bitmask>
+            </contact>
+          </surface>
+        </collision>
+        <inertial>
+          <mass>50.0</mass>
+          <inertia>
+            <ixx>16.670416666666668</ixx>
+            <iyy>23.590063290654097</iyy>
+            <izz>6.927146623987427</izz>
+          </inertia>
+        </inertial>
+      </link>
+      <joint name="right_joint" type="revolute">
+        <parent>world</parent>
+        <child>right</child>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>1.57</upper>
+          </limit>
+        </axis>
+        <pose>0.6495182677312146 0 0 0 0 0</pose>
+      </joint>
+    </model>
+    <include>
+      <name>starbots_complete_L1</name>
+      <uri>model://starbots_complete_L1</uri>
+      <pose>0 0 0.0 0 0 0</pose>
+    </include>
+
+        <!-- ADDED ELEMENTS for charging simulated system -->
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <update_rate>5.0</update_rate>
+    </plugin>
+
+
+    <model name="couch">
+      <static>1</static>
+      <include>
+        <uri>model://couch</uri>
+      </include>
+      <pose>10.0 -13.7 0.35 0 0 0</pose>
+    </model>
+
+    <!-- <model name="worktop">
+      <static>1</static>
+      <include>
+        <uri>model://worktop</uri>
+      </include>
+      <pose>16.2 -20.5 0.0 0 0 1.57</pose>
+    </model> -->
+
+    <!-- <model name="worktop_aluminium">
+      <static>1</static>
+      <include>
+        <uri>model://worktop_aluminium</uri>
+      </include>
+      <pose>14.7 -20.5 0.0 0 0 1.57</pose>
+    </model> -->
+
+    <model name="square_coffee_table">
+      <static>1</static>
+      <include>
+        <uri>model://cafe_table</uri>
+      </include>
+      <pose>15.5 -14.7 0.0 0 0 0</pose>
+    </model>
+
+    <model name="square_coffee_table_2">
+      <static>1</static>
+      <include>
+        <uri>model://cafe_table</uri>
+      </include>
+      <pose>14.5 -14.7 0.0 0 0 0</pose>
+    </model>
+
+    <model name="barstool_9">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>14.5 -14.0 0 1.57 0 0</pose>
+    </model>
+
+    <model name="barstool_10">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>15.5 -14.0 0 1.57 0 0</pose>
+    </model>
+
+    <model name="barstool_11">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>14.5 -15.3 0 1.57 0 -3.1416</pose>
+    </model>
+
+    <model name="barstool_12">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>15.5 -15.3 0 1.57 0 -3.1416</pose>
+    </model>
+
+
+    <model name="coffee_table">
+      <static>1</static>
+      <include>
+        <uri>model://coffee_table</uri>
+      </include>
+      <pose>9.5 -15.3 0 0 0 0</pose>
+    </model>
+
+    <model name="armchair">
+      <static>1</static>
+      <include>
+        <uri>model://armchair</uri>
+      </include>
+      <pose>9.0 -15.3 0 0 0 3.1416</pose>
+    </model>
+
+    <model name="cabinet">
+      <static>1</static>
+      <include>
+        <uri>model://cabinet</uri>
+      </include>
+      <pose>8.5 -13.5 0 0 0 1.57</pose>
+    </model>
+
+    <model name="cabinet_2">
+      <static>1</static>
+      <include>
+        <uri>model://cabinet</uri>
+      </include>
+      <pose>7.5 -18.5 0 0 0 0</pose>
+    </model>
+
+    <model name="high_table">
+      <static>1</static>
+      <include>
+        <uri>model://table</uri>
+      </include>
+      <pose>9.25 -17.0 0 0 0 0</pose>
+    </model>
+
+    <model name="starbots_table_ingestor">
+      <static>1</static>
+      <include>
+        <uri>model://starbots_table_ingestor</uri>
+      </include>
+      <pose>10.75 -17.0 0 0 0 0</pose>
+    </model>
+
+    <model name="espresso_machine">
+      <static>1</static>
+      <include>
+        <uri>model://espresso_machine</uri>
+      </include>
+      <pose>15.7 -18.3 0.9 0 0 -1.57</pose>
+    </model>
+
+    <model name="barstool">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>9.0 -16.5 0 1.57 0 0</pose>
+    </model>
+
+    <model name="barstool_2">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>9.8 -16.5 0 1.57 0 0</pose>
+    </model>
+
+    <model name="barstool_3">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>10.6 -16.5 0 1.57 0 0</pose>
+    </model>
+
+    <model name="barstool_4">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>11.4 -16.5 0 1.57 0 0</pose>
+    </model>
+
+    <model name="barstool_5">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>9.0 -17.5 0 1.57 0 -3.1416</pose>
+    </model>
+
+    <model name="barstool_6">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>9.8 -17.5 0 1.57 0 -3.1416</pose>
+    </model>
+
+    <model name="barstool_7">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>10.6 -17.5 0 1.57 0 -3.1416</pose>
+    </model>
+
+    <model name="barstool_8">
+      <static>1</static>
+      <include>
+        <uri>model://barstool</uri>
+      </include>
+      <pose>11.4 -17.5 0 1.57 0 -3.1416</pose>
+    </model>
+
+    <model name="countertop">
+      <static>1</static>
+      <include>
+        <uri>model://countertop</uri>
+      </include>
+      <pose>15.7 -18.2 0.5 0 0 0</pose>
+    </model>
+
+    <model name="starbots_bartender_dispenser">
+      <static>1</static>
+      <include>
+        <uri>model://starbots_bartender_dispenser</uri>
+      </include>
+      <pose>14.2 -18.2 0.5 0 0 0</pose>
+    </model>
+
+    <model name="portable_cup_2">
+      <static>0</static>
+      <include>
+        <uri>model://portable_cup_2</uri>
+      </include>
+      <pose>14.2 -18.1 1.1 0 0 0</pose>
+    </model>
+
+    <model name="coffee_machine">
+      <static>1</static>
+      <include>
+        <uri>model://coffee_machine</uri>
+      </include>
+      <pose>14.0 -17.7 1.0 0 0 1.57</pose>
+    </model>
+
+    <model name="trapezium">
+      <static>1</static>
+      <include>
+        <uri>model://trapezium</uri>
+      </include>
+      <pose>12.2 -13.5 0.2 -3.1416 0 3.1416</pose>
+    </model>
+
+
+
+    <model name="trapezium_2">
+      <static>1</static>
+      <include>
+        <uri>model://trapezium</uri>
+      </include>
+      <pose>11.5 -13.5 0.2 -3.1416 0 3.1416</pose>
+    </model>
+
+
+    <model name="trapezium_3">
+      <static>1</static>
+      <include>
+        <uri>model://trapezium</uri>
+      </include>
+      <pose>2.11 -14.7 0.2 -3.1416 0 -1.57</pose>
+    </model>
+
+
+    <model name="rubish_table_1">
+      <static>1</static>
+      <include>
+        <uri>model://rubish_table</uri>
+      </include>
+      <pose>6.15 -14.9 0.0 0 0 -3.1416</pose>
+    </model>
+
+    
+
+
+
+  </world>
+</sdf>

@@ -1,0 +1,9 @@
+<?xml version='1.0' ?>
+<launch>
+
+  <!-- Launches World now independently form spawning robot -->
+  <include file="$(find-pkg-share the_construct_office_gazebo)/launch/start_world_empty_standalone.launch.py"/>
+  <!-- UR3e Arm -->
+  <include file="$(find-pkg-share ur_simulation_gazebo)/launch/ur_sim_empty.launch.py"/>
+
+</launch>
