@@ -14,7 +14,7 @@ This project is based on ROS2 Humble middleware.
 
 by download the following docker image...
 
-```aaaaaa```
+```docker pull ptientho/rb1-warehouse-navigation```
 
 This image includes: 
 
