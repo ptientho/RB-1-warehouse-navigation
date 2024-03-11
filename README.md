@@ -18,7 +18,7 @@ by download the following docker image...
 
 This image includes: 
 
-    - ROS2 Humble installation
-    - The project source codes
-    - Web application for controlling the robot
+- ROS2 Humble installation
+- The project source codes
+- Web application for controlling the robot
 
