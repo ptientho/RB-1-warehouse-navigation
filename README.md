@@ -36,9 +36,43 @@ Inside web workspace runs,
 
 ```git clone -b webapp --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
 
-# How to run the application
+# How to run the application (simulation version)
 
-Once you already downloaded the above docker image and RB-1 robot is connected, run the following command
+**Navigation Server**
 
-```docker exec -it rb1_webapp /bin/bash -c 
+```
+ros2 launch path_planner_server navigation.launch.py
+```
+
+**Rviz**
+
+```
+ros2 launch path_planner_server rviz.launch.py
+```
+
+**Shelf Servers**
+
+```
+ros2 launch rb1_autonomy shelf_servers.launch.py
+```
+
+**Autonomy Server**
+
+```
+ros2 launch rb1_autonomy autonomy.launch.py
+```
+
+**Web Application**
+
+```
+cd your-webpage-workspace/RB-1-warehouse-navigation/rb1_webapp/
+python3 -m http.server 7000
+```
+
+In a new terminal, run
+
+```
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+```
+
 
