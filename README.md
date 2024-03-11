@@ -38,6 +38,13 @@ Inside web workspace runs,
 
 # How to run the application (simulation version)
 
+**Gazebo Simulation**
+
+```
+source ~/your-simulation-workspace/install/setup.bash
+ros2 launch the_construct_office_gazebo warehouse_rb1.launch.xml
+```
+
 **Navigation Server**
 
 ```
@@ -65,7 +72,7 @@ ros2 launch rb1_autonomy autonomy.launch.py
 **Web Application**
 
 ```
-cd your-webpage-workspace/RB-1-warehouse-navigation/rb1_webapp/
+cd ~/your-webpage-workspace/RB-1-warehouse-navigation/rb1_webapp/
 python3 -m http.server 7000
 ```
 
@@ -74,5 +81,45 @@ In a new terminal, run
 ```
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ```
+
+# How to run the application (real robot)
+
+Make sure to connect the real robot.
+
+**Navigation Server**
+
+```
+ros2 launch path_planner_server navigation_real.launch.py
+```
+
+**Rviz**
+
+```
+ros2 launch path_planner_server rviz.launch.py
+```
+
+**Shelf Servers**
+
+```
+ros2 launch rb1_autonomy shelf_servers_real.launch.py
+```
+
+**Autonomy Server**
+
+```
+ros2 launch rb1_autonomy autonomy_real.launch.py
+```
+
+**Web Application**
+
+```
+cd ~/your-webpage-workspace/RB-1-warehouse-navigation/rb1_webapp/
+python3 -m http.server 7000
+```
+
+In a new terminal, run
+
+```
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 
 
