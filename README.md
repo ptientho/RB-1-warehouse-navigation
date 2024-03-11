@@ -14,8 +14,6 @@ This project is based on ROS2 Humble middleware.
 
 **Robot Simulation**
 
-![rb1 sim](rb1-sim.png)
-
 Inside simulation workspace runs,
 
 ```
@@ -41,6 +39,8 @@ Inside web workspace runs,
 # How to run the application (simulation version)
 
 **Gazebo Simulation**
+
+![rb1 sim](rb1-sim.png)
 
 ```
 source ~/your-simulation-workspace/install/setup.bash
@@ -125,3 +125,9 @@ In a new terminal, run
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ```
 
+# Groot2 Visualization
+
+Download the installer from [Groot2 installer](https://www.behaviortree.dev/groot).
+Open the project file inside Groot2 software and browse for a file name ```bt_real_project.btproj```.
+
+![Full bt](full_bt.png)
