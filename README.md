@@ -10,15 +10,35 @@ The behavior consists of
 Thanks to the [BT.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/master) and [BehaviorTree.ROS2](https://github.com/BehaviorTree/BehaviorTree.ROS2) libraries, the complex behavior can be achieved.
 This project is based on ROS2 Humble middleware.
 
-# System Installations:
+# How to compile
 
-by download the following docker image...
+**Robot Simulation**
 
-```docker pull ptientho/rb1-warehouse-navigation```
+Inside simuklation workspace runs,
+
+```git clone -b simulation --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
+```colcon build```
+
+**Project source codes**
+
+Inside ROS2 workspace runs,
+
+```git clone -b main --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
+```colcon build```
+
+**Web application**
+
+```git clone -b webapp --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
 
 This image includes: 
 
 - ROS2 Humble installation
 - The project source codes
 - Web application for controlling the robot
+
+# How to run the application
+
+Once you already downloaded the above docker image and RB-1 robot is connected, run the following command
+
+```docker exec -it rb1_webapp /bin/bash -c 
 
