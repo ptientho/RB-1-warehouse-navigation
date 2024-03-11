@@ -39,7 +39,7 @@ controller_server:
       vx_samples: 20 # generally vx samples < vt samples
       vy_samples: 0 # since robot moves in x+ and max_vel_y = 0, this is not required
       vtheta_samples: 30 # turning samples; should be higher than vx and vy since turning requires more complexity
-      sim_time: 4.0 # increase this results in higher arch of the local path
+      sim_time: 1.0 # increase this results in higher arch of the local path
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.2

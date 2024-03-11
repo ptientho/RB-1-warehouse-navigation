@@ -1,6 +1,6 @@
 shelf_detach_server:
   ros__parameters:
-    backup_distance: 0.8
+    backup_distance: 0.9
     from_frame: robot_base_footprint
     qos_overrides:
       /clock:

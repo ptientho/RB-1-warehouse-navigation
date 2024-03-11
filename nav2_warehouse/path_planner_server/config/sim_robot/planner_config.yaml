@@ -3,12 +3,6 @@ planner_server:
     expected_planner_frequency: 20.0
     planner_plugins: ['GridBased']
     use_sim_time: True
-    
-    #GridBased:
-    #  plugin: 'nav2_navfn_planner/NavfnPlanner'
-    #  use_astar: False
-    #  allow_unknown: True
-    #  tolerance: 1.0
     GridBased:
       plugin: "nav2_smac_planner/SmacPlanner2D"
       tolerance: 0.125                      # tolerance for planning if unable to reach exact pose, in meters

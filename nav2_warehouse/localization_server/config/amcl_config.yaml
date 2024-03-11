@@ -46,3 +46,4 @@ amcl:
       y: 0.0
       z: 0.0
       yaw: 0.0
+    use_sim_time: true

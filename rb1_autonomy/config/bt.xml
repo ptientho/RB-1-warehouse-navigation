@@ -7,7 +7,8 @@
         <Sequence>
             <CheckShelfAttached name="check_attach_shelf"
                             shelf_attached="is_attached"/>
-            <GoToDes goal_degree="-90"/>
+            <GoToDes goal_degree="-90"
+                   action_name="__default__placeholder__"/>
             <DetachShelf detach_shelf="true"
                    shelf_attached="is_attached"
                    service_name="__default__placeholder__"/>
