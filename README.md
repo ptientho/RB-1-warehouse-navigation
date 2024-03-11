@@ -14,7 +14,9 @@ This project is based on ROS2 Humble middleware.
 
 **Robot Simulation**
 
-Inside simuklation workspace runs,
+![rb1 sim](rb1_sim.png)
+
+Inside simulation workspace runs,
 
 ```
 git clone -b simulation --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git
