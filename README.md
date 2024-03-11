@@ -17,6 +17,7 @@ This project is based on ROS2 Humble middleware.
 Inside simuklation workspace runs,
 
 ```git clone -b simulation --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
+
 ```colcon build```
 
 **Project source codes**
@@ -24,17 +25,14 @@ Inside simuklation workspace runs,
 Inside ROS2 workspace runs,
 
 ```git clone -b main --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
+
 ```colcon build```
 
 **Web application**
 
+Inside web workspace runs,
+
 ```git clone -b webapp --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
-
-This image includes: 
-
-- ROS2 Humble installation
-- The project source codes
-- Web application for controlling the robot
 
 # How to run the application
 
