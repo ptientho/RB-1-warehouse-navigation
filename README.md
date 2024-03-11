@@ -7,7 +7,7 @@ The behavior consists of
 2. get underneath the shelf and use the elevator to pick it up
 3. place the shelf at a desired location
 
-Thanks to the [BT.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/master) library, the complex behavior can be achieved.
+Thanks to the [BT.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/master) and [BehaviorTree.ROS2](https://github.com/BehaviorTree/BehaviorTree.ROS2) libraries, the complex behavior can be achieved.
 This project is based on ROS2 Humble middleware.
 
 # System Installations:
