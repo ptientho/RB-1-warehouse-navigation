@@ -14,7 +14,7 @@ This project is based on ROS2 Humble middleware.
 
 by download the following docker image...
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```aaaaaa```
 
 This image includes: 
 
@@ -22,4 +22,3 @@ This image includes:
     - The project source codes
     - Web application for controlling the robot
 
-```aaaaaa```
