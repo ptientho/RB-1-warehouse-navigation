@@ -1,0 +1,6 @@
+[submodule "rb1_ros2"]
+	path = rb1_ros2
+	url = https://bitbucket.org/theconstructcore/rb1_ros2.git
+[submodule "robotnik_sensors"]
+	path = robotnik_sensors
+	url = https://github.com/RobotnikAutomation/robotnik_sensors.git
