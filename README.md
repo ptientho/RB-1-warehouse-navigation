@@ -14,7 +14,7 @@ This project is based on ROS2 Humble middleware.
 
 # Software Architecture
 
-[Software Architecture]()
+[Software Architecture](https://github.com/ptientho/RB-1-warehouse-navigation/blob/main/software_architecture.jpg)
 
 # How to compile
 
