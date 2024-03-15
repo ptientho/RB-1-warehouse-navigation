@@ -36,18 +36,23 @@ colcon build
 
 **Project source codes**
 
-Inside ROS2 workspace runs,
-
 ```
+cd {ros2 workspace}/src
 git clone -b main --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git
+colcon build
+```
+Build the package
+```
+cd {ros2 workspace}
 colcon build
 ```
 
 **Web application**
 
-Inside web workspace runs,
-
-```git clone -b webapp --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
+```
+cd {webapp workspace}
+git clone -b webapp --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git
+```
 
 ## Run the application: simulation
 
