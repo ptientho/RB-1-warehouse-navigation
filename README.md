@@ -24,10 +24,13 @@ ROS2 Humble | Ubuntu 22.04 (Jammy) | CPU Architecture: amd64
 
 **Robot Simulation**
 
-Inside simulation workspace runs,
-
 ```
+cd {simulation workspace}/src
 git clone -b simulation --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git
+```
+Build the package
+```
+cd {simulation workspace}
 colcon build
 ```
 
