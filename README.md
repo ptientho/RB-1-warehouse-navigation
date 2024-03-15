@@ -18,7 +18,6 @@ This project is based on ROS2 Humble middleware.
 
 ## Dependencies
 
-**Environment**
 ROS2 Humble | Ubuntu 22.04 (Jammy) | CPU Architecture: amd64
 
 ## Compile
