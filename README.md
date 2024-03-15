@@ -16,6 +16,13 @@ This project is based on ROS2 Humble middleware.
 
 ![Software Architecture](software_architecture.jpg)
 
+## Dependencies
+
+### Environment
+ROS2 Humble
+Ubuntu 22.04 (Jammy)
+CPU Architecture: amd64
+
 ## Compile
 
 **Robot Simulation**
