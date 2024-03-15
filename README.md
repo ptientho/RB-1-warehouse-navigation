@@ -12,11 +12,11 @@ The behavior consists of
 Thanks to the [BT.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/master) and [BehaviorTree.ROS2](https://github.com/BehaviorTree/BehaviorTree.ROS2) libraries, the complex behavior can be achieved.
 This project is based on ROS2 Humble middleware.
 
-# Software Architecture
+## Software Architecture
 
 ![Software Architecture](software_architecture.jpg)
 
-# How to compile
+## Compile
 
 **Robot Simulation**
 
@@ -42,7 +42,7 @@ Inside web workspace runs,
 
 ```git clone -b webapp --recurse-submodules https://github.com/ptientho/RB-1-warehouse-navigation.git```
 
-# How to run the application (simulation version)
+## Run the application: simulation
 
 **Gazebo Simulation**
 
@@ -90,7 +90,7 @@ In a new terminal, run
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ```
 
-# How to run the application (real robot)
+# Run the application: real robot
 
 Make sure to connect the real robot.
 
