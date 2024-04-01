@@ -142,10 +142,13 @@ In a new terminal, run
 ```
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ```
+// include webapp snapshot
 
 ## Groot2 Visualization
-
+The robot operation is facilitated by Groot2 which turn behavior xml text into graphical and easy-to-read nodes.
 Download the installer from [Groot2 installer](https://www.behaviortree.dev/groot).
 Open the project file inside Groot2 software and browse for a file name ```bt_real_project.btproj```.
 
 ![Full bt](full_bt.png)
+
+## Future Work
