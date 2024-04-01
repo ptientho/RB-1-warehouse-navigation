@@ -102,7 +102,7 @@ In a new terminal, run
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ```
 
-# Run the application: real robot
+## Run the application: real robot
 
 Make sure to connect the real robot.
 
@@ -143,7 +143,7 @@ In a new terminal, run
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 ```
 
-# Groot2 Visualization
+## Groot2 Visualization
 
 Download the installer from [Groot2 installer](https://www.behaviortree.dev/groot).
 Open the project file inside Groot2 software and browse for a file name ```bt_real_project.btproj```.
