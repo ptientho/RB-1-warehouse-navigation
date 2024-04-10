@@ -12,7 +12,7 @@ The behavior consists of
 Thanks to the [BT.CPP](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/master) and [BehaviorTree.ROS2](https://github.com/BehaviorTree/BehaviorTree.ROS2) libraries, the complex behavior can be achieved.
 This project is based on ROS2 Humble middleware.
 
-For more details about what's the project and its challenges, please check out [notebook](https://i-02f032bd8d4a4cba5.robotigniteacademy.com/101cb850-8397-45a6-9d8e-90befd63f056/jupyter_rds/notebooks/final_project_presentation.ipynb)
+For more details about what's the project and its challenges, please check out [notebook](https://drive.google.com/drive/folders/1f9LTSbTydT0m9Wg69g96PT40qZzt6H88?usp=sharing)
 
 ## Software Architecture
 
